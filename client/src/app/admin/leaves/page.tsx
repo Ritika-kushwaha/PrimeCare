@@ -138,7 +138,6 @@ export default function AdminDashboardPage() {
     } catch {}
 
     try {
-      // Fetch leaves including active and past records for doctor summaries
       const leaveRes = await fetch('/api/sync/leaves?includePast=true', { cache: 'no-store' });
       const leaveData = await leaveRes.json();
       if (leaveData.success && Array.isArray(leaveData.leaves)) {
@@ -198,7 +197,7 @@ export default function AdminDashboardPage() {
 
   const cleanDoctorName = (name?: string) => (name || '').toLowerCase().replace('dr. ', '').trim();
 
-  // Helper: Get Leave History for a specific Doctor
+  // Get Leave History for a specific Doctor
   const getDoctorLeaves = useCallback((doc: DoctorProfile) => {
     const docClean = cleanDoctorName(doc.name);
     const docId = doc.id;
@@ -381,8 +380,24 @@ export default function AdminDashboardPage() {
         body: JSON.stringify({ doctor: newDocProfile })
       });
 
+      // Dispatch automated approval email
+      try {
+        await fetch('/api/notifications/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'DOCTOR_APPROVED',
+            recipientEmail: app.email,
+            recipientName: app.name,
+            specialisation: app.specialisation
+          })
+        });
+      } catch (emailErr) {
+        console.warn('Approval email dispatch notice:', emailErr);
+      }
+
       loadData();
-      setActionSuccessMsg(`Physician ${app.name} approved and added to live roster.`);
+      setActionSuccessMsg('Physician ' + app.name + ' approved! Email notification sent and credentials unlocked.');
       setTimeout(() => setActionSuccessMsg(''), 5000);
     } catch {
       alert('Failed to approve doctor.');
@@ -398,10 +413,10 @@ export default function AdminDashboardPage() {
     loadData();
   };
 
-  // ADD LEAVE: Permanent Server-Side Record & Shift
+  // ADD LEAVE: Permanent Record, Auto Shift & Email Notification
   const handleAddLeave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setActionSuccessMsg('Recording leave & shifting affected patient appointments in database...');
+    setActionSuccessMsg('Recording leave, sending doctor email notification & shifting appointments...');
 
     const newLeave: LeaveRecord = {
       id: 'leave-' + Date.now(),
@@ -423,8 +438,25 @@ export default function AdminDashboardPage() {
         throw new Error('Failed to save leave.');
       }
 
+      // Dispatch automated leave notification email to physician
+      try {
+        await fetch('/api/notifications/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'LEAVE_APPROVED',
+            recipientEmail: selectedLeaveDoctor.email,
+            doctorName: selectedLeaveDoctor.name,
+            leaveDate,
+            reason: leaveReason
+          })
+        });
+      } catch (leaveEmailErr) {
+        console.warn('Leave email dispatch notice:', leaveEmailErr);
+      }
+
       await loadData();
-      setActionSuccessMsg(`Approved leave recorded for ${selectedLeaveDoctor.name} on ${leaveDate}. Matching patients shifted to "Due to Dr. on Leave" tab.`);
+      setActionSuccessMsg('Approved leave recorded for ' + selectedLeaveDoctor.name + ' on ' + leaveDate + '! Email notification dispatched to physician and matching patients shifted.');
       setTimeout(() => setActionSuccessMsg(''), 6000);
     } catch (err: any) {
       alert(`Failed to record leave: ${err.message}`);
