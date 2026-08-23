@@ -26,6 +26,15 @@ interface DoctorProfile {
   bio: string;
 }
 
+interface LeaveRecord {
+  id: string;
+  doctorId: string;
+  doctorName: string;
+  specialisation: string;
+  leaveDate: string;
+  reason: string;
+}
+
 interface VisitRecord {
   visitId: string;
   date: string;
@@ -138,6 +147,7 @@ export default function DoctorDashboardPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'CLINICAL' | 'LEAVE_AFFECTED' | 'EHR' | 'PROFILE'>('CLINICAL');
   const [allAppointments, setAllAppointments] = useState<AppointmentItem[]>([]);
+  const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [activePatient, setActivePatient] = useState<AppointmentItem | null>(null);
   const [filterMode, setFilterMode] = useState<'MY_PATIENTS' | 'ALL'>('ALL');
   const [searchQueue, setSearchQueue] = useState('');
@@ -188,7 +198,6 @@ export default function DoctorDashboardPage() {
   const [durationDays, setDurationDays] = useState(5);
   const [loading, setLoading] = useState(false);
   const [completedRecord, setCompletedRecord] = useState<any | null>(null);
-  const [printDocType, setPrintDocType] = useState<'PRESCRIPTION' | 'AI_SUMMARY' | null>(null);
 
   const loadData = useCallback(async () => {
     setIsRefreshing(true);
@@ -243,6 +252,14 @@ export default function DoctorDashboardPage() {
     } catch {}
 
     try {
+      const leaveRes = await fetch('/api/sync/leaves', { cache: 'no-store' });
+      const leaveData = await leaveRes.json();
+      if (leaveData.success && Array.isArray(leaveData.leaves)) {
+        setLeaves(leaveData.leaves);
+      }
+    } catch {}
+
+    try {
       const ehrRes = await fetch('/api/sync/ehr', { cache: 'no-store' });
       const ehrData = await ehrRes.json();
       if (ehrData.success && Array.isArray(ehrData.ehrRegistry)) {
@@ -259,6 +276,9 @@ export default function DoctorDashboardPage() {
     const timer = setInterval(loadData, 5000);
     return () => clearInterval(timer);
   }, [loadData]);
+
+  // Clean Name Helper
+  const cleanDoctorName = (name?: string) => (name || '').toLowerCase().replace('dr. ', '').trim();
 
   // Handle Save Doctor Profile Edits
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -337,7 +357,6 @@ export default function DoctorDashboardPage() {
     setActivePatient(patient);
     setCompletedRecord(null);
 
-    // Run AI Symptom Analysis
     setAiTriageLoading(true);
     const symp = (patient.symptoms || '').toLowerCase();
     const isHigh = symp.includes('chest') || symp.includes('severe') || symp.includes('breath') || symp.includes('heart') || symp.includes('faint');
@@ -370,9 +389,69 @@ export default function DoctorDashboardPage() {
     }
   };
 
+  // Reschedule Slot Availability Check (strictly for assigned doctor on target date)
+  const isRescheduleDoctorOnLeave = useMemo(() => {
+    if (!reschedulingApt) return null;
+    const docClean = cleanDoctorName(reschedulingApt.doctorName);
+    const docId = reschedulingApt.doctorId;
+
+    return leaves.find(l => {
+      if (l.leaveDate !== rescheduleDate) return false;
+      const lDocClean = cleanDoctorName(l.doctorName);
+      return (l.doctorId && l.doctorId === docId) || (lDocClean && (lDocClean.includes(docClean) || docClean.includes(lDocClean)));
+    });
+  }, [reschedulingApt, rescheduleDate, leaves]);
+
+  const getRescheduleSlotStatus = (slot: string) => {
+    if (isRescheduleDoctorOnLeave) {
+      return {
+        available: false,
+        reason: 'Doctor on Leave'
+      };
+    }
+
+    if (!reschedulingApt) return { available: true, reason: 'Available' };
+
+    const docClean = cleanDoctorName(reschedulingApt.doctorName);
+    const docId = reschedulingApt.doctorId;
+
+    const existingBooking = allAppointments.find(a => {
+      if (a.id === reschedulingApt.id) return false;
+      if (a.date !== rescheduleDate || a.timeSlot !== slot) return false;
+      if (a.status === 'CANCELLED' || a.status === 'LEAVE_CANCELLED') return false;
+
+      const aDocClean = cleanDoctorName(a.doctorName);
+      const isSameDoctor = (a.doctorId && a.doctorId === docId) || (aDocClean && aDocClean.includes(docClean));
+      return isSameDoctor;
+    });
+
+    if (existingBooking) {
+      return {
+        available: false,
+        reason: 'Already Booked'
+      };
+    }
+
+    return {
+      available: true,
+      reason: 'Available'
+    };
+  };
+
   const handleConfirmReschedule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reschedulingApt) return;
+
+    if (isRescheduleDoctorOnLeave) {
+      alert(`Cannot reschedule: Doctor is on approved leave on ${rescheduleDate}.`);
+      return;
+    }
+
+    const slotStatus = getRescheduleSlotStatus(rescheduleSlot);
+    if (!slotStatus.available) {
+      alert(`Cannot reschedule: Selected slot (${rescheduleSlot}) is ${slotStatus.reason}. Please pick a green available slot.`);
+      return;
+    }
 
     const updatedAppts = allAppointments.map(a => {
       if (a.id === reschedulingApt.id) {
@@ -521,7 +600,6 @@ export default function DoctorDashboardPage() {
     );
   }, [ehrRegistry, searchEhr]);
 
-  // Selected Patient's Prior Encounters
   const activePatientHistory = useMemo(() => {
     if (!activePatient) return [];
     const canonicalKey = getNormalizedPatientKey(activePatient.patientEmail, activePatient.patientName);
@@ -850,7 +928,7 @@ export default function DoctorDashboardPage() {
                   <span>Appointments Shifted Due to Doctor on Leave ({leaveAffectedAppointments.length})</span>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  These patient appointments were displaced due to an approved leave date. Click <strong>&quot;Reschedule Slot&quot;</strong> to allocate a new date and time.
+                  These patient appointments were displaced due to an approved leave date. Click <strong>&quot;Reschedule Slot&quot;</strong> to allocate a new date and strictly available time.
                 </p>
               </div>
 
@@ -899,7 +977,8 @@ export default function DoctorDashboardPage() {
                         onClick={() => {
                           setReschedulingApt(a);
                           setRescheduleDate(a.date || '2026-08-29');
-                          setRescheduleSlot(a.timeSlot || '10:00 AM');
+                          // Find first available slot
+                          setRescheduleSlot('10:00 AM');
                         }}
                         className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20"
                       >
@@ -1159,7 +1238,7 @@ export default function DoctorDashboardPage() {
           )}
         </AnimatePresence>
 
-        {/* RESCHEDULE MODAL */}
+        {/* RESCHEDULE MODAL (ONLY OFFERS VALID AVAILABLE SLOTS) */}
         <AnimatePresence>
           {reschedulingApt && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
@@ -1175,12 +1254,23 @@ export default function DoctorDashboardPage() {
                       <CalendarPlus className="w-3 h-3" /> Reschedule Shifted Slot
                     </div>
                     <h3 className="text-xl font-bold text-white">{reschedulingApt.patientName}</h3>
-                    <p className="text-xs text-slate-400">{reschedulingApt.patientEmail} • Token {reschedulingApt.tokenNumber}</p>
+                    <p className="text-xs text-slate-400">Doctor: <strong>{reschedulingApt.doctorName}</strong> • Token {reschedulingApt.tokenNumber}</p>
                   </div>
                   <button onClick={() => setReschedulingApt(null)} className="text-slate-400 hover:text-white px-2 py-1 rounded-lg bg-slate-800">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
+
+                {/* DOCTOR ON LEAVE WARNING */}
+                {isRescheduleDoctorOnLeave && (
+                  <div className="p-3.5 bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs rounded-xl flex items-start gap-2.5">
+                    <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="block font-bold">{reschedulingApt.doctorName} is on Leave on {rescheduleDate}</strong>
+                      <p className="text-[11px] text-amber-300/90 mt-0.5">Please pick another date to view free consultation slots.</p>
+                    </div>
+                  </div>
+                )}
 
                 <form onSubmit={handleConfirmReschedule} className="space-y-4 text-xs">
                   <div>
@@ -1189,28 +1279,52 @@ export default function DoctorDashboardPage() {
                       type="date"
                       required
                       value={rescheduleDate}
-                      onChange={(e) => setRescheduleDate(e.target.value)}
+                      onChange={(e) => setSelectedRescheduleDate(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 [color-scheme:dark]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1.5">Select New Time Slot</label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-slate-400 font-semibold">Available Consultation Slots Only</label>
+                      <span className="text-[10px] text-slate-500">1 patient per slot</span>
+                    </div>
+
                     <div className="grid grid-cols-3 gap-2">
-                      {TIME_SLOTS.map(slot => (
-                        <button
-                          key={slot}
-                          type="button"
-                          onClick={() => setRescheduleSlot(slot)}
-                          className={`py-2 px-2.5 rounded-xl font-bold border transition text-center ${
-                            rescheduleSlot === slot
-                              ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
-                              : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
-                          }`}
-                        >
-                          {slot}
-                        </button>
-                      ))}
+                      {TIME_SLOTS.map(slot => {
+                        const status = getRescheduleSlotStatus(slot);
+                        const isSelected = rescheduleSlot === slot && status.available;
+
+                        if (!status.available) {
+                          return (
+                            <button
+                              key={slot}
+                              type="button"
+                              disabled
+                              className="py-2 px-2.5 rounded-xl font-bold border text-center opacity-40 bg-red-950/20 border-red-500/30 text-red-300 cursor-not-allowed flex flex-col justify-center items-center"
+                            >
+                              <span>{slot}</span>
+                              <span className="text-[8px] text-red-400 font-normal">{status.reason}</span>
+                            </button>
+                          );
+                        }
+
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => setRescheduleSlot(slot)}
+                            className={`py-2 px-2.5 rounded-xl font-bold border transition text-center flex flex-col justify-center items-center ${
+                              isSelected
+                                ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20 font-black'
+                                : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+                            }`}
+                          >
+                            <span>{slot}</span>
+                            <span className={`text-[8px] ${isSelected ? 'text-slate-950' : 'text-emerald-400'}`}>Available</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -1224,7 +1338,8 @@ export default function DoctorDashboardPage() {
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-lg shadow-emerald-500/20"
+                      disabled={Boolean(isRescheduleDoctorOnLeave) || !getRescheduleSlotStatus(rescheduleSlot).available}
+                      className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-lg shadow-emerald-500/20 disabled:opacity-40"
                     >
                       Confirm Reschedule & Restore
                     </button>

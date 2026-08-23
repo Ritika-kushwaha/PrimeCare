@@ -955,7 +955,27 @@ export default function AdminDashboardPage() {
                   <div>
                     <label className="block text-slate-400 font-semibold mb-1.5">Select New Time Slot</label>
                     <div className="grid grid-cols-3 gap-2">
-                      {TIME_SLOTS.map(slot => (
+                      {TIME_SLOTS.map(slot => {
+                        const docClean = (reschedulingApt?.doctorName || '').toLowerCase().replace('dr. ', '').trim();
+                        const docId = reschedulingApt?.doctorId;
+                        const isDocOnLeave = leaves.some(l => l.leaveDate === rescheduleDate && ((l.doctorId && l.doctorId === docId) || (l.doctorName || '').toLowerCase().includes(docClean)));
+                        const isTaken = appointments.some(a => a.id !== reschedulingApt?.id && a.date === rescheduleDate && a.timeSlot === slot && a.status !== 'CANCELLED' && a.status !== 'LEAVE_CANCELLED' && ((a.doctorId && a.doctorId === docId) || (a.doctorName || '').toLowerCase().includes(docClean)));
+                        const isAvailable = !isDocOnLeave && !isTaken;
+                        const isSelected = rescheduleSlot === slot && isAvailable;
+
+                        if (!isAvailable) {
+                          return (
+                            <button
+                              key={slot}
+                              type="button"
+                              disabled
+                              className="py-2 px-2 rounded-xl font-bold border text-center opacity-40 bg-red-950/20 border-red-500/30 text-red-300 cursor-not-allowed flex flex-col justify-center items-center"
+                            >
+                              <span>{slot}</span>
+                              <span className="text-[8px] text-red-400">{isDocOnLeave ? 'On Leave' : 'Booked'}</span>
+                            </button>
+                          );
+                        }
                         <button
                           key={slot}
                           type="button"
@@ -1172,3 +1192,4 @@ export default function AdminDashboardPage() {
     </ProtectedRoute>
   );
 }
+
