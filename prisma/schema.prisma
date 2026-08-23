@@ -1,0 +1,128 @@
+﻿datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum UrgencyLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum AppointmentStatus {
+  HELD
+  CONFIRMED
+  CANCELLED_BY_PATIENT
+  CANCELLED_BY_DOCTOR_LEAVE
+  COMPLETED
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  role          Role           @default(PATIENT)
+  doctorProfile DoctorProfile?
+  patientAppointments Appointment[] @relation("PatientAppointments")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model DoctorProfile {
+  id              String         @id @default(uuid())
+  userId          String         @unique
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialisation  String
+  qualification   String
+  experienceYears Int
+  hospital        String
+  consultationFee Decimal        @db.Decimal(10, 2)
+  slotDurationMin Int            @default(30)
+  startHour       Int            @default(9)  // 09:00 AM
+  endHour         Int            @default(17) // 05:00 PM
+  appointments    Appointment[]  @relation("DoctorAppointments")
+  leaves          DoctorLeave[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model DoctorLeave {
+  id              String        @id @default(uuid())
+  doctorId        String
+  doctor          DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  leaveDate       DateTime      @db.Date
+  reason          String
+  createdAt       DateTime      @default(now())
+
+  @@unique([doctorId, leaveDate])
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  patientId       String
+  patient         User              @relation("PatientAppointments", fields: [patientId], references: [id])
+  doctorId        String
+  doctor          DoctorProfile     @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  appointmentDate DateTime          @db.Date
+  timeSlot        String            // "10:00 AM"
+  status          AppointmentStatus @default(CONFIRMED)
+  holdExpiresAt   DateTime?
+  symptomsRaw     String            @db.Text
+  
+  // AI Pre-Visit Analysis
+  aiUrgency       UrgencyLevel?
+  aiChiefComplaint String?
+  aiQuestions     String[]          @default([])
+  
+  // Doctor Clinical Visit
+  clinicalNotes   String?           @db.Text
+  prescriptions   Prescription[]
+  
+  // AI Post-Visit Summary
+  aiPatientSummary String?          @db.Text
+  aiFollowUpSteps  String?          @db.Text
+  
+  // Google Calendar Reference
+  googleEventId   String?
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([doctorId, appointmentDate, timeSlot, status])
+}
+
+model Prescription {
+  id              String       @id @default(uuid())
+  appointmentId   String
+  appointment     Appointment  @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  medicationName  String
+  frequencyHours  Int          // e.g., every 8 hours
+  durationDays    Int          // e.g., 5 days
+  startDateTime   DateTime     @default(now())
+  remindersSent   Int          @default(0)
+  createdAt       DateTime     @default(now())
+}
+
+model NotificationLog {
+  id              String       @id @default(uuid())
+  recipientEmail  String
+  subject         String
+  body            String       @db.Text
+  type            String       // "BOOKING_CONFIRMATION" | "DOCTOR_LEAVE_CANCEL" | "MED_REMINDER"
+  status          String       // "SENT" | "FAILED" | "PENDING"
+  retryCount      Int          @default(0)
+  lastError       String?
+  createdAt       DateTime     @default(now())
+}
