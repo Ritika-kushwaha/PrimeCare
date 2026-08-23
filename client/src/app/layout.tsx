@@ -2,6 +2,8 @@
 import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "PrimeCare - Healthcare Portal",
   description: "AI-driven Clinical Management System",
