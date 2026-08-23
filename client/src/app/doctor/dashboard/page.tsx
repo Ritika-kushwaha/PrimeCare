@@ -10,7 +10,7 @@ import {
   Pill, FileText, Send, Calendar, 
   Printer, Receipt, Lock, Search, History, FolderHeart, User, Users, X, 
   Edit3, Save, BadgeCheck, Sparkles, AlertTriangle, HelpCircle, Check, ArrowRight,
-  Filter, RefreshCw, Award, Briefcase, Building2, Star, Mail, CheckCheck, CalendarX2, AlertCircle, CalendarPlus
+  Filter, RefreshCw, Award, Briefcase, Building2, Star, Mail, CheckCheck, CalendarX2, AlertCircle, CalendarPlus, ChevronRight
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -139,7 +139,7 @@ export default function DoctorDashboardPage() {
   const [activeTab, setActiveTab] = useState<'CLINICAL' | 'LEAVE_AFFECTED' | 'EHR' | 'PROFILE'>('CLINICAL');
   const [allAppointments, setAllAppointments] = useState<AppointmentItem[]>([]);
   const [activePatient, setActivePatient] = useState<AppointmentItem | null>(null);
-  const [filterMode, setFilterMode] = useState<'MY_PATIENTS' | 'ALL'>('ALL'); // Default ALL so new doctors see incoming queue instantly
+  const [filterMode, setFilterMode] = useState<'MY_PATIENTS' | 'ALL'>('ALL');
   const [searchQueue, setSearchQueue] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   
@@ -162,16 +162,18 @@ export default function DoctorDashboardPage() {
   const [searchEhr, setSearchEhr] = useState('');
 
   // Doctor Email Binding
-  const doctorEmail = (user?.email || 'ritikakushwaha62@gmail.com').toLowerCase().trim();
+  const doctorEmail = (user?.email || 'doctor@primecare.in').toLowerCase().trim();
 
-  // Profile Form Inputs
-    const [docName, setDocName] = useState(() => {
+  // Dynamic Doctor Profile State
+  const [docId, setDocId] = useState('doc-' + Date.now());
+  const [docName, setDocName] = useState(() => {
     if (user?.firstName) {
-      return ('Dr. ' + user.firstName + (user.lastName ? ' ' + user.lastName : '')).trim();
+      const full = `Dr. ${user.firstName} ${user.lastName || ''}`.trim();
+      return full.startsWith('Dr.') ? full : `Dr. ${full}`;
     }
-    return 'Dr. Practitioner';
+    return 'Dr. Ritika Kushwaha';
   });
-    const [docSpecialty, setDocSpecialty] = useState(user?.specialisation || 'General Medicine');
+  const [docSpecialty, setDocSpecialty] = useState(user?.specialisation || 'Cardiology');
   const [docQualification, setDocQualification] = useState('MD, DM (Cardiology - AIIMS Delhi)');
   const [docExperience, setDocExperience] = useState('14 Years Practice');
   const [docHospital, setDocHospital] = useState('PrimeCare Apex Heart Institute');
@@ -196,28 +198,25 @@ export default function DoctorDashboardPage() {
       let roster: DoctorProfile[] = DEFAULT_DOCTORS;
       if (docData.success && Array.isArray(docData.doctors) && docData.doctors.length > 0) {
         roster = docData.doctors;
-        localStorage.setItem('primecare_doctor_profiles', JSON.stringify(roster));
       }
 
       let myProfile = roster.find((d: any) => (d.email || '').toLowerCase().trim() === doctorEmail);
 
       if (!myProfile) {
-                const userName = user?.firstName ? ('Dr. ' + user.firstName + (user.lastName ? ' ' + user.lastName : '')).trim() : 'Dr. Practitioner';
-        const genName = userName.startsWith('Dr.') ? userName : 'Dr. ' + userName;
-        const finalName = genName.trim().startsWith('Dr.') ? genName.trim() : 'Dr. ' + genName.trim();
+        const genName = user?.firstName ? `Dr. ${user.firstName} ${user.lastName || ''}`.trim() : docName;
+        const finalName = genName.startsWith('Dr.') ? genName : `Dr. ${genName}`;
         myProfile = {
           id: 'doc-' + Date.now(),
           email: doctorEmail,
           name: finalName,
-          specialisation: user?.specialisation || 'Cardiology',
-          qualification: 'MD, DM (Cardiology - AIIMS Delhi)',
-          experience: '14 Years Practice',
-          hospital: 'PrimeCare Apex Heart Institute',
-          fee: '₹1,200',
+          specialisation: user?.specialisation || docSpecialty,
+          qualification: docQualification,
+          experience: docExperience,
+          hospital: docHospital,
+          fee: docFee,
           rating: '4.9 ★',
-          bio: 'Senior Clinical Specialist specializing in cardiovascular disease and outpatient care.'
+          bio: docBio
         };
-        roster = [myProfile, ...roster];
         await fetch('/api/sync/doctors', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -225,6 +224,7 @@ export default function DoctorDashboardPage() {
         });
       }
 
+      setDocId(myProfile.id);
       setDocName(myProfile.name);
       setDocSpecialty(myProfile.specialisation);
       setDocQualification(myProfile.qualification);
@@ -239,7 +239,6 @@ export default function DoctorDashboardPage() {
       const apptData = await apptRes.json();
       if (apptData.success && Array.isArray(apptData.appointments)) {
         setAllAppointments(apptData.appointments);
-        localStorage.setItem('primecare_appointments', JSON.stringify(apptData.appointments));
       }
     } catch {}
 
@@ -249,7 +248,6 @@ export default function DoctorDashboardPage() {
       if (ehrData.success && Array.isArray(ehrData.ehrRegistry)) {
         const cleanEHR = deduplicateEHR(ehrData.ehrRegistry);
         setEhrRegistry(cleanEHR);
-        localStorage.setItem('primecare_ehr_registry', JSON.stringify(cleanEHR));
       }
     } catch {}
 
@@ -258,11 +256,42 @@ export default function DoctorDashboardPage() {
 
   useEffect(() => {
     loadData();
-    const timer = setInterval(loadData, 5000); // 5s fast polling for real-time cross-device updates
+    const timer = setInterval(loadData, 5000);
     return () => clearInterval(timer);
   }, [loadData]);
 
-  // 1. ACTIVE QUEUE: Excludes COMPLETED, CANCELLED, and LEAVE_CANCELLED
+  // Handle Save Doctor Profile Edits
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileSuccessMsg('Saving profile to database...');
+
+    const updatedProfile: DoctorProfile = {
+      id: docId,
+      email: doctorEmail,
+      name: docName.startsWith('Dr.') ? docName : `Dr. ${docName}`,
+      specialisation: docSpecialty,
+      qualification: docQualification,
+      experience: docExperience,
+      hospital: docHospital,
+      fee: docFee,
+      rating: '4.9 ★',
+      bio: docBio
+    };
+
+    try {
+      await fetch('/api/sync/doctors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ doctor: updatedProfile })
+      });
+      setProfileSuccessMsg('Doctor profile successfully updated across all devices!');
+      setTimeout(() => setProfileSuccessMsg(''), 4000);
+    } catch (err) {
+      setProfileSuccessMsg('Failed to update doctor profile.');
+    }
+  };
+
+  // 1. ACTIVE QUEUE
   const activeQueue = useMemo(() => {
     const query = searchQueue.toLowerCase().trim();
     const cleanDocName = docName.toLowerCase().replace('dr. ', '').trim();
@@ -281,7 +310,7 @@ export default function DoctorDashboardPage() {
     });
   }, [allAppointments, filterMode, docName, doctorEmail, searchQueue]);
 
-  // 2. LEAVE AFFECTED SECTION
+  // 2. LEAVE AFFECTED
   const leaveAffectedAppointments = useMemo(() => {
     const cleanDocName = docName.toLowerCase().replace('dr. ', '').trim();
 
@@ -308,24 +337,32 @@ export default function DoctorDashboardPage() {
     setActivePatient(patient);
     setCompletedRecord(null);
 
+    // Run AI Symptom Analysis
     setAiTriageLoading(true);
+    const symp = (patient.symptoms || '').toLowerCase();
+    const isHigh = symp.includes('chest') || symp.includes('severe') || symp.includes('breath') || symp.includes('heart') || symp.includes('faint');
+    const isLow = symp.includes('routine') || symp.includes('checkup') || symp.includes('mild');
+
     try {
       const res = await fetch('/api/ai/pre-visit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symptoms: patient.symptoms || '' }),
+        body: JSON.stringify({ symptoms: patient.symptoms || 'Routine Consultation' }),
       });
       const data = await res.json();
-      setPreVisitTriage(data);
+      if (data && data.chiefComplaint) {
+        setPreVisitTriage(data);
+      } else {
+        throw new Error('AI fallback');
+      }
     } catch {
-      const symp = (patient.symptoms || '').toLowerCase();
       setPreVisitTriage({
-        urgency: symp.includes('chest') || symp.includes('severe') ? 'HIGH' : 'MEDIUM',
-        chiefComplaint: patient.symptoms || 'Clinical Evaluation',
+        urgency: isHigh ? 'HIGH' : isLow ? 'LOW' : 'MEDIUM',
+        chiefComplaint: patient.symptoms || 'General Clinical Consultation',
         suggestedQuestions: [
           'What is the precise onset time and progression of symptoms?',
           'Are there any known drug allergies or active medications?',
-          'Have you noticed aggravating triggers or shortness of breath?'
+          'Have you noticed aggravating triggers or related discomfort?'
         ],
       });
     } finally {
@@ -351,7 +388,6 @@ export default function DoctorDashboardPage() {
     });
 
     setAllAppointments(updatedAppts);
-    localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
     await fetch('/api/sync/appointments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -359,8 +395,6 @@ export default function DoctorDashboardPage() {
     });
 
     setReschedulingApt(null);
-    setProfileSuccessMsg('Appointment successfully rescheduled & synced across devices!');
-    setTimeout(() => setProfileSuccessMsg(''), 5000);
   };
 
   const handleFinalizeConsultation = async (e: React.FormEvent) => {
@@ -424,12 +458,11 @@ export default function DoctorDashboardPage() {
     const canonicalKey = getNormalizedPatientKey(pEmail, pName);
 
     try {
-      const storedEHR: PatientEHR[] = JSON.parse(localStorage.getItem('primecare_ehr_registry') || '[]');
-      const patientIndex = storedEHR.findIndex((p) => getNormalizedPatientKey(p.patientEmail, p.patientName) === canonicalKey);
+      const patientIndex = ehrRegistry.findIndex((p) => getNormalizedPatientKey(p.patientEmail, p.patientName) === canonicalKey);
 
       let updatedEHR: PatientEHR[];
       if (patientIndex > -1) {
-        updatedEHR = [...storedEHR];
+        updatedEHR = [...ehrRegistry];
         updatedEHR[patientIndex] = {
           ...updatedEHR[patientIndex],
           patientName: pName,
@@ -446,13 +479,12 @@ export default function DoctorDashboardPage() {
             gender: activePatient.gender || 'Member',
             visits: [visitEntry],
           },
-          ...storedEHR
+          ...ehrRegistry
         ];
       }
 
       const cleanedEHR = deduplicateEHR(updatedEHR);
       setEhrRegistry(cleanedEHR);
-      localStorage.setItem('primecare_ehr_registry', JSON.stringify(cleanedEHR));
       await fetch('/api/sync/ehr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -463,7 +495,6 @@ export default function DoctorDashboardPage() {
     try {
       const updatedAppts = allAppointments.map(a => a.id === completedPatientId ? { ...a, status: 'COMPLETED' } : a);
       setAllAppointments(updatedAppts);
-      localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
       await fetch('/api/sync/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -485,10 +516,18 @@ export default function DoctorDashboardPage() {
   const filteredEhr = useMemo(() => {
     const q = searchEhr.toLowerCase().trim();
     return ehrRegistry.filter(p => 
-      p.patientName.toLowerCase().includes(q) || 
-      p.patientEmail.toLowerCase().includes(q)
+      (p.patientName || '').toLowerCase().includes(q) || 
+      (p.patientEmail || '').toLowerCase().includes(q)
     );
   }, [ehrRegistry, searchEhr]);
+
+  // Selected Patient's Prior Encounters
+  const activePatientHistory = useMemo(() => {
+    if (!activePatient) return [];
+    const canonicalKey = getNormalizedPatientKey(activePatient.patientEmail, activePatient.patientName);
+    const matched = ehrRegistry.find(p => getNormalizedPatientKey(p.patientEmail, p.patientName) === canonicalKey);
+    return matched ? matched.visits : [];
+  }, [activePatient, ehrRegistry]);
 
   return (
     <ProtectedRoute allowedRoles={['DOCTOR', 'ADMIN']}>
@@ -513,11 +552,11 @@ export default function DoctorDashboardPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto">
+            <div className="flex items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto text-xs font-bold">
               <button
                 type="button"
                 onClick={() => setActiveTab('CLINICAL')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                className={`px-4 py-2 rounded-xl transition whitespace-nowrap ${
                   activeTab === 'CLINICAL' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -527,7 +566,7 @@ export default function DoctorDashboardPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('LEAVE_AFFECTED')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap ${
+                className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap ${
                   activeTab === 'LEAVE_AFFECTED' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -537,7 +576,7 @@ export default function DoctorDashboardPage() {
               <button
                 type="button"
                 onClick={() => { setActiveTab('EHR'); loadData(); }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap ${
+                className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap ${
                   activeTab === 'EHR' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -547,7 +586,7 @@ export default function DoctorDashboardPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('PROFILE')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap ${
+                className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap ${
                   activeTab === 'PROFILE' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -574,7 +613,7 @@ export default function DoctorDashboardPage() {
                         onClick={loadData}
                         className="text-[11px] text-emerald-400 hover:underline flex items-center gap-1 font-bold"
                       >
-                        <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} /> Refresh Cloud
+                        <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} /> Refresh
                       </button>
                     </div>
 
@@ -610,12 +649,12 @@ export default function DoctorDashboardPage() {
                       />
                     </div>
 
-                    <div className="space-y-2.5 max-h-[480px] overflow-y-auto pr-1">
+                    <div className="space-y-2.5 max-h-[520px] overflow-y-auto pr-1">
                       {activeQueue.length === 0 ? (
                         <div className="p-8 text-center text-xs text-slate-500 space-y-2">
                           <Users className="w-8 h-8 mx-auto text-slate-600" />
                           <p className="font-semibold text-slate-400">Queue is Clear</p>
-                          <p className="text-[11px]">No active patient bookings found in the database.</p>
+                          <p className="text-[11px]">No active patient bookings in this queue.</p>
                         </div>
                       ) : (
                         activeQueue.map((p) => {
@@ -637,7 +676,7 @@ export default function DoctorDashboardPage() {
                                     {p.patientName}
                                     {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
                                   </h4>
-                                  <p className="text-[11px] text-slate-400">{p.patientEmail}</p>
+                                  <p className="text-[11px] text-slate-400 font-mono">{p.patientEmail}</p>
                                 </div>
                                 <div className="text-right">
                                   <span className="text-xs font-mono text-emerald-400 font-bold block">{p.timeSlot}</span>
@@ -646,7 +685,7 @@ export default function DoctorDashboardPage() {
                               </div>
                               
                               <div className="mt-2 pt-2 border-t border-slate-900 flex justify-between items-center text-[10px] text-slate-400">
-                                <span>Assisting Dr: <strong className="text-slate-300">{p.doctorName}</strong></span>
+                                <span>Assigned Dr: <strong className="text-slate-300">{p.doctorName}</strong></span>
                                 <span>{p.date}</span>
                               </div>
 
@@ -659,22 +698,85 @@ export default function DoctorDashboardPage() {
                   </div>
                 </div>
 
-                {/* CONSULTATION COLUMN */}
+                {/* CONSULTATION & AI TRIAGE COLUMN */}
                 <div className="lg:col-span-7 space-y-6">
                   {activePatient ? (
                     <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-6">
+                      
+                      {/* HEADER */}
                       <div className="flex items-start justify-between border-b border-slate-800 pb-4">
                         <div>
                           <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Active Patient Consultation</span>
                           <h3 className="font-extrabold text-xl text-white">{activePatient.patientName}</h3>
-                          <p className="text-xs text-slate-400">{activePatient.patientEmail} • Scheduled with {activePatient.doctorName}</p>
+                          <p className="text-xs text-slate-400">{activePatient.patientEmail} • {activePatient.age} Yrs • {activePatient.gender}</p>
                         </div>
                         <span className="text-xs font-mono font-bold text-emerald-300 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                           {activePatient.timeSlot} ({activePatient.tokenNumber})
                         </span>
                       </div>
 
-                      {/* CLINICAL NOTES FORM */}
+                      {/* 1. AI PRE-VISIT SYMPTOM TRIAGE SUMMARY */}
+                      <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-950/30 to-slate-950 border border-blue-500/30 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-xs font-bold text-blue-300">
+                            <Sparkles className="w-4 h-4 text-blue-400" />
+                            <span>AI Pre-Consultation Symptom Analysis</span>
+                          </div>
+                          {preVisitTriage && (
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              preVisitTriage.urgency === 'HIGH'
+                                ? 'bg-red-500/20 text-red-300 border border-red-500/40'
+                                : preVisitTriage.urgency === 'MEDIUM'
+                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                            }`}>
+                              {preVisitTriage.urgency} Urgency
+                            </span>
+                          )}
+                        </div>
+
+                        {aiTriageLoading ? (
+                          <div className="text-xs text-slate-400 animate-pulse py-2">
+                            Analyzing symptoms with clinical AI model...
+                          </div>
+                        ) : preVisitTriage ? (
+                          <div className="space-y-2 text-xs">
+                            <p className="text-slate-300">
+                              <strong>Reported Chief Complaint:</strong> {preVisitTriage.chiefComplaint}
+                            </p>
+                            <div>
+                              <strong className="text-slate-400 block mb-1">Recommended Clinical Exploration Questions:</strong>
+                              <ul className="list-disc list-inside text-slate-300 space-y-1 pl-1">
+                                {preVisitTriage.suggestedQuestions.map((q, idx) => (
+                                  <li key={idx} className="leading-relaxed">{q}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+
+                      {/* 2. PRIOR PATIENT ENCOUNTERS (HISTORICAL EHR) */}
+                      {activePatientHistory.length > 0 && (
+                        <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
+                          <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                            <History className="w-3.5 h-3.5" /> Past Encounter History ({activePatientHistory.length} Visits)
+                          </span>
+                          <div className="space-y-2 max-h-36 overflow-y-auto pr-1 text-xs">
+                            {activePatientHistory.map((visit, i) => (
+                              <div key={i} className="p-2.5 bg-slate-900 rounded-xl border border-slate-800 text-[11px] space-y-1">
+                                <div className="flex justify-between text-slate-400">
+                                  <span>{visit.date} • {visit.doctorName}</span>
+                                  <span className="text-emerald-400 font-semibold">{visit.prescription.medication}</span>
+                                </div>
+                                <p className="text-slate-300 italic">&quot;{visit.clinicalNotes}&quot;</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 3. CLINICAL NOTES & PRESCRIPTION FORM */}
                       <form onSubmit={handleFinalizeConsultation} className="space-y-5">
                         <div>
                           <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-2">
@@ -702,7 +804,7 @@ export default function DoctorDashboardPage() {
                                 required
                                 value={medication}
                                 onChange={(e) => setMedication(e.target.value)}
-                                className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                                className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                               />
                             </div>
                             <div>
@@ -712,7 +814,7 @@ export default function DoctorDashboardPage() {
                                 required
                                 value={frequencyHours}
                                 onChange={(e) => setFrequencyHours(Number(e.target.value))}
-                                className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                                className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                               />
                             </div>
                           </div>
@@ -723,7 +825,7 @@ export default function DoctorDashboardPage() {
                           disabled={loading}
                           className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2"
                         >
-                          {loading ? 'Finalizing...' : (<><Send className="w-4 h-4" /> Finalize Consultation & Remove from Queue</>)}
+                          {loading ? 'Finalizing with AI...' : (<><Send className="w-4 h-4" /> Finalize Consultation & Synchronize EHR</>)}
                         </button>
                       </form>
                     </div>
@@ -745,7 +847,7 @@ export default function DoctorDashboardPage() {
               <div className="p-6 rounded-3xl bg-amber-950/20 border border-amber-500/30 space-y-2">
                 <div className="flex items-center gap-2 text-amber-400 font-bold text-base">
                   <CalendarX2 className="w-5 h-5" />
-                  <span>Considered Appointments Shifted Due to Doctor on Leave ({leaveAffectedAppointments.length})</span>
+                  <span>Appointments Shifted Due to Doctor on Leave ({leaveAffectedAppointments.length})</span>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   These patient appointments were displaced due to an approved leave date. Click <strong>&quot;Reschedule Slot&quot;</strong> to allocate a new date and time.
@@ -810,7 +912,7 @@ export default function DoctorDashboardPage() {
             </div>
           )}
 
-          {/* TAB 3: EHR */}
+          {/* TAB 3: LONGITUDINAL EHR REGISTRY */}
           {activeTab === 'EHR' && (
             <div className="space-y-6">
               <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -819,7 +921,7 @@ export default function DoctorDashboardPage() {
                     <History className="w-4 h-4 text-emerald-400" /> Longitudinal Patient EHR Registry
                   </h2>
                   <p className="text-xs text-slate-400">
-                    Unified records synchronized from cloud database.
+                    Unified records synchronized from cloud database grouped by unique patient email and name.
                   </p>
                 </div>
                 <div className="relative w-full sm:w-72">
@@ -847,7 +949,7 @@ export default function DoctorDashboardPage() {
                         <div className="flex items-start justify-between">
                           <h3 className="font-bold text-base text-white">{patient.patientName}</h3>
                           <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
-                            {patient.visits.length} Visits
+                            {patient.visits.length} Encounters
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-400 font-mono mt-0.5">{patient.patientEmail}</p>
@@ -867,7 +969,195 @@ export default function DoctorDashboardPage() {
             </div>
           )}
 
+          {/* TAB 4: EDIT DOCTOR DETAILS */}
+          {activeTab === 'PROFILE' && (
+            <div className="max-w-3xl mx-auto space-y-6">
+              <form onSubmit={handleSaveProfile} className="p-6 sm:p-8 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-2xl space-y-5 text-xs">
+                
+                <div className="border-b border-slate-800 pb-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400 mb-2">
+                    <Edit3 className="w-3.5 h-3.5" /> Doctor Profile Management
+                  </div>
+                  <h3 className="text-2xl font-extrabold text-white">Edit Doctor Credentials & Practice Info</h3>
+                  <p className="text-slate-400 mt-1">Updates will reflect immediately in the public booking registry across all devices.</p>
+                </div>
+
+                {profileSuccessMsg && (
+                  <div className="p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>{profileSuccessMsg}</span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Doctor Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={docName}
+                      onChange={(e) => setDocName(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Specialisation Department</label>
+                    <select
+                      value={docSpecialty}
+                      onChange={(e) => setDocSpecialty(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="Cardiology">Cardiology</option>
+                      <option value="Neurology">Neurology</option>
+                      <option value="Orthopedics">Orthopedics</option>
+                      <option value="Pediatrics">Pediatrics</option>
+                      <option value="Dermatology">Dermatology</option>
+                      <option value="General Medicine">General Medicine</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Degrees & Qualifications</label>
+                    <input
+                      type="text"
+                      required
+                      value={docQualification}
+                      onChange={(e) => setDocQualification(e.target.value)}
+                      placeholder="e.g. MD, DM (Cardiology - AIIMS Delhi)"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Years of Clinical Experience</label>
+                    <input
+                      type="text"
+                      required
+                      value={docExperience}
+                      onChange={(e) => setDocExperience(e.target.value)}
+                      placeholder="e.g. 14 Years Practice"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Affiliated Hospital / Clinic</label>
+                    <input
+                      type="text"
+                      required
+                      value={docHospital}
+                      onChange={(e) => setDocHospital(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Consultation Fee</label>
+                    <input
+                      type="text"
+                      required
+                      value={docFee}
+                      onChange={(e) => setDocFee(e.target.value)}
+                      placeholder="e.g. ₹1,200"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 font-semibold mb-1">Physician Bio & Clinical Focus</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={docBio}
+                    onChange={(e) => setDocBio(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 leading-relaxed"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2"
+                >
+                  <Save className="w-4 h-4" /> Save & Broadcast Doctor Profile Across Devices
+                </button>
+              </form>
+            </div>
+          )}
+
         </main>
+
+        {/* MODAL: VIEW FULL EHR RECORD */}
+        <AnimatePresence>
+          {selectedEhrPatient && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-6"
+              >
+                <div className="flex justify-between items-start border-b border-slate-800 pb-4">
+                  <div>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 mb-1 inline-block">
+                      Patient Longitudinal Health Record
+                    </span>
+                    <h3 className="text-2xl font-bold text-white">{selectedEhrPatient.patientName}</h3>
+                    <p className="text-xs text-slate-400">{selectedEhrPatient.patientEmail} • {selectedEhrPatient.age} Yrs • {selectedEhrPatient.gender}</p>
+                  </div>
+                  <button onClick={() => setSelectedEhrPatient(null)} className="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Clinical Encounters ({selectedEhrPatient.visits.length})
+                  </h4>
+
+                  {selectedEhrPatient.visits.map((v, i) => (
+                    <div key={i} className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5 text-xs">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <strong className="text-white text-sm block">{v.date}</strong>
+                          <span className="text-slate-400">{v.doctorName} ({v.department})</span>
+                        </div>
+                        <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-[10px] font-bold">
+                          {v.invoice.invoiceNumber}
+                        </span>
+                      </div>
+
+                      <div className="p-2.5 bg-slate-900/80 rounded-xl border border-slate-800 space-y-1">
+                        <p><strong>Chief Symptoms:</strong> {v.symptoms}</p>
+                        <p><strong>Examination Notes:</strong> {v.clinicalNotes}</p>
+                        <p><strong>Prescription:</strong> <span className="text-emerald-400 font-semibold">{v.prescription.medication}</span> (Every {v.prescription.frequencyHours}h for {v.prescription.durationDays} days)</p>
+                      </div>
+
+                      {v.aiPostVisitSummary && (
+                        <div className="text-[11px] text-slate-300 italic pt-1 border-t border-slate-900">
+                          {v.aiPostVisitSummary.patientSummary}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedEhrPatient(null)}
+                  className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition"
+                >
+                  Close Record
+                </button>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* RESCHEDULE MODAL */}
         <AnimatePresence>
@@ -949,7 +1239,3 @@ export default function DoctorDashboardPage() {
     </ProtectedRoute>
   );
 }
-
-
-
-
