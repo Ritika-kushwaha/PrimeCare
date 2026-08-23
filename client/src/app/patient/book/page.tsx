@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, Clock, Stethoscope, User, 
   CheckCircle2, AlertCircle, ArrowRight, ShieldCheck, 
-  Search, Building2, Award, CalendarX2, Ban, Users, Printer, CalendarPlus
+  Search, Building2, Award, CalendarX2, Ban, Users, 
+  Printer, CalendarPlus, Briefcase, Star, Info, ChevronRight
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -18,7 +19,8 @@ interface DoctorProfile {
   experience: string;
   hospital: string;
   fee: string;
-  bio?: string;
+  rating: string;
+  bio: string;
 }
 
 interface LeaveRecord {
@@ -33,29 +35,89 @@ interface LeaveRecord {
 interface AppointmentItem {
   id: string;
   tokenNumber: string;
-  doctorId?: string;
-  doctorName?: string;
-  department?: string;
-  fee?: string;
-  hospital?: string;
-  date?: string;
-  timeSlot?: string;
-  symptoms?: string;
-  patientName?: string;
-  patientEmail?: string;
-  age?: string;
-  gender?: string;
-  bookingDate?: string;
-  status?: string;
+  doctorId: string;
+  doctorName: string;
+  department: string;
+  fee: string;
+  hospital: string;
+  date: string;
+  timeSlot: string;
+  symptoms: string;
+  patientName: string;
+  patientEmail: string;
+  age: string;
+  gender: string;
+  bookingDate: string;
+  status: string;
 }
 
 const DEFAULT_DOCTORS: DoctorProfile[] = [
-  { id: 'doc-cardio-01', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', bio: 'Senior Interventional Cardiologist specializing in preventive heart health and echo.' },
-  { id: 'doc-cardio-02', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', bio: 'Specialist in non-invasive imaging and complex coronary care.' },
-  { id: 'doc-neuro-01', name: 'Dr. Priya Nair', specialisation: 'Neurology', qualification: 'MD, DM (Neurology - NIMHANS)', experience: '12 Years Practice', hospital: 'PrimeCare Neuroscience Center', fee: '₹1,500', bio: 'Neurologist with stroke and epilepsy expertise.' },
-  { id: 'doc-ortho-01', name: 'Dr. Vikram Patel', specialisation: 'Orthopedics', qualification: 'MS (Orthopedics), MCh', experience: '15 Years Practice', hospital: 'PrimeCare Ortho Wing', fee: '₹1,000', bio: 'Joint replacement and arthroscopy surgeon.' },
-  { id: 'doc-pedia-01', name: 'Dr. Ananya Deshmukh', specialisation: 'Pediatrics', qualification: 'MD (Pediatrics), DCH', experience: '9 Years Practice', hospital: 'PrimeCare Children Pavilion', fee: '₹900', bio: 'Pediatric care and immunization specialist.' },
-  { id: 'doc-derma-01', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', bio: 'Clinical dermatology & aesthetics.' },
+  { 
+    id: 'doc-cardio-01', 
+    name: 'Dr. Aarav Sharma', 
+    specialisation: 'Cardiology', 
+    qualification: 'MD, DM (Cardiology - AIIMS Delhi)', 
+    experience: '14 Years Practice', 
+    hospital: 'PrimeCare Apex Heart Institute', 
+    fee: '₹1,200', 
+    rating: '4.9 ★',
+    bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, angiographies, and lipidology.' 
+  },
+  { 
+    id: 'doc-cardio-02', 
+    name: 'Dr. Meera Kulkarni', 
+    specialisation: 'Cardiology', 
+    qualification: 'MD, DNB (Cardiology)', 
+    experience: '10 Years Practice', 
+    hospital: 'PrimeCare Metro Hospital', 
+    fee: '₹1,400', 
+    rating: '4.8 ★',
+    bio: 'Specialist in non-invasive coronary imaging, pediatric cardiology, and heart rhythm management.' 
+  },
+  { 
+    id: 'doc-neuro-01', 
+    name: 'Dr. Priya Nair', 
+    specialisation: 'Neurology', 
+    qualification: 'MD, DM (Neurology - NIMHANS)', 
+    experience: '12 Years Practice', 
+    hospital: 'PrimeCare Neuroscience Center', 
+    fee: '₹1,500', 
+    rating: '4.9 ★',
+    bio: 'Consultant Neurologist focused on headache disorders, neuropathies, epilepsy, and acute stroke treatment.' 
+  },
+  { 
+    id: 'doc-ortho-01', 
+    name: 'Dr. Vikram Patel', 
+    specialisation: 'Orthopedics', 
+    qualification: 'MS (Orthopedics), MCh', 
+    experience: '15 Years Practice', 
+    hospital: 'PrimeCare Ortho Wing', 
+    fee: '₹1,000', 
+    rating: '4.7 ★',
+    bio: 'Joint replacement, arthroscopic ligament surgery, and complex sports injury rehabilitation specialist.' 
+  },
+  { 
+    id: 'doc-pedia-01', 
+    name: 'Dr. Ananya Deshmukh', 
+    specialisation: 'Pediatrics', 
+    qualification: 'MD (Pediatrics), DCH', 
+    experience: '9 Years Practice', 
+    hospital: 'PrimeCare Children Pavilion', 
+    fee: '₹900', 
+    rating: '5.0 ★',
+    bio: 'Pediatrician handling newborn intensive care, routine growth assessments, and childhood immunizations.' 
+  },
+  { 
+    id: 'doc-derma-01', 
+    name: 'Dr. Rohan Mehta', 
+    specialisation: 'Dermatology', 
+    qualification: 'MD (Dermatology)', 
+    experience: '8 Years Practice', 
+    hospital: 'PrimeCare Skin Clinic', 
+    fee: '₹1,100', 
+    rating: '4.8 ★',
+    bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' 
+  },
 ];
 
 const TIME_SLOTS = [
@@ -69,18 +131,23 @@ export default function BookAppointmentPage() {
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [existingAppointments, setExistingAppointments] = useState<AppointmentItem[]>([]);
   
+  // Selection States
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorProfile>(DEFAULT_DOCTORS[0]);
   const [selectedDate, setSelectedDate] = useState('2026-08-28');
   const [selectedSlot, setSelectedSlot] = useState('10:00 AM');
   
+  // Member & Account Info
+  const [sharedEmail, setSharedEmail] = useState('ritikakushwaha62@gmail.com');
   const [patientFirstName, setPatientFirstName] = useState('Ritika');
   const [patientLastName, setPatientLastName] = useState('Kushwaha');
   const [patientAge, setPatientAge] = useState('21');
   const [patientGender, setPatientGender] = useState('Female');
-  const [sharedEmail, setSharedEmail] = useState('ritikakushwaha62@gmail.com');
   const [symptoms, setSymptoms] = useState('Routine cardiovascular checkup');
   
+  // Filters & State Handlers
   const [searchDoc, setSearchDoc] = useState('');
+  const [selectedSpecialty, setSelectedSpecialty] = useState('ALL');
+  const [inspectDoctor, setInspectDoctor] = useState<DoctorProfile | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<AppointmentItem | null>(null);
   const [slotConflictError, setSlotConflictError] = useState<string | null>(null);
 
@@ -113,101 +180,105 @@ export default function BookAppointmentPage() {
     return leaves.find(l => l.doctorId === selectedDoctor.id && l.leaveDate === selectedDate);
   }, [leaves, selectedDoctor, selectedDate]);
 
-  // Count slot usage for the shared email (allowing up to 2 family members in same slot)
-  const bookedSlotsForEmail = useMemo(() => {
+  const currentMemberName = useMemo(() => {
+    return `${(patientFirstName || '').trim()} ${(patientLastName || '').trim()}`.trim();
+  }, [patientFirstName, patientLastName]);
+
+  // Determine slot status per specific member vs global doctor capacity
+  const getSlotAvailability = (slot: string) => {
     const cleanEmail = (sharedEmail || '').trim().toLowerCase();
-    const map = new Map<string, AppointmentItem[]>();
-    
-    if (!cleanEmail) return map;
+    const cleanMember = currentMemberName.toLowerCase();
 
-    existingAppointments.forEach((a) => {
-      if (!a) return;
-      const aEmail = (a.patientEmail || '').toLowerCase().trim();
-      const aDate = (a.date || '').trim();
-      const aSlot = (a.timeSlot || '').trim();
+    // 1. Appointments on this slot for this specific doctor
+    const docSlotAppointments = existingAppointments.filter(
+      a => a.doctorId === selectedDoctor.id && a.date === selectedDate && a.timeSlot === slot
+    );
 
-      if (aEmail === cleanEmail && aDate === selectedDate && aSlot) {
-        const currentList = map.get(aSlot) || [];
-        map.set(aSlot, [...currentList, a]);
-      }
-    });
-    return map;
-  }, [existingAppointments, sharedEmail, selectedDate]);
+    // 2. Check if THIS CURRENT MEMBER already booked this doctor at this slot
+    const memberAlreadyBookedThisDoc = docSlotAppointments.find(
+      a => (a.patientName || '').toLowerCase() === cleanMember
+    );
+
+    if (memberAlreadyBookedThisDoc) {
+      return {
+        available: false,
+        reason: 'You already have this slot reserved',
+        statusType: 'SELF_RESERVED'
+      };
+    }
+
+    // 3. Check if THIS CURRENT MEMBER is booked with ANY OTHER DOCTOR at this exact time slot
+    const memberBusyOtherDoctor = existingAppointments.find(
+      a => (a.patientName || '').toLowerCase() === cleanMember &&
+           a.date === selectedDate &&
+           a.timeSlot === slot &&
+           a.doctorId !== selectedDoctor.id
+    );
+
+    if (memberBusyOtherDoctor) {
+      return {
+        available: false,
+        reason: `Busy with ${memberBusyOtherDoctor.doctorName}`,
+        statusType: 'MEMBER_BUSY'
+      };
+    }
+
+    // 4. Check doctor capacity (Allowing up to 2 distinct members in the slot)
+    if (docSlotAppointments.length >= 2) {
+      return {
+        available: false,
+        reason: 'Slot Full (2/2 capacity reached)',
+        statusType: 'SLOT_FULL'
+      };
+    }
+
+    // 5. If another family member from same email is in this slot, it's open for this member
+    const familyMemberInSlot = docSlotAppointments.find(
+      a => (a.patientEmail || '').toLowerCase() === cleanEmail && (a.patientName || '').toLowerCase() !== cleanMember
+    );
+
+    return {
+      available: true,
+      reason: familyMemberInSlot ? `Available for you (Family member ${familyMemberInSlot.patientName} is also in this slot)` : 'Available',
+      statusType: familyMemberInSlot ? 'FAMILY_SHARED' : 'FREE'
+    };
+  };
 
   const filteredDoctors = useMemo(() => {
     const query = (searchDoc || '').toLowerCase().trim();
     return doctors.filter((d) => {
       if (!d) return false;
-      const full = `${d.name || ''} ${d.specialisation || ''} ${d.hospital || ''}`.toLowerCase();
-      return full.includes(query);
+      const matchSpec = selectedSpecialty === 'ALL' || d.specialisation.toUpperCase() === selectedSpecialty.toUpperCase();
+      const matchQuery = `${d.name} ${d.specialisation} ${d.hospital} ${d.qualification}`.toLowerCase().includes(query);
+      return matchSpec && matchQuery;
     });
-  }, [doctors, searchDoc]);
+  }, [doctors, searchDoc, selectedSpecialty]);
 
-  const getGoogleCalendarUrl = (item: AppointmentItem) => {
-    try {
-      const dateParts = (item.date || '2026-08-28').split('-');
-      const year = dateParts[0];
-      const month = dateParts[1];
-      const day = dateParts[2];
-
-      const slot = item.timeSlot || '10:00 AM';
-      const [time, meridian] = slot.split(' ');
-      let [hours, minutes] = time.split(':').map(Number);
-
-      if (meridian === 'PM' && hours < 12) hours += 12;
-      if (meridian === 'AM' && hours === 12) hours = 0;
-
-      const pad = (n: number) => n.toString().padStart(2, '0');
-      const startUtc = `${year}${month}${day}T${pad(hours)}${pad(minutes)}00`;
-      
-      let endHours = hours;
-      let endMinutes = minutes + 45;
-      if (endMinutes >= 60) {
-        endHours += 1;
-        endMinutes -= 60;
-      }
-      const endUtc = `${year}${month}${day}T${pad(endHours)}${pad(endMinutes)}00`;
-
-      const title = encodeURIComponent(`🩺 Consultation: ${item.doctorName} (${item.department})`);
-      const details = encodeURIComponent(`Patient: ${item.patientName}\nToken: ${item.tokenNumber}\nDepartment: ${item.department}\nHospital: ${item.hospital}`);
-      const location = encodeURIComponent(item.hospital || 'PrimeCare Hospital');
-
-      return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startUtc}/${endUtc}&details=${details}&location=${location}`;
-    } catch {
-      return 'https://calendar.google.com';
-    }
-  };
+  const specialties = useMemo(() => {
+    const set = new Set(doctors.map(d => d.specialisation));
+    return ['ALL', ...Array.from(set)];
+  }, [doctors]);
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     setSlotConflictError(null);
 
     const cleanEmail = (sharedEmail || '').trim().toLowerCase();
-    const fullName = `${(patientFirstName || '').trim()} ${(patientLastName || '').trim()}`.trim();
+    const fullName = currentMemberName;
+
+    if (!fullName) {
+      setSlotConflictError("Please enter patient first and last name.");
+      return;
+    }
 
     if (isDoctorOnLeave) {
       alert(`${selectedDoctor.name} is on approved leave on ${selectedDate}.`);
       return;
     }
 
-    const slotBookings = bookedSlotsForEmail.get(selectedSlot) || [];
-
-    // Allow up to 2 family members per slot
-    if (slotBookings.length >= 2) {
-      setSlotConflictError(
-        `Slot ${selectedSlot} on ${selectedDate} has reached maximum family limit (2 members already booked). Please pick another slot.`
-      );
-      return;
-    }
-
-    // Check if the same member name is already booked in that slot
-    const duplicateMember = slotBookings.find(
-      (b) => (b.patientName || '').toLowerCase() === fullName.toLowerCase()
-    );
-    if (duplicateMember) {
-      setSlotConflictError(
-        `${fullName} already has a confirmed booking in slot ${selectedSlot}. You can book a second family member in this slot.`
-      );
+    const slotState = getSlotAvailability(selectedSlot);
+    if (!slotState.available) {
+      setSlotConflictError(`Cannot book ${selectedSlot}: ${slotState.reason}`);
       return;
     }
 
@@ -224,7 +295,7 @@ export default function BookAppointmentPage() {
       date: selectedDate,
       timeSlot: selectedSlot,
       symptoms: symptoms || 'General Consultation',
-      patientName: fullName || 'Patient Member',
+      patientName: fullName,
       patientEmail: cleanEmail || 'patient@primecare.in',
       age: patientAge,
       gender: patientGender,
@@ -247,43 +318,39 @@ export default function BookAppointmentPage() {
     setBookingSuccess(appointment);
   };
 
-  const handlePrintSlip = () => {
-    window.print();
-  };
-
   return (
     <ProtectedRoute allowedRoles={['PATIENT', 'DOCTOR', 'ADMIN']}>
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
         
-        {/* PRINTABLE BOOKING SLIP */}
+        {/* PRINT SLIP */}
         {bookingSuccess && (
           <div className="hidden print:block p-8 bg-white text-black font-sans min-h-screen">
             <div className="border-2 border-black p-6 rounded-lg space-y-6 max-w-2xl mx-auto">
               <div className="border-b-2 border-black pb-4 flex justify-between items-start">
                 <div>
-                  <h1 className="text-2xl font-black tracking-tight text-gray-950">PrimeCare Multispecialty Hospital</h1>
-                  <p className="text-xs font-semibold text-gray-700">{bookingSuccess.hospital || 'PrimeCare Apex Health Institute'}</p>
+                  <h1 className="text-2xl font-black">{bookingSuccess.hospital}</h1>
+                  <p className="text-xs text-gray-700">Official Outpatient Token Receipt</p>
                 </div>
-                <div className="text-right border-l-2 border-gray-300 pl-4">
-                  <span className="text-[10px] uppercase font-bold text-gray-500 block">Queue Token</span>
-                  <span className="text-2xl font-black text-gray-950">{bookingSuccess.tokenNumber}</span>
+                <div className="text-right">
+                  <span className="text-[10px] uppercase font-bold text-gray-500">Token</span>
+                  <span className="text-2xl font-black block">{bookingSuccess.tokenNumber}</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs border border-gray-300 p-4 rounded bg-gray-50/50">
+              <div className="grid grid-cols-2 gap-3 text-xs border border-gray-300 p-4 rounded bg-gray-50">
                 <div><strong>Patient:</strong> {bookingSuccess.patientName}</div>
-                <div><strong>Age/Gender:</strong> {bookingSuccess.age || '21'}Y • {bookingSuccess.gender || 'Female'}</div>
-                <div><strong>Email:</strong> {bookingSuccess.patientEmail}</div>
+                <div><strong>Age/Gender:</strong> {bookingSuccess.age}Y • {bookingSuccess.gender}</div>
+                <div><strong>Account:</strong> {bookingSuccess.patientEmail}</div>
                 <div><strong>Status:</strong> {bookingSuccess.status}</div>
               </div>
 
               <div className="border border-gray-300 rounded divide-y divide-gray-200 text-xs">
-                <div className="grid grid-cols-3 p-3 bg-gray-100 font-semibold text-gray-700">
+                <div className="grid grid-cols-3 p-3 bg-gray-100 font-semibold">
                   <div>Physician</div>
                   <div>Department</div>
-                  <div className="text-right">Date & Time</div>
+                  <div className="text-right">Schedule</div>
                 </div>
-                <div className="grid grid-cols-3 p-3 font-medium">
+                <div className="grid grid-cols-3 p-3">
                   <div><strong>{bookingSuccess.doctorName}</strong></div>
                   <div>{bookingSuccess.department}</div>
                   <div className="text-right font-bold">{bookingSuccess.date} • {bookingSuccess.timeSlot}</div>
@@ -291,10 +358,10 @@ export default function BookAppointmentPage() {
               </div>
 
               <div className="flex justify-between items-center border-t-2 border-dashed border-gray-400 pt-4 text-xs">
-                <p className="text-[10px] text-gray-500">Please arrive 15 minutes before your scheduled slot.</p>
-                <div className="text-right">
-                  <span className="text-[10px] text-gray-500 uppercase block">Fee</span>
-                  <strong className="text-lg font-black text-gray-950">{bookingSuccess.fee}</strong>
+                <p className="text-[10px] text-gray-500">Please arrive 15 minutes prior to appointment.</p>
+                <div>
+                  <span className="text-[10px] text-gray-500 block text-right">Fee Paid</span>
+                  <strong className="text-lg font-black">{bookingSuccess.fee}</strong>
                 </div>
               </div>
             </div>
@@ -306,15 +373,23 @@ export default function BookAppointmentPage() {
         </div>
 
         <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8 print:hidden">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400 mb-2">
-              <Calendar className="w-3.5 h-3.5" /> Outpatient Booking Desk
+          
+          {/* HEADER */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400 mb-2">
+                <Calendar className="w-3.5 h-3.5" /> Outpatient Booking Desk
+              </div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+                Doctor Discovery & Family Appointment Desk
+              </h1>
+              <p className="text-xs text-slate-400 mt-1">
+                Book for different family members under a shared email with individual conflict detection.
+              </p>
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              Book Doctor Consultation
-            </h1>
           </div>
 
+          {/* SUCCESS NOTIFICATION */}
           <AnimatePresence>
             {bookingSuccess && (
               <motion.div
@@ -327,90 +402,136 @@ export default function BookAppointmentPage() {
                     <CheckCircle2 className="w-6 h-6 text-emerald-400" /> Confirmed • Token {bookingSuccess.tokenNumber}
                   </div>
                   <p className="text-xs text-emerald-300">
-                    {bookingSuccess.patientName} with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}.
+                    Booking confirmed for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}.
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
-                  <a
-                    href={getGoogleCalendarUrl(bookingSuccess)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition"
-                  >
-                    <CalendarPlus className="w-4 h-4" /> Add to Google Calendar
-                  </a>
-
                   <button
                     type="button"
-                    onClick={handlePrintSlip}
+                    onClick={() => window.print()}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition"
                   >
                     <Printer className="w-4 h-4" /> Print Booking Slip
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBookingSuccess(null);
+                      setPatientFirstName('');
+                      setPatientLastName('');
+                    }}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition"
+                  >
+                    + Book Another Family Member
                   </button>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <AnimatePresence>
-            {slotConflictError && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="p-5 rounded-2xl bg-red-950/50 border border-red-500/50 text-red-200 text-xs shadow-xl flex items-center gap-3"
-              >
-                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                <span>{slotConflictError}</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
+          {/* MAIN TWO-COLUMN LAYOUT */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* DOCTOR DIRECTORY */}
+            
+            {/* AREA 1: SEPARATE DOCTOR SEARCH & SELECTION (5 COLS) */}
             <div className="lg:col-span-5 space-y-4">
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
-                <input
-                  type="text"
-                  value={searchDoc}
-                  onChange={(e) => setSearchDoc(e.target.value)}
-                  placeholder="Search doctor..."
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
+              <div className="p-4 bg-slate-900/80 border border-slate-800 rounded-3xl space-y-3">
+                <h2 className="text-sm font-bold text-white flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Stethoscope className="w-4 h-4 text-emerald-400" /> Search & Select Specialist
+                  </span>
+                  <span className="text-[11px] text-slate-400">{filteredDoctors.length} available</span>
+                </h2>
+
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                  <input
+                    type="text"
+                    value={searchDoc}
+                    onChange={(e) => setSearchDoc(e.target.value)}
+                    placeholder="Search by doctor name or specialty..."
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+
+                {/* Specialty Filter Pills */}
+                <div className="flex gap-1.5 overflow-x-auto pb-1 text-[11px] scrollbar-none">
+                  {specialties.map(spec => (
+                    <button
+                      key={spec}
+                      type="button"
+                      onClick={() => setSelectedSpecialty(spec)}
+                      className={`px-3 py-1 rounded-lg font-semibold whitespace-nowrap transition ${
+                        selectedSpecialty === spec
+                          ? 'bg-emerald-500 text-slate-950'
+                          : 'bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      {spec}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-                {filteredDoctors.map((doc, idx) => {
+              {/* Doctors Directory List */}
+              <div className="space-y-3 max-h-[640px] overflow-y-auto pr-1">
+                {filteredDoctors.map((doc) => {
                   const isSelected = selectedDoctor.id === doc.id;
                   const hasLeave = leaves.some(l => l.doctorId === doc.id && l.leaveDate === selectedDate);
-                  const docKey = doc.id || `doc-card-${idx}`;
 
                   return (
                     <div
-                      key={docKey}
+                      key={doc.id}
                       onClick={() => setSelectedDoctor(doc)}
-                      className={`p-4 rounded-2xl border cursor-pointer transition-all space-y-2 ${
+                      className={`p-4 rounded-2xl border cursor-pointer transition-all space-y-2.5 ${
                         isSelected
                           ? 'bg-emerald-950/40 border-emerald-500 shadow-xl ring-2 ring-emerald-500/30'
-                          : 'bg-slate-900/70 border-slate-800 hover:border-slate-700'
+                          : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
                       }`}
                     >
                       <div className="flex items-start justify-between">
                         <div>
-                          <h4 className="font-bold text-sm text-white">{doc.name}</h4>
+                          <h4 className="font-bold text-sm text-white flex items-center gap-1.5">
+                            {doc.name}
+                            {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                          </h4>
                           <span className="text-xs text-emerald-400 font-semibold">{doc.specialisation}</span>
                         </div>
                         <span className="text-xs font-mono font-bold text-emerald-300 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                           {doc.fee}
                         </span>
                       </div>
-                      <div className="flex flex-wrap gap-2 text-[10px] text-slate-400">
-                        <span className="flex items-center gap-1"><Award className="w-3 h-3 text-blue-400" /> {doc.qualification}</span>
-                        <span>•</span>
-                        <span>{doc.experience}</span>
+
+                      {/* Doctor Credential Badges */}
+                      <div className="flex flex-wrap gap-2 text-[10px] text-slate-300">
+                        <span className="flex items-center gap-1 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                          <Award className="w-3 h-3 text-blue-400" /> {doc.qualification}
+                        </span>
+                        <span className="flex items-center gap-1 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                          <Briefcase className="w-3 h-3 text-amber-400" /> {doc.experience}
+                        </span>
+                        <span className="flex items-center gap-1 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                          <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" /> {doc.rating || '4.9 ★'}
+                        </span>
                       </div>
-                      <p className="text-[11px] text-slate-400">{doc.hospital}</p>
+
+                      <p className="text-[11px] text-slate-400 line-clamp-2">{doc.bio}</p>
+
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-800/80 text-[10px] text-slate-400">
+                        <span className="truncate max-w-[200px]">{doc.hospital}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setInspectDoctor(doc);
+                          }}
+                          className="text-emerald-400 hover:underline flex items-center gap-0.5"
+                        >
+                          Full Profile <ChevronRight className="w-3 h-3" />
+                        </button>
+                      </div>
+
                       {hasLeave && (
                         <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold">
                           <CalendarX2 className="w-3 h-3" /> On Leave on {selectedDate}
@@ -422,24 +543,41 @@ export default function BookAppointmentPage() {
               </div>
             </div>
 
-            {/* FORM */}
+            {/* AREA 2: FAMILY MEMBER INFO & INTELLIGENT SLOT AVAILABILITY (7 COLS) */}
             <div className="lg:col-span-7 space-y-6">
               <form onSubmit={handleBooking} className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-6">
+                
+                {/* Active Doctor Selected Header */}
                 <div className="flex items-start justify-between border-b border-slate-800 pb-4">
                   <div>
-                    <h3 className="font-bold text-lg text-white">{selectedDoctor.name}</h3>
-                    <p className="text-xs text-emerald-400">{selectedDoctor.specialisation} • {selectedDoctor.hospital}</p>
-                    <p className="text-[11px] text-slate-400 mt-1">{selectedDoctor.qualification} ({selectedDoctor.experience})</p>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Booking With</span>
+                    <h3 className="font-extrabold text-lg text-white">{selectedDoctor.name}</h3>
+                    <p className="text-xs text-emerald-400 font-medium">{selectedDoctor.specialisation} • {selectedDoctor.hospital}</p>
                   </div>
-                  <span className="text-xs font-mono font-bold text-emerald-300 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                    Fee: {selectedDoctor.fee}
-                  </span>
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Consultation Fee</span>
+                    <span className="text-sm font-mono font-black text-emerald-300 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                      {selectedDoctor.fee}
+                    </span>
+                  </div>
                 </div>
 
+                {/* Error Banner */}
+                {slotConflictError && (
+                  <div className="p-4 bg-red-950/50 border border-red-500/40 text-red-200 text-xs rounded-2xl flex items-center gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                    <span>{slotConflictError}</span>
+                  </div>
+                )}
+
+                {/* Patient / Family Member Information */}
                 <div className="space-y-3 p-4 bg-slate-950 rounded-2xl border border-slate-800">
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5" /> Patient Details (Book for Family / Self)
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5" /> Patient / Family Member Identity
+                    </span>
+                    <span className="text-[10px] text-slate-400">Slots recalculate dynamically per member</span>
+                  </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -448,8 +586,11 @@ export default function BookAppointmentPage() {
                         type="text"
                         required
                         value={patientFirstName}
-                        onChange={(e) => setPatientFirstName(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                        onChange={(e) => {
+                          setPatientFirstName(e.target.value);
+                          setSlotConflictError(null);
+                        }}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
                     <div>
@@ -458,8 +599,11 @@ export default function BookAppointmentPage() {
                         type="text"
                         required
                         value={patientLastName}
-                        onChange={(e) => setPatientLastName(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                        onChange={(e) => {
+                          setPatientLastName(e.target.value);
+                          setSlotConflictError(null);
+                        }}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
                   </div>
@@ -488,7 +632,7 @@ export default function BookAppointmentPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Account Email</label>
+                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Shared Account Email</label>
                       <input
                         type="email"
                         required
@@ -500,6 +644,7 @@ export default function BookAppointmentPage() {
                   </div>
                 </div>
 
+                {/* Consultation Date */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Select Date</label>
                   <input
@@ -511,31 +656,42 @@ export default function BookAppointmentPage() {
                   />
                 </div>
 
+                {/* Dynamic Slot Selection Grid */}
                 {isDoctorOnLeave ? (
                   <div className="p-5 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs">
-                    Physician is on approved leave on {selectedDate}.
+                    {selectedDoctor.name} is on approved leave on {selectedDate}.
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                      Available Slots (Max 2 Members per Slot)
-                    </label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Available Consultation Slots for {currentMemberName || 'Current Member'}
+                      </label>
+                      <span className="text-[10px] text-emerald-400">Same-slot multi-family member booking supported</span>
+                    </div>
+
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
                       {TIME_SLOTS.map((slot) => {
-                        const slotBookings = bookedSlotsForEmail.get(slot) || [];
-                        const isFull = slotBookings.length >= 2;
-                        const isSlotSelected = selectedSlot === slot;
+                        const slotInfo = getSlotAvailability(slot);
+                        const isSlotSelected = selectedSlot === slot && slotInfo.available;
 
-                        if (isFull) {
+                        if (!slotInfo.available) {
                           return (
                             <button
                               key={slot}
                               type="button"
                               disabled
-                              className="py-2 px-2 rounded-xl text-[11px] font-semibold bg-red-950/30 border border-red-500/40 text-red-400 opacity-60 cursor-not-allowed text-left"
+                              title={slotInfo.reason}
+                              className="py-2.5 px-3 rounded-xl text-left bg-red-950/20 border border-red-500/30 opacity-60 cursor-not-allowed flex flex-col justify-between"
                             >
-                              <span className="block font-bold">{slot}</span>
-                              <span className="text-[9px] text-red-300 block truncate">2/2 Booked</span>
+                              <span className="text-xs font-bold text-red-300">{slot}</span>
+                              <span className="text-[9px] text-red-400 mt-1 truncate">
+                                {slotInfo.statusType === 'SELF_RESERVED'
+                                  ? 'Booked for you'
+                                  : slotInfo.statusType === 'MEMBER_BUSY'
+                                  ? 'Busy (Other Dr)'
+                                  : 'Slot Full (2/2)'}
+                              </span>
                             </button>
                           );
                         }
@@ -555,9 +711,13 @@ export default function BookAppointmentPage() {
                             }`}
                           >
                             <span>{slot}</span>
-                            {slotBookings.length === 1 && (
-                              <span className={`text-[9px] font-semibold ${isSlotSelected ? 'text-slate-900' : 'text-emerald-400'}`}>
-                                (1 member in slot)
+                            {slotInfo.statusType === 'FAMILY_SHARED' ? (
+                              <span className={`text-[9px] font-semibold ${isSlotSelected ? 'text-slate-900' : 'text-blue-400'}`}>
+                                Family also booked
+                              </span>
+                            ) : (
+                              <span className={`text-[9px] ${isSlotSelected ? 'text-slate-900' : 'text-emerald-400'}`}>
+                                Available
                               </span>
                             )}
                           </button>
@@ -567,6 +727,7 @@ export default function BookAppointmentPage() {
                   </div>
                 )}
 
+                {/* Chief Complaint */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Chief Complaint</label>
                   <textarea
@@ -574,7 +735,7 @@ export default function BookAppointmentPage() {
                     required
                     value={symptoms}
                     onChange={(e) => setSymptoms(e.target.value)}
-                    placeholder="Brief description..."
+                    placeholder="Describe symptoms or clinical notes..."
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none"
                   />
                 </div>
@@ -582,14 +743,86 @@ export default function BookAppointmentPage() {
                 <button
                   type="submit"
                   disabled={Boolean(isDoctorOnLeave)}
-                  className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2 disabled:opacity-40"
+                  className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2 disabled:opacity-40"
                 >
-                  Confirm Appointment & Generate Slip <ArrowRight className="w-4 h-4" />
+                  Confirm Appointment for {currentMemberName} <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
             </div>
           </div>
         </main>
+
+        {/* DETAILED DOCTOR MODAL */}
+        <AnimatePresence>
+          {inspectDoctor && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl"
+              >
+                <div className="flex items-start justify-between border-b border-slate-800 pb-3">
+                  <div>
+                    <h3 className="text-lg font-bold text-white">{inspectDoctor.name}</h3>
+                    <p className="text-xs text-emerald-400 font-semibold">{inspectDoctor.specialisation}</p>
+                  </div>
+                  <button
+                    onClick={() => setInspectDoctor(null)}
+                    className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg bg-slate-800"
+                  >
+                    ✕ Close
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-xs text-slate-300">
+                  <div className="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <div>
+                      <span className="text-[10px] text-slate-500 block uppercase">Qualification</span>
+                      <strong>{inspectDoctor.qualification}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-500 block uppercase">Experience</span>
+                      <strong>{inspectDoctor.experience}</strong>
+                    </div>
+                    <div className="mt-2">
+                      <span className="text-[10px] text-slate-500 block uppercase">Consultation Fee</span>
+                      <strong className="text-emerald-400">{inspectDoctor.fee}</strong>
+                    </div>
+                    <div className="mt-2">
+                      <span className="text-[10px] text-slate-500 block uppercase">Rating</span>
+                      <strong className="text-yellow-400">{inspectDoctor.rating || '4.9 ★'}</strong>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] text-slate-500 block uppercase mb-1">Affiliated Hospital</span>
+                    <p className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 font-medium">{inspectDoctor.hospital}</p>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] text-slate-500 block uppercase mb-1">Physician Bio & Specialties</span>
+                    <p className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 leading-relaxed text-slate-300">
+                      {inspectDoctor.bio}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedDoctor(inspectDoctor);
+                    setInspectDoctor(null);
+                  }}
+                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition"
+                >
+                  Select {inspectDoctor.name} for Booking
+                </button>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
       </div>
     </ProtectedRoute>
   );
