@@ -1,6 +1,9 @@
 ﻿import { NextResponse } from "next/navigation";
 import { getDb, initDb } from "@/lib/db";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const DEFAULT_DOCTORS = [
   { id: 'doc-cardio-01', email: 'ritikakushwaha62@gmail.com', name: 'Dr. Ritika Kushwaha', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, diagnostic angiographies, coronary interventions, and comprehensive lipid management.' },
   { id: 'doc-cardio-02', email: 'aarav.sharma@primecare.in', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS)', experience: '12 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease.' },
@@ -25,9 +28,9 @@ export async function GET() {
             ON CONFLICT (id) DO NOTHING
           `;
         }
-        return NextResponse.json({ success: true, doctors: DEFAULT_DOCTORS });
+        return NextResponse.json({ success: true, doctors: DEFAULT_DOCTORS }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
       }
-      return NextResponse.json({ success: true, doctors: rows });
+      return NextResponse.json({ success: true, doctors: rows }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
     } catch (err: any) {
       console.error("GET doctors error:", err);
     }
@@ -59,7 +62,7 @@ export async function POST(req: Request) {
         `;
       }
     }
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

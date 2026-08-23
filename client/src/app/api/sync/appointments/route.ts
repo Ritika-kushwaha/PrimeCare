@@ -2,6 +2,7 @@
 import { getDb, initDb } from "@/lib/db";
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   await initDb();
@@ -31,7 +32,10 @@ export async function GET() {
         FROM pc_appointments 
         ORDER BY created_at DESC
       `;
-      return NextResponse.json({ success: true, appointments: rows || [] });
+      return NextResponse.json(
+        { success: true, appointments: rows || [] },
+        { headers: { 'Cache-Control': 'no-store, max-age=0, must-revalidate' } }
+      );
     } catch (err: any) {
       console.error("GET appointments error:", err);
     }
@@ -92,7 +96,7 @@ export async function POST(req: Request) {
         `;
       }
     }
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
   } catch (err: any) {
     console.error("POST appointments error:", err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
