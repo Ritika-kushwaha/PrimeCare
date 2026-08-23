@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, Clock, Stethoscope, User, 
@@ -78,9 +79,9 @@ export default function BookAppointmentPage() {
   const [selectedDate, setSelectedDate] = useState('2026-08-28');
   const [selectedSlot, setSelectedSlot] = useState('10:00 AM');
   
-  const [sharedEmail, setSharedEmail] = useState('ritikakushwaha62@gmail.com');
-  const [patientFirstName, setPatientFirstName] = useState('Ritika');
-  const [patientLastName, setPatientLastName] = useState('Kushwaha');
+  const [sharedEmail, setSharedEmail] = useState(user?.email || 'ritikakushwaha62@gmail.com');
+  const [patientFirstName, setPatientFirstName] = useState(user?.firstName || 'Ritika');
+  const [patientLastName, setPatientLastName] = useState(user?.lastName || 'Kushwaha');
   const [patientAge, setPatientAge] = useState('21');
   const [patientGender, setPatientGender] = useState('Female');
   const [symptoms, setSymptoms] = useState('Routine cardiovascular checkup');
@@ -117,10 +118,7 @@ export default function BookAppointmentPage() {
         setExistingAppointments(parsed.filter(a => a.status !== 'CANCELLED'));
       }
     } catch {}
-  };
 
-  useEffect(() => {
-        loadData();
     if (user?.email) {
       setSharedEmail(user.email);
     }
@@ -130,11 +128,14 @@ export default function BookAppointmentPage() {
     if (user?.lastName) {
       setPatientLastName(user.lastName);
     }
+  };
+
+  useEffect(() => {
+    loadData();
     window.addEventListener('storage', loadData);
     return () => window.removeEventListener('storage', loadData);
   }, [user]);
 
-  // Strict, robust leave matching against current selected doctor
   const isDoctorOnLeave = useMemo(() => {
     const selName = selectedDoctor.name.toLowerCase().replace('dr. ', '').trim();
     const selId = selectedDoctor.id;
@@ -154,7 +155,6 @@ export default function BookAppointmentPage() {
   const getSlotAvailability = (slot: string) => {
     const cleanMember = currentMemberName.toLowerCase();
 
-    // 1. Check if Doctor is on Leave
     if (isDoctorOnLeave) {
       return {
         available: false,
@@ -163,7 +163,6 @@ export default function BookAppointmentPage() {
       };
     }
 
-    // 2. Doctor Slot Booking Check
     const existingDoctorBooking = existingAppointments.find(
       a => a.doctorId === selectedDoctor.id && a.date === selectedDate && a.timeSlot === slot && a.status !== 'CANCELLED'
     );
@@ -177,7 +176,6 @@ export default function BookAppointmentPage() {
       };
     }
 
-    // 3. Member Busy with another doctor
     const memberBusyOtherDoctor = existingAppointments.find(
       a => (a.patientName || '').toLowerCase() === cleanMember &&
            a.date === selectedDate &&
@@ -299,7 +297,6 @@ export default function BookAppointmentPage() {
     <ProtectedRoute allowedRoles={['PATIENT', 'DOCTOR', 'ADMIN']}>
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
         
-        {/* PRINT SLIP */}
         {bookingSuccess && (
           <div className="hidden print:block p-8 bg-white text-black font-sans min-h-screen">
             <div className="border-2 border-black p-6 rounded-lg space-y-6 max-w-2xl mx-auto">
@@ -350,7 +347,6 @@ export default function BookAppointmentPage() {
         </div>
 
         <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8 print:hidden">
-          
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400 mb-2">
@@ -416,7 +412,6 @@ export default function BookAppointmentPage() {
           </AnimatePresence>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
             {/* AREA 1: DOCTOR SEARCH & SELECTION */}
             <div className="lg:col-span-5 space-y-4">
               <div className="p-4 bg-slate-900/80 border border-slate-800 rounded-3xl space-y-3">
@@ -459,7 +454,6 @@ export default function BookAppointmentPage() {
               <div className="space-y-3 max-h-[640px] overflow-y-auto pr-1">
                 {filteredDoctors.map((doc) => {
                   const isSelected = selectedDoctor.id === doc.id;
-                  
                   const docClean = doc.name.toLowerCase().replace('dr. ', '').trim();
                   const hasLeave = leaves.some(l => {
                     if (l.leaveDate !== selectedDate) return false;
@@ -539,7 +533,6 @@ export default function BookAppointmentPage() {
             {/* AREA 2: APPOINTMENT BOOKING & ACTIVE LEAVE BLOCKING */}
             <div className="lg:col-span-7 space-y-6">
               <form onSubmit={handleBooking} className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-6">
-                
                 <div className="flex items-start justify-between border-b border-slate-800 pb-4">
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Selected Physician</span>
@@ -648,7 +641,6 @@ export default function BookAppointmentPage() {
                   />
                 </div>
 
-                {/* DOCTOR LEAVE BANNER & DISABLED SLOTS */}
                 {isDoctorOnLeave ? (
                   <div className="p-6 rounded-2xl bg-red-950/40 border border-red-500/50 text-red-200 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-red-400 text-sm">
@@ -745,7 +737,6 @@ export default function BookAppointmentPage() {
           </div>
         </main>
 
-        {/* MODAL PROFILE */}
         <AnimatePresence>
           {inspectDoctor && (
             <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -824,4 +815,3 @@ export default function BookAppointmentPage() {
     </ProtectedRoute>
   );
 }
-
