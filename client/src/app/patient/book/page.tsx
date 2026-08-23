@@ -8,19 +8,19 @@ import {
   Calendar, Clock, Stethoscope, User, 
   CheckCircle2, AlertCircle, ArrowRight, ShieldCheck, 
   Search, Building2, Award, CalendarX2, Ban, Users, 
-  Printer, CalendarPlus, Briefcase, Star, ChevronRight,
-  FileText, Check
+  Printer, CalendarPlus, Briefcase, Star, ChevronRight
 } from 'lucide-react';
 
 interface DoctorProfile {
   id: string;
+  email?: string;
   name: string;
   specialisation: string;
   qualification: string;
   experience: string;
   hospital: string;
   fee: string;
-  rating: string;
+  rating?: string;
   bio: string;
 }
 
@@ -53,72 +53,13 @@ interface AppointmentItem {
 }
 
 const DEFAULT_DOCTORS: DoctorProfile[] = [
-  { 
-    id: 'doc-cardio-01', 
-    name: 'Dr. Aarav Sharma', 
-    specialisation: 'Cardiology', 
-    qualification: 'MD, DM (Cardiology - AIIMS Delhi)', 
-    experience: '14 Years Practice', 
-    hospital: 'PrimeCare Apex Heart Institute', 
-    fee: '₹1,200', 
-    rating: '4.9 ★',
-    bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, diagnostic angiographies, coronary interventions, and comprehensive lipid management.' 
-  },
-  { 
-    id: 'doc-cardio-02', 
-    name: 'Dr. Meera Kulkarni', 
-    specialisation: 'Cardiology', 
-    qualification: 'MD, DNB (Cardiology)', 
-    experience: '10 Years Practice', 
-    hospital: 'PrimeCare Metro Hospital', 
-    fee: '₹1,400', 
-    rating: '4.9 ★',
-    bio: 'Consultant Clinical Cardiologist specializing in advanced echocardiography, non-invasive coronary imaging, hypertensive disorders, and post-infarction rehabilitation.' 
-  },
-  { 
-    id: 'doc-neuro-01', 
-    name: 'Dr. Priya Nair', 
-    specialisation: 'Neurology', 
-    qualification: 'MD, DM (Neurology - NIMHANS)', 
-    experience: '12 Years Practice', 
-    hospital: 'PrimeCare Neuroscience Center', 
-    fee: '₹1,500', 
-    rating: '4.9 ★',
-    bio: 'Senior Consultant Neurologist with expertise in acute stroke management, intractable migraine syndromes, peripheral neuropathies, and epilepsy care.' 
-  },
-  { 
-    id: 'doc-ortho-01', 
-    name: 'Dr. Vikram Patel', 
-    specialisation: 'Orthopedics', 
-    qualification: 'MS (Orthopedics), MCh', 
-    experience: '15 Years Practice', 
-    hospital: 'PrimeCare Ortho Wing', 
-    fee: '₹1,000', 
-    rating: '4.7 ★',
-    bio: 'Lead Orthopedic and Joint Replacement Surgeon with extensive experience in total knee/hip arthroplasty, complex trauma, and sports ligament reconstruction.' 
-  },
-  { 
-    id: 'doc-pedia-01', 
-    name: 'Dr. Ananya Deshmukh', 
-    specialisation: 'Pediatrics', 
-    qualification: 'MD (Pediatrics), DCH', 
-    experience: '9 Years Practice', 
-    hospital: 'PrimeCare Children Pavilion', 
-    fee: '₹900', 
-    rating: '5.0 ★',
-    bio: 'Consultant Pediatrician and Neonatologist providing developmental milestone evaluations, infant immunization regimens, and pediatric infection management.' 
-  },
-  { 
-    id: 'doc-derma-01', 
-    name: 'Dr. Rohan Mehta', 
-    specialisation: 'Dermatology', 
-    qualification: 'MD (Dermatology)', 
-    experience: '8 Years Practice', 
-    hospital: 'PrimeCare Skin Clinic', 
-    fee: '₹1,100', 
-    rating: '4.8 ★',
-    bio: 'Specialist in clinical dermatology, medical trichology, chronic eczema management, and advanced aesthetic laser procedures.' 
-  },
+  { id: 'doc-cardio-01', name: 'Dr. Ritika Kushwaha', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, angiographies, and lipidology.' },
+  { id: 'doc-cardio-02', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS)', experience: '12 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease.' },
+  { id: 'doc-cardio-03', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', rating: '4.8 ★', bio: 'Specialist in non-invasive coronary imaging, pediatric cardiology, and heart rhythm management.' },
+  { id: 'doc-neuro-01', name: 'Dr. Priya Nair', specialisation: 'Neurology', qualification: 'MD, DM (Neurology - NIMHANS)', experience: '12 Years Practice', hospital: 'PrimeCare Neuroscience Center', fee: '₹1,500', rating: '4.9 ★', bio: 'Consultant Neurologist focused on headache disorders, neuropathies, epilepsy, and acute stroke treatment.' },
+  { id: 'doc-ortho-01', name: 'Dr. Vikram Patel', specialisation: 'Orthopedics', qualification: 'MS (Orthopedics), MCh', experience: '15 Years Practice', hospital: 'PrimeCare Ortho Wing', fee: '₹1,000', rating: '4.7 ★', bio: 'Joint replacement, arthroscopic ligament surgery, and complex sports injury rehabilitation specialist.' },
+  { id: 'doc-pedia-01', name: 'Dr. Ananya Deshmukh', specialisation: 'Pediatrics', qualification: 'MD (Pediatrics), DCH', experience: '9 Years Practice', hospital: 'PrimeCare Children Pavilion', fee: '₹900', rating: '5.0 ★', bio: 'Pediatrician handling newborn intensive care, routine growth assessments, and childhood immunizations.' },
+  { id: 'doc-derma-01', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', rating: '4.8 ★', bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' },
 ];
 
 const TIME_SLOTS = [
@@ -128,6 +69,7 @@ const TIME_SLOTS = [
 ];
 
 export default function BookAppointmentPage() {
+  const { user } = useAuth();
   const [doctors, setDoctors] = useState<DoctorProfile[]>(DEFAULT_DOCTORS);
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [existingAppointments, setExistingAppointments] = useState<AppointmentItem[]>([]);
@@ -149,22 +91,14 @@ export default function BookAppointmentPage() {
   const [bookingSuccess, setBookingSuccess] = useState<AppointmentItem | null>(null);
   const [slotConflictError, setSlotConflictError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadData = () => {
     try {
       const storedRoster = localStorage.getItem('primecare_doctor_profiles');
       if (storedRoster) {
         const parsed = JSON.parse(storedRoster);
         const map = new Map<string, DoctorProfile>();
         DEFAULT_DOCTORS.forEach(d => map.set(d.id, d));
-        
-        parsed.forEach((d: any) => {
-          const defaultDoc = DEFAULT_DOCTORS.find(def => def.id === d.id);
-          map.set(d.id, {
-            ...d,
-            bio: d.bio && d.bio.trim().length > 0 ? d.bio : defaultDoc?.bio || `Consultant Specialist in ${d.specialisation} with extensive clinical expertise in inpatient and outpatient consultations.`
-          });
-        });
-        
+        parsed.forEach((d: any) => map.set(d.id, d));
         const allDocs = Array.from(map.values());
         setDoctors(allDocs);
         if (allDocs.length > 0) setSelectedDoctor(allDocs[0]);
@@ -178,12 +112,39 @@ export default function BookAppointmentPage() {
 
     try {
       const storedAppts = localStorage.getItem('primecare_appointments');
-      if (storedAppts) setExistingAppointments(JSON.parse(storedAppts));
+      if (storedAppts) {
+        const parsed: AppointmentItem[] = JSON.parse(storedAppts);
+        setExistingAppointments(parsed.filter(a => a.status !== 'CANCELLED'));
+      }
     } catch {}
-  }, []);
+  };
 
+  useEffect(() => {
+        loadData();
+    if (user?.email) {
+      setSharedEmail(user.email);
+    }
+    if (user?.firstName) {
+      setPatientFirstName(user.firstName);
+    }
+    if (user?.lastName) {
+      setPatientLastName(user.lastName);
+    }
+    window.addEventListener('storage', loadData);
+    return () => window.removeEventListener('storage', loadData);
+  }, [user]);
+
+  // Strict, robust leave matching against current selected doctor
   const isDoctorOnLeave = useMemo(() => {
-    return leaves.find(l => l.doctorId === selectedDoctor.id && l.leaveDate === selectedDate);
+    const selName = selectedDoctor.name.toLowerCase().replace('dr. ', '').trim();
+    const selId = selectedDoctor.id;
+
+    return leaves.find(l => {
+      if (l.leaveDate !== selectedDate) return false;
+      const lName = (l.doctorName || '').toLowerCase().replace('dr. ', '').trim();
+      const lId = l.doctorId;
+      return (lId && lId === selId) || (lName && (lName.includes(selName) || selName.includes(lName)));
+    });
   }, [leaves, selectedDoctor, selectedDate]);
 
   const currentMemberName = useMemo(() => {
@@ -193,8 +154,18 @@ export default function BookAppointmentPage() {
   const getSlotAvailability = (slot: string) => {
     const cleanMember = currentMemberName.toLowerCase();
 
+    // 1. Check if Doctor is on Leave
+    if (isDoctorOnLeave) {
+      return {
+        available: false,
+        reason: `${selectedDoctor.name} is on Leave on ${selectedDate}`,
+        statusType: 'DOCTOR_ON_LEAVE'
+      };
+    }
+
+    // 2. Doctor Slot Booking Check
     const existingDoctorBooking = existingAppointments.find(
-      a => a.doctorId === selectedDoctor.id && a.date === selectedDate && a.timeSlot === slot
+      a => a.doctorId === selectedDoctor.id && a.date === selectedDate && a.timeSlot === slot && a.status !== 'CANCELLED'
     );
 
     if (existingDoctorBooking) {
@@ -206,17 +177,19 @@ export default function BookAppointmentPage() {
       };
     }
 
+    // 3. Member Busy with another doctor
     const memberBusyOtherDoctor = existingAppointments.find(
       a => (a.patientName || '').toLowerCase() === cleanMember &&
            a.date === selectedDate &&
            a.timeSlot === slot &&
-           a.doctorId !== selectedDoctor.id
+           a.doctorId !== selectedDoctor.id &&
+           a.status !== 'CANCELLED'
     );
 
     if (memberBusyOtherDoctor) {
       return {
         available: false,
-        reason: `You have an appointment with ${memberBusyOtherDoctor.doctorName}`,
+        reason: `Busy with ${memberBusyOtherDoctor.doctorName}`,
         statusType: 'MEMBER_BUSY'
       };
     }
@@ -253,15 +226,14 @@ export default function BookAppointmentPage() {
 
       const pad = (n: number) => n.toString().padStart(2, '0');
       const startUtc = `${year}${pad(month)}${pad(day)}T${pad(hours)}${pad(minutes)}00Z`;
-
       let endHours = hours;
       let endMinutes = minutes + 45;
       if (endMinutes >= 60) { endHours += 1; endMinutes -= 60; }
       const endUtc = `${year}${pad(month)}${pad(day)}T${pad(endHours)}${pad(endMinutes)}00Z`;
 
       const title = encodeURIComponent(`🩺 Clinical Consultation: ${item.doctorName} (${item.department})`);
-      const details = encodeURIComponent(`Patient Name: ${item.patientName}\nQueue Token: ${item.tokenNumber}\nDepartment: ${item.department}\nHospital: ${item.hospital}\nConsultation Fee: ${item.fee}`);
-      const location = encodeURIComponent(item.hospital || 'PrimeCare Multispecialty Hospital');
+      const details = encodeURIComponent(`Patient: ${item.patientName}\nQueue Token: ${item.tokenNumber}\nDepartment: ${item.department}\nHospital: ${item.hospital}\nFee: ${item.fee}`);
+      const location = encodeURIComponent(item.hospital || 'PrimeCare Hospital');
 
       return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startUtc}/${endUtc}&details=${details}&location=${location}`;
     } catch {
@@ -282,7 +254,7 @@ export default function BookAppointmentPage() {
     }
 
     if (isDoctorOnLeave) {
-      alert(`${selectedDoctor.name} is on approved leave on ${selectedDate}.`);
+      setSlotConflictError(`${selectedDoctor.name} is on approved leave on ${selectedDate} (${isDoctorOnLeave.reason}). Please choose another date or doctor.`);
       return;
     }
 
@@ -363,7 +335,7 @@ export default function BookAppointmentPage() {
               </div>
 
               <div className="flex justify-between items-center border-t-2 border-dashed border-gray-400 pt-4 text-xs">
-                <p className="text-[10px] text-gray-500">Strict Single-Occupancy Slot. Please arrive 15 minutes prior to appointment.</p>
+                <p className="text-[10px] text-gray-500">Please arrive 15 minutes prior to appointment.</p>
                 <div>
                   <span className="text-[10px] text-gray-500 block text-right">Fee Paid</span>
                   <strong className="text-lg font-black">{bookingSuccess.fee}</strong>
@@ -388,7 +360,7 @@ export default function BookAppointmentPage() {
                 Doctor Discovery & Outpatient Booking
               </h1>
               <p className="text-xs text-slate-400 mt-1">
-                Strict 1-patient per slot. Once booked, the slot is locked for all other members.
+                Real-time physician duty status and calendar synchronized slot booking.
               </p>
             </div>
           </div>
@@ -405,7 +377,7 @@ export default function BookAppointmentPage() {
                     <CheckCircle2 className="w-6 h-6 text-emerald-400" /> Confirmed • Token {bookingSuccess.tokenNumber}
                   </div>
                   <p className="text-xs text-emerald-300">
-                    Slot confirmed exclusively for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}.
+                    Slot confirmed for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}.
                   </p>
                 </div>
 
@@ -445,7 +417,7 @@ export default function BookAppointmentPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* AREA 1: SEPARATE DOCTOR SEARCH & SELECTION */}
+            {/* AREA 1: DOCTOR SEARCH & SELECTION */}
             <div className="lg:col-span-5 space-y-4">
               <div className="p-4 bg-slate-900/80 border border-slate-800 rounded-3xl space-y-3">
                 <h2 className="text-sm font-bold text-white flex items-center justify-between">
@@ -487,7 +459,14 @@ export default function BookAppointmentPage() {
               <div className="space-y-3 max-h-[640px] overflow-y-auto pr-1">
                 {filteredDoctors.map((doc) => {
                   const isSelected = selectedDoctor.id === doc.id;
-                  const hasLeave = leaves.some(l => l.doctorId === doc.id && l.leaveDate === selectedDate);
+                  
+                  const docClean = doc.name.toLowerCase().replace('dr. ', '').trim();
+                  const hasLeave = leaves.some(l => {
+                    if (l.leaveDate !== selectedDate) return false;
+                    const lClean = (l.doctorName || '').toLowerCase().replace('dr. ', '').trim();
+                    return (l.doctorId && l.doctorId === doc.id) || (lClean && (lClean.includes(docClean) || docClean.includes(lClean)));
+                  });
+
                   const fallbackBio = doc.bio || `Senior Clinical Specialist in ${doc.specialisation} at ${doc.hospital}.`;
 
                   return (
@@ -547,8 +526,8 @@ export default function BookAppointmentPage() {
                       </div>
 
                       {hasLeave && (
-                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold">
-                          <CalendarX2 className="w-3 h-3" /> On Leave on {selectedDate}
+                        <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-950/40 border border-red-500/40 text-red-300 text-[10px] font-bold">
+                          <CalendarX2 className="w-3.5 h-3.5 text-red-400" /> On Leave on {selectedDate}
                         </div>
                       )}
                     </div>
@@ -557,7 +536,7 @@ export default function BookAppointmentPage() {
               </div>
             </div>
 
-            {/* AREA 2: SINGLE PATIENT SLOT BOOKING */}
+            {/* AREA 2: APPOINTMENT BOOKING & ACTIVE LEAVE BLOCKING */}
             <div className="lg:col-span-7 space-y-6">
               <form onSubmit={handleBooking} className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-6">
                 
@@ -661,14 +640,24 @@ export default function BookAppointmentPage() {
                     type="date"
                     required
                     value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedDate(e.target.value);
+                      setSlotConflictError(null);
+                    }}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none [color-scheme:dark]"
                   />
                 </div>
 
+                {/* DOCTOR LEAVE BANNER & DISABLED SLOTS */}
                 {isDoctorOnLeave ? (
-                  <div className="p-5 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs">
-                    {selectedDoctor.name} is on approved leave on {selectedDate}.
+                  <div className="p-6 rounded-2xl bg-red-950/40 border border-red-500/50 text-red-200 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-red-400 text-sm">
+                      <CalendarX2 className="w-5 h-5" />
+                      <span>{selectedDoctor.name} is on Approved Duty Leave on {selectedDate}</span>
+                    </div>
+                    <p className="text-xs text-red-300">
+                      Reason: <strong>{isDoctorOnLeave.reason || 'Clinical Duty Leave'}</strong>. All booking slots are temporarily locked for this date. Please pick an alternate consultation date.
+                    </p>
                   </div>
                 ) : (
                   <div>
@@ -695,7 +684,9 @@ export default function BookAppointmentPage() {
                             >
                               <span className="text-xs font-bold text-red-300">{slot}</span>
                               <span className="text-[9px] text-red-400 mt-1 truncate">
-                                {slotInfo.statusType === 'SELF_RESERVED'
+                                {slotInfo.statusType === 'DOCTOR_ON_LEAVE'
+                                  ? 'Doctor on Leave'
+                                  : slotInfo.statusType === 'SELF_RESERVED'
                                   ? 'Booked for you'
                                   : slotInfo.statusType === 'MEMBER_BUSY'
                                   ? 'Busy (Other Dr)'
@@ -754,7 +745,7 @@ export default function BookAppointmentPage() {
           </div>
         </main>
 
-        {/* DETAILED MODAL WITH COMPREHENSIVE FALLBACK BIO */}
+        {/* MODAL PROFILE */}
         <AnimatePresence>
           {inspectDoctor && (
             <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -808,16 +799,8 @@ export default function BookAppointmentPage() {
                     <span className="text-[10px] text-slate-400 block uppercase font-bold mb-1">Physician Bio & Specialties</span>
                     <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 leading-relaxed text-slate-200 text-[11px] space-y-2">
                       <p>
-                        {inspectDoctor.bio || `Senior Clinical Specialist in ${inspectDoctor.specialisation} with extensive clinical expertise across non-invasive therapeutics, diagnosis, and patient care.`}
+                        {inspectDoctor.bio || `Senior Clinical Specialist in ${inspectDoctor.specialisation} at ${inspectDoctor.hospital}.`}
                       </p>
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        <span className="px-2 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[10px] font-semibold">
-                          Specialist Consultation
-                        </span>
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[10px] font-semibold">
-                          Outpatient Diagnostic
-                        </span>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -841,3 +824,4 @@ export default function BookAppointmentPage() {
     </ProtectedRoute>
   );
 }
+
