@@ -65,7 +65,10 @@ export function getDbPool(): Pool | null {
   return pool;
 }
 
+let isInitialized = false;
+
 export async function initDb(): Promise<void> {
+  if (isInitialized) return;
   const db = getDbPool();
   if (!db) return;
 
@@ -73,7 +76,7 @@ export async function initDb(): Promise<void> {
     await db.query(`
       CREATE TABLE IF NOT EXISTS pc_doctors (
         id VARCHAR(255) PRIMARY KEY,
-        email VARCHAR(255) UNIQUE,
+        email VARCHAR(255),
         name VARCHAR(255) NOT NULL,
         specialisation VARCHAR(255),
         qualification VARCHAR(255),
@@ -127,6 +130,7 @@ export async function initDb(): Promise<void> {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    isInitialized = true;
   } catch (err) {
     console.error("Neon DB Init Error:", err);
   }

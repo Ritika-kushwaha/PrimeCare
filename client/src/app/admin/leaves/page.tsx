@@ -279,7 +279,8 @@ export default function AdminDashboardPage() {
       localStorage.removeItem(`role_pwd_ADMIN_${docEmailClean}`);
 
       const updatedLeaves = leaves.filter(l => l.doctorId !== docId && l.doctorName.toLowerCase() !== doctor.name.toLowerCase());
-      localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
+          localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
+    fetch('/api/sync/leaves', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leaves: updatedLeaves }) });
       setLeaves(updatedLeaves);
 
       setDoctorToDelete(null);
@@ -348,7 +349,8 @@ export default function AdminDashboardPage() {
     };
 
     const updatedLeaves = [newLeave, ...leaves];
-    localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
+        localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
+    fetch('/api/sync/leaves', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leaves: updatedLeaves }) });
     setLeaves(updatedLeaves);
 
     const affected = appointments.filter(a => {
@@ -1196,3 +1198,4 @@ export default function AdminDashboardPage() {
     </ProtectedRoute>
   );
 }
+

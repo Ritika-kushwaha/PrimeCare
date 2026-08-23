@@ -184,19 +184,26 @@ export default function DoctorDashboardPage() {
   const [completedRecord, setCompletedRecord] = useState<any | null>(null);
   const [printDocType, setPrintDocType] = useState<'PRESCRIPTION' | 'AI_SUMMARY' | null>(null);
 
-  const loadData = () => {
+    const loadData = async () => {
     try {
-      const storedRoster = localStorage.getItem('primecare_doctor_profiles');
-      let roster: DoctorProfile[] = storedRoster ? JSON.parse(storedRoster) : DEFAULT_DOCTORS;
+      const docRes = await fetch('/api/sync/doctors');
+      const docData = await docRes.json();
+      let roster = DEFAULT_DOCTORS;
+      if (docData.success && Array.isArray(docData.doctors) && docData.doctors.length > 0) {
+        roster = docData.doctors;
+        localStorage.setItem('primecare_doctor_profiles', JSON.stringify(roster));
+      } else {
+        const stored = localStorage.getItem('primecare_doctor_profiles');
+        if (stored) roster = JSON.parse(stored);
+      }
 
-      let myProfile = roster.find(d => (d.email || '').toLowerCase().trim() === doctorEmail);
-
+      let myProfile = roster.find((d: any) => (d.email || '').toLowerCase().trim() === doctorEmail);
       if (!myProfile) {
-        const generatedName = user ? `Dr. ${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Dr. Ritika Kushwaha';
+        const generatedName = user ? \Dr. \ \\.trim() : 'Dr. Ritika Kushwaha';
         myProfile = {
-          id: `doc-${Date.now()}`,
+          id: \doc-\\,
           email: doctorEmail,
-          name: generatedName.startsWith('Dr.') ? generatedName : `Dr. ${generatedName}`,
+          name: generatedName.startsWith('Dr.') ? generatedName : \Dr. \\,
           specialisation: user?.specialisation || 'Cardiology',
           qualification: 'MD, DM (Cardiology - AIIMS Delhi)',
           experience: '14 Years Practice',
@@ -206,7 +213,7 @@ export default function DoctorDashboardPage() {
           bio: 'Senior Clinical Specialist specializing in cardiovascular disease and outpatient care.'
         };
         roster = [myProfile, ...roster];
-        localStorage.setItem('primecare_doctor_profiles', JSON.stringify(roster));
+        await fetch('/api/sync/doctors', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ doctor: myProfile }) });
       }
 
       setDocName(myProfile.name);
@@ -219,17 +226,19 @@ export default function DoctorDashboardPage() {
     } catch {}
 
     try {
-      const stored = localStorage.getItem('primecare_appointments');
-      if (stored) {
-        setAllAppointments(JSON.parse(stored));
+      const apptRes = await fetch('/api/sync/appointments');
+      const apptData = await apptRes.json();
+      if (apptData.success && Array.isArray(apptData.appointments)) {
+        setAllAppointments(apptData.appointments);
+        localStorage.setItem('primecare_appointments', JSON.stringify(apptData.appointments));
       }
     } catch {}
 
     try {
-      const storedEHR = localStorage.getItem('primecare_ehr_registry');
-      if (storedEHR) {
-        const rawEHR: PatientEHR[] = JSON.parse(storedEHR);
-        const cleanEHR = deduplicateEHR(rawEHR);
+      const ehrRes = await fetch('/api/sync/ehr');
+      const ehrData = await ehrRes.json();
+      if (ehrData.success && Array.isArray(ehrData.ehrRegistry)) {
+        const cleanEHR = deduplicateEHR(ehrData.ehrRegistry);
         setEhrRegistry(cleanEHR);
         localStorage.setItem('primecare_ehr_registry', JSON.stringify(cleanEHR));
       }
@@ -274,7 +283,8 @@ export default function DoctorDashboardPage() {
       } else {
         newRoster = [updatedDoctorData, ...storedRoster];
       }
-      localStorage.setItem('primecare_doctor_profiles', JSON.stringify(newRoster));
+            localStorage.setItem('primecare_doctor_profiles', JSON.stringify(newRoster));
+      fetch('/api/sync/doctors', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ doctor: updatedDoctorData }) });
 
       const storedAppointments: AppointmentItem[] = JSON.parse(localStorage.getItem('primecare_appointments') || '[]');
       const oldNameClean = docName.toLowerCase().trim();
@@ -396,7 +406,8 @@ export default function DoctorDashboardPage() {
       return a;
     });
 
-    localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
+          localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
+      fetch('/api/sync/appointments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ appointments: updatedAppts }) });
     setAllAppointments(updatedAppts);
     setReschedulingApt(null);
     setProfileSuccessMsg(`Appointment for ${reschedulingApt.patientName} successfully rescheduled to ${rescheduleDate} at ${rescheduleSlot} and moved back to Active Queue.`);
@@ -495,7 +506,8 @@ export default function DoctorDashboardPage() {
       }
 
       const cleanedEHR = deduplicateEHR(updatedEHR);
-      localStorage.setItem('primecare_ehr_registry', JSON.stringify(cleanedEHR));
+            localStorage.setItem('primecare_ehr_registry', JSON.stringify(cleanedEHR));
+      fetch('/api/sync/ehr', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ehrRegistry: cleanedEHR }) });
       setEhrRegistry(cleanedEHR);
     } catch {}
 
@@ -507,7 +519,8 @@ export default function DoctorDashboardPage() {
         }
         return a;
       });
-      localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
+            localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
+      fetch('/api/sync/appointments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ appointments: updatedAppts }) });
       setAllAppointments(updatedAppts);
     } catch {}
 
@@ -1394,3 +1407,4 @@ export default function DoctorDashboardPage() {
     </ProtectedRoute>
   );
 }
+

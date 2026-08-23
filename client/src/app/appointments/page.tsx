@@ -9,7 +9,7 @@ import {
   Calendar, Clock, Stethoscope, User, 
   CheckCircle2, AlertCircle, ArrowRight, ShieldCheck, 
   Search, Building2, Award, CalendarX2, Ban, Users, 
-  Printer, CalendarPlus, Briefcase, Star, ChevronRight
+  Printer, CalendarPlus, Briefcase, Star, ChevronRight, RefreshCw
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -49,18 +49,18 @@ interface AppointmentItem {
   patientEmail: string;
   age: string;
   gender: string;
-  bookingDate: string;
+  bookingDate?: string;
   status: string;
 }
 
 const DEFAULT_DOCTORS: DoctorProfile[] = [
-  { id: 'doc-cardio-01', name: 'Dr. Ritika Kushwaha', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, angiographies, and lipidology.' },
-  { id: 'doc-cardio-02', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS)', experience: '12 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease.' },
-  { id: 'doc-cardio-03', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', rating: '4.8 ★', bio: 'Specialist in non-invasive coronary imaging, pediatric cardiology, and heart rhythm management.' },
-  { id: 'doc-neuro-01', name: 'Dr. Priya Nair', specialisation: 'Neurology', qualification: 'MD, DM (Neurology - NIMHANS)', experience: '12 Years Practice', hospital: 'PrimeCare Neuroscience Center', fee: '₹1,500', rating: '4.9 ★', bio: 'Consultant Neurologist focused on headache disorders, neuropathies, epilepsy, and acute stroke treatment.' },
-  { id: 'doc-ortho-01', name: 'Dr. Vikram Patel', specialisation: 'Orthopedics', qualification: 'MS (Orthopedics), MCh', experience: '15 Years Practice', hospital: 'PrimeCare Ortho Wing', fee: '₹1,000', rating: '4.7 ★', bio: 'Joint replacement, arthroscopic ligament surgery, and complex sports injury rehabilitation specialist.' },
-  { id: 'doc-pedia-01', name: 'Dr. Ananya Deshmukh', specialisation: 'Pediatrics', qualification: 'MD (Pediatrics), DCH', experience: '9 Years Practice', hospital: 'PrimeCare Children Pavilion', fee: '₹900', rating: '5.0 ★', bio: 'Pediatrician handling newborn intensive care, routine growth assessments, and childhood immunizations.' },
-  { id: 'doc-derma-01', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', rating: '4.8 ★', bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' },
+  { id: 'doc-cardio-01', email: 'ritikakushwaha62@gmail.com', name: 'Dr. Ritika Kushwaha', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, angiographies, and lipidology.' },
+  { id: 'doc-cardio-02', email: 'aarav.sharma@primecare.in', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS)', experience: '12 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease.' },
+  { id: 'doc-cardio-03', email: 'meera.kulkarni@primecare.in', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', rating: '4.8 ★', bio: 'Specialist in non-invasive coronary imaging, pediatric cardiology, and heart rhythm management.' },
+  { id: 'doc-neuro-01', email: 'priya.nair@primecare.in', name: 'Dr. Priya Nair', specialisation: 'Neurology', qualification: 'MD, DM (Neurology - NIMHANS)', experience: '12 Years Practice', hospital: 'PrimeCare Neuroscience Center', fee: '₹1,500', rating: '4.9 ★', bio: 'Consultant Neurologist focused on headache disorders, neuropathies, epilepsy, and acute stroke treatment.' },
+  { id: 'doc-ortho-01', email: 'vikram.patel@primecare.in', name: 'Dr. Vikram Patel', specialisation: 'Orthopedics', qualification: 'MS (Orthopedics), MCh', experience: '15 Years Practice', hospital: 'PrimeCare Ortho Wing', fee: '₹1,000', rating: '4.7 ★', bio: 'Joint replacement, arthroscopic ligament surgery, and complex sports injury rehabilitation specialist.' },
+  { id: 'doc-pedia-01', email: 'ananya.deshmukh@primecare.in', name: 'Dr. Ananya Deshmukh', specialisation: 'Pediatrics', qualification: 'MD (Pediatrics), DCH', experience: '9 Years Practice', hospital: 'PrimeCare Children Pavilion', fee: '₹900', rating: '5.0 ★', bio: 'Pediatrician handling newborn intensive care, routine growth assessments, and childhood immunizations.' },
+  { id: 'doc-derma-01', email: 'rohan.mehta@primecare.in', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', rating: '4.8 ★', bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' },
 ];
 
 const TIME_SLOTS = [
@@ -91,51 +91,75 @@ export default function BookAppointmentPage() {
   const [inspectDoctor, setInspectDoctor] = useState<DoctorProfile | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<AppointmentItem | null>(null);
   const [slotConflictError, setSlotConflictError] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
-  const loadData = () => {
+  // CLOUD DATABASE SYNC LOADER
+  const loadData = async () => {
+    setSyncing(true);
     try {
-      const storedRoster = localStorage.getItem('primecare_doctor_profiles');
-      if (storedRoster) {
-        const parsed = JSON.parse(storedRoster);
-        const map = new Map<string, DoctorProfile>();
-        DEFAULT_DOCTORS.forEach(d => map.set(d.id, d));
-        parsed.forEach((d: any) => map.set(d.id, d));
-        const allDocs = Array.from(map.values());
-        setDoctors(allDocs);
-        if (allDocs.length > 0) setSelectedDoctor(allDocs[0]);
+      // 1. Fetch Doctors from Neon Cloud Database
+      const docRes = await fetch('/api/sync/doctors');
+      const docData = await docRes.json();
+      if (docData.success && Array.isArray(docData.doctors) && docData.doctors.length > 0) {
+        setDoctors(docData.doctors);
+        localStorage.setItem('primecare_doctor_profiles', JSON.stringify(docData.doctors));
+        if (!selectedDoctor || !docData.doctors.some((d: DoctorProfile) => d.id === selectedDoctor.id)) {
+          setSelectedDoctor(docData.doctors[0]);
+        }
+      } else {
+        const local = localStorage.getItem('primecare_doctor_profiles');
+        if (local) setDoctors(JSON.parse(local));
       }
-    } catch {}
+    } catch {
+      const local = localStorage.getItem('primecare_doctor_profiles');
+      if (local) setDoctors(JSON.parse(local));
+    }
 
     try {
-      const storedLeaves = localStorage.getItem('primecare_leaves');
-      if (storedLeaves) setLeaves(JSON.parse(storedLeaves));
-    } catch {}
-
-    try {
-      const storedAppts = localStorage.getItem('primecare_appointments');
-      if (storedAppts) {
-        const parsed: AppointmentItem[] = JSON.parse(storedAppts);
-        setExistingAppointments(parsed.filter(a => a.status !== 'CANCELLED'));
+      // 2. Fetch Doctor Leaves from Neon Cloud Database
+      const leaveRes = await fetch('/api/sync/leaves');
+      const leaveData = await leaveRes.json();
+      if (leaveData.success && Array.isArray(leaveData.leaves)) {
+        setLeaves(leaveData.leaves);
+        localStorage.setItem('primecare_leaves', JSON.stringify(leaveData.leaves));
+      } else {
+        const local = localStorage.getItem('primecare_leaves');
+        if (local) setLeaves(JSON.parse(local));
       }
-    } catch {}
+    } catch {
+      const local = localStorage.getItem('primecare_leaves');
+      if (local) setLeaves(JSON.parse(local));
+    }
 
-    if (user?.email) {
-      setSharedEmail(user.email);
+    try {
+      // 3. Fetch Appointments from Neon Cloud Database
+      const apptRes = await fetch('/api/sync/appointments');
+      const apptData = await apptRes.json();
+      if (apptData.success && Array.isArray(apptData.appointments)) {
+        setExistingAppointments(apptData.appointments.filter((a: AppointmentItem) => a.status !== 'CANCELLED'));
+        localStorage.setItem('primecare_appointments', JSON.stringify(apptData.appointments));
+      } else {
+        const local = localStorage.getItem('primecare_appointments');
+        if (local) setExistingAppointments(JSON.parse(local).filter((a: any) => a.status !== 'CANCELLED'));
+      }
+    } catch {
+      const local = localStorage.getItem('primecare_appointments');
+      if (local) setExistingAppointments(JSON.parse(local).filter((a: any) => a.status !== 'CANCELLED'));
     }
-    if (user?.firstName) {
-      setPatientFirstName(user.firstName);
-    }
-    if (user?.lastName) {
-      setPatientLastName(user.lastName);
-    }
+
+    if (user?.email) setSharedEmail(user.email);
+    if (user?.firstName) setPatientFirstName(user.firstName);
+    if (user?.lastName) setPatientLastName(user.lastName);
+    setSyncing(false);
   };
 
   useEffect(() => {
     loadData();
-    window.addEventListener('storage', loadData);
-    return () => window.removeEventListener('storage', loadData);
+    const interval = setInterval(loadData, 8000); // Auto poll every 8 seconds across devices
+    return () => clearInterval(interval);
   }, [user]);
 
+  // Strict check if Selected Doctor is on Approved Leave on selected date
   const isDoctorOnLeave = useMemo(() => {
     const selName = selectedDoctor.name.toLowerCase().replace('dr. ', '').trim();
     const selId = selectedDoctor.id;
@@ -164,7 +188,11 @@ export default function BookAppointmentPage() {
     }
 
     const existingDoctorBooking = existingAppointments.find(
-      a => a.doctorId === selectedDoctor.id && a.date === selectedDate && a.timeSlot === slot && a.status !== 'CANCELLED'
+      a => (a.doctorId === selectedDoctor.id || a.doctorName.toLowerCase().includes(selectedDoctor.name.toLowerCase().replace('dr. ', '').trim())) && 
+           a.date === selectedDate && 
+           a.timeSlot === slot && 
+           a.status !== 'CANCELLED' && 
+           a.status !== 'LEAVE_CANCELLED'
     );
 
     if (existingDoctorBooking) {
@@ -181,7 +209,8 @@ export default function BookAppointmentPage() {
            a.date === selectedDate &&
            a.timeSlot === slot &&
            a.doctorId !== selectedDoctor.id &&
-           a.status !== 'CANCELLED'
+           a.status !== 'CANCELLED' &&
+           a.status !== 'LEAVE_CANCELLED'
     );
 
     if (memberBusyOtherDoctor) {
@@ -239,6 +268,7 @@ export default function BookAppointmentPage() {
     }
   };
 
+  // BOOKING HANDLER WITH NEON CLOUD DATABASE SYNC
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     setSlotConflictError(null);
@@ -283,6 +313,18 @@ export default function BookAppointmentPage() {
       status: 'CONFIRMED',
     };
 
+    // 1. Save directly to Neon Cloud Database
+    try {
+      await fetch('/api/sync/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointment }),
+      });
+    } catch (err) {
+      console.error("Cloud booking error:", err);
+    }
+
+    // 2. Update local state
     const updated = [appointment, ...existingAppointments];
     setExistingAppointments(updated);
     localStorage.setItem('primecare_appointments', JSON.stringify(updated));
@@ -355,10 +397,18 @@ export default function BookAppointmentPage() {
               <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
                 Doctor Discovery & Outpatient Booking
               </h1>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">
                 Real-time physician duty status and calendar synchronized slot booking.
               </p>
             </div>
+
+            <button
+              type="button"
+              onClick={loadData}
+              className="text-xs text-emerald-400 hover:underline flex items-center gap-1.5 self-start sm:self-auto bg-slate-900 px-3 py-2 rounded-xl border border-slate-800"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} /> Sync Database
+            </button>
           </div>
 
           <AnimatePresence>
@@ -373,7 +423,7 @@ export default function BookAppointmentPage() {
                     <CheckCircle2 className="w-6 h-6 text-emerald-400" /> Confirmed • Token {bookingSuccess.tokenNumber}
                   </div>
                   <p className="text-xs text-emerald-300">
-                    Slot confirmed for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}.
+                    Slot confirmed for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}. Saved to cloud database.
                   </p>
                 </div>
 
