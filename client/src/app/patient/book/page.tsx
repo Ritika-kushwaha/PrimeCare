@@ -8,7 +8,8 @@ import {
   Calendar, Clock, Stethoscope, User, 
   CheckCircle2, AlertCircle, ArrowRight, ShieldCheck, 
   Search, Building2, Award, CalendarX2, Ban, Users, 
-  Printer, CalendarPlus, Briefcase, Star, ChevronRight
+  Printer, CalendarPlus, Briefcase, Star, ChevronRight,
+  FileText, Check
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -61,7 +62,7 @@ const DEFAULT_DOCTORS: DoctorProfile[] = [
     hospital: 'PrimeCare Apex Heart Institute', 
     fee: '₹1,200', 
     rating: '4.9 ★',
-    bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, angiographies, and lipidology.' 
+    bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, diagnostic angiographies, coronary interventions, and comprehensive lipid management.' 
   },
   { 
     id: 'doc-cardio-02', 
@@ -71,8 +72,8 @@ const DEFAULT_DOCTORS: DoctorProfile[] = [
     experience: '10 Years Practice', 
     hospital: 'PrimeCare Metro Hospital', 
     fee: '₹1,400', 
-    rating: '4.8 ★',
-    bio: 'Specialist in non-invasive coronary imaging, pediatric cardiology, and heart rhythm management.' 
+    rating: '4.9 ★',
+    bio: 'Consultant Clinical Cardiologist specializing in advanced echocardiography, non-invasive coronary imaging, hypertensive disorders, and post-infarction rehabilitation.' 
   },
   { 
     id: 'doc-neuro-01', 
@@ -83,7 +84,7 @@ const DEFAULT_DOCTORS: DoctorProfile[] = [
     hospital: 'PrimeCare Neuroscience Center', 
     fee: '₹1,500', 
     rating: '4.9 ★',
-    bio: 'Consultant Neurologist focused on headache disorders, neuropathies, epilepsy, and acute stroke treatment.' 
+    bio: 'Senior Consultant Neurologist with expertise in acute stroke management, intractable migraine syndromes, peripheral neuropathies, and epilepsy care.' 
   },
   { 
     id: 'doc-ortho-01', 
@@ -94,7 +95,7 @@ const DEFAULT_DOCTORS: DoctorProfile[] = [
     hospital: 'PrimeCare Ortho Wing', 
     fee: '₹1,000', 
     rating: '4.7 ★',
-    bio: 'Joint replacement, arthroscopic ligament surgery, and complex sports injury rehabilitation specialist.' 
+    bio: 'Lead Orthopedic and Joint Replacement Surgeon with extensive experience in total knee/hip arthroplasty, complex trauma, and sports ligament reconstruction.' 
   },
   { 
     id: 'doc-pedia-01', 
@@ -105,7 +106,7 @@ const DEFAULT_DOCTORS: DoctorProfile[] = [
     hospital: 'PrimeCare Children Pavilion', 
     fee: '₹900', 
     rating: '5.0 ★',
-    bio: 'Pediatrician handling newborn intensive care, routine growth assessments, and childhood immunizations.' 
+    bio: 'Consultant Pediatrician and Neonatologist providing developmental milestone evaluations, infant immunization regimens, and pediatric infection management.' 
   },
   { 
     id: 'doc-derma-01', 
@@ -116,7 +117,7 @@ const DEFAULT_DOCTORS: DoctorProfile[] = [
     hospital: 'PrimeCare Skin Clinic', 
     fee: '₹1,100', 
     rating: '4.8 ★',
-    bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' 
+    bio: 'Specialist in clinical dermatology, medical trichology, chronic eczema management, and advanced aesthetic laser procedures.' 
   },
 ];
 
@@ -131,12 +132,10 @@ export default function BookAppointmentPage() {
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [existingAppointments, setExistingAppointments] = useState<AppointmentItem[]>([]);
   
-  // Selection States
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorProfile>(DEFAULT_DOCTORS[0]);
   const [selectedDate, setSelectedDate] = useState('2026-08-28');
   const [selectedSlot, setSelectedSlot] = useState('10:00 AM');
   
-  // Member & Account Info
   const [sharedEmail, setSharedEmail] = useState('ritikakushwaha62@gmail.com');
   const [patientFirstName, setPatientFirstName] = useState('Ritika');
   const [patientLastName, setPatientLastName] = useState('Kushwaha');
@@ -144,7 +143,6 @@ export default function BookAppointmentPage() {
   const [patientGender, setPatientGender] = useState('Female');
   const [symptoms, setSymptoms] = useState('Routine cardiovascular checkup');
   
-  // Filters & State Handlers
   const [searchDoc, setSearchDoc] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('ALL');
   const [inspectDoctor, setInspectDoctor] = useState<DoctorProfile | null>(null);
@@ -158,7 +156,15 @@ export default function BookAppointmentPage() {
         const parsed = JSON.parse(storedRoster);
         const map = new Map<string, DoctorProfile>();
         DEFAULT_DOCTORS.forEach(d => map.set(d.id, d));
-        parsed.forEach((d: any) => map.set(d.id, d));
+        
+        parsed.forEach((d: any) => {
+          const defaultDoc = DEFAULT_DOCTORS.find(def => def.id === d.id);
+          map.set(d.id, {
+            ...d,
+            bio: d.bio && d.bio.trim().length > 0 ? d.bio : defaultDoc?.bio || `Consultant Specialist in ${d.specialisation} with extensive clinical expertise in inpatient and outpatient consultations.`
+          });
+        });
+        
         const allDocs = Array.from(map.values());
         setDoctors(allDocs);
         if (allDocs.length > 0) setSelectedDoctor(allDocs[0]);
@@ -184,11 +190,9 @@ export default function BookAppointmentPage() {
     return `${(patientFirstName || '').trim()} ${(patientLastName || '').trim()}`.trim();
   }, [patientFirstName, patientLastName]);
 
-  // STRICT 1:1 SLOT CHECK
   const getSlotAvailability = (slot: string) => {
     const cleanMember = currentMemberName.toLowerCase();
 
-    // 1. Is this doctor's slot already booked by ANYONE (even 1 person)?
     const existingDoctorBooking = existingAppointments.find(
       a => a.doctorId === selectedDoctor.id && a.date === selectedDate && a.timeSlot === slot
     );
@@ -202,7 +206,6 @@ export default function BookAppointmentPage() {
       };
     }
 
-    // 2. Is THIS member busy with another doctor at this same time?
     const memberBusyOtherDoctor = existingAppointments.find(
       a => (a.patientName || '').toLowerCase() === cleanMember &&
            a.date === selectedDate &&
@@ -218,7 +221,6 @@ export default function BookAppointmentPage() {
       };
     }
 
-    // Slot is completely free for 1 person
     return {
       available: true,
       reason: 'Available (1 Person Only)',
@@ -241,7 +243,6 @@ export default function BookAppointmentPage() {
     return ['ALL', ...Array.from(set)];
   }, [doctors]);
 
-  // Generate Google Calendar Link
   const buildGoogleCalendarUrl = (item: AppointmentItem) => {
     try {
       const [year, month, day] = (item.date || '2026-08-28').split('-').map(Number);
@@ -316,34 +317,8 @@ export default function BookAppointmentPage() {
     setExistingAppointments(updated);
     localStorage.setItem('primecare_appointments', JSON.stringify(updated));
 
-    // 1. Instant Google Calendar Redirect
     const gcalUrl = buildGoogleCalendarUrl(appointment);
     window.open(gcalUrl, '_blank');
-
-    // 2. Direct .ics File Download
-    try {
-      const [year, month, day] = (appointment.date || '2026-08-28').split('-');
-      const [timeStr, meridian] = (appointment.timeSlot || '10:00 AM').split(' ');
-      let [hours, minutes] = timeStr.split(':').map(Number);
-      if (meridian === 'PM' && hours < 12) hours += 12;
-      if (meridian === 'AM' && hours === 12) hours = 0;
-      const pad = (n: number) => n.toString().padStart(2, '0');
-      const startStr = `${year}${month}${day}T${pad(hours)}${pad(minutes)}00`;
-      let endHours = hours;
-      let endMinutes = minutes + 45;
-      if (endMinutes >= 60) { endHours += 1; endMinutes -= 60; }
-      const endStr = `${year}${month}${day}T${pad(endHours)}${pad(endMinutes)}00`;
-
-      const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//PrimeCare//EN\nMETHOD:REQUEST\nBEGIN:VEVENT\nUID:apt-${appointment.id}@primecare.health\nDTSTAMP:${year}${month}${day}T000000Z\nDTSTART:${startStr}\nDTEND:${endStr}\nSUMMARY:🩺 ${appointment.doctorName} (${appointment.department})\nDESCRIPTION:Patient: ${appointment.patientName}\\nToken: ${appointment.tokenNumber}\\nHospital: ${appointment.hospital}\nLOCATION:${appointment.hospital}\nSTATUS:CONFIRMED\nEND:VEVENT\nEND:VCALENDAR`;
-
-      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-      const link = document.createElement('a');
-      link.href = window.URL.createObjectURL(blob);
-      link.setAttribute('download', `PrimeCare-${appointment.patientName.replace(/\s+/g, '_')}-${appointment.date}.ics`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch {}
 
     setBookingSuccess(appointment);
   };
@@ -513,6 +488,7 @@ export default function BookAppointmentPage() {
                 {filteredDoctors.map((doc) => {
                   const isSelected = selectedDoctor.id === doc.id;
                   const hasLeave = leaves.some(l => l.doctorId === doc.id && l.leaveDate === selectedDate);
+                  const fallbackBio = doc.bio || `Senior Clinical Specialist in ${doc.specialisation} at ${doc.hospital}.`;
 
                   return (
                     <div
@@ -549,7 +525,9 @@ export default function BookAppointmentPage() {
                         </span>
                       </div>
 
-                      <p className="text-[11px] text-slate-400 line-clamp-2">{doc.bio}</p>
+                      <p className="text-[11px] text-slate-300 leading-relaxed line-clamp-2">
+                        {fallbackBio}
+                      </p>
 
                       <div className="flex items-center justify-between pt-1 border-t border-slate-800/80 text-[10px] text-slate-400">
                         <span className="truncate max-w-[200px]">{doc.hospital}</span>
@@ -557,9 +535,12 @@ export default function BookAppointmentPage() {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setInspectDoctor(doc);
+                            setInspectDoctor({
+                              ...doc,
+                              bio: fallbackBio
+                            });
                           }}
-                          className="text-emerald-400 hover:underline flex items-center gap-0.5"
+                          className="text-emerald-400 font-bold hover:underline flex items-center gap-0.5"
                         >
                           Full Profile <ChevronRight className="w-3 h-3" />
                         </button>
@@ -773,6 +754,7 @@ export default function BookAppointmentPage() {
           </div>
         </main>
 
+        {/* DETAILED MODAL WITH COMPREHENSIVE FALLBACK BIO */}
         <AnimatePresence>
           {inspectDoctor && (
             <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -780,51 +762,63 @@ export default function BookAppointmentPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl"
+                className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 max-w-lg w-full space-y-5 shadow-2xl"
               >
                 <div className="flex items-start justify-between border-b border-slate-800 pb-3">
                   <div>
-                    <h3 className="text-lg font-bold text-white">{inspectDoctor.name}</h3>
-                    <p className="text-xs text-emerald-400 font-semibold">{inspectDoctor.specialisation}</p>
+                    <h3 className="text-xl font-extrabold text-white">{inspectDoctor.name}</h3>
+                    <p className="text-xs text-emerald-400 font-bold mt-0.5">{inspectDoctor.specialisation}</p>
                   </div>
                   <button
                     onClick={() => setInspectDoctor(null)}
-                    className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg bg-slate-800"
+                    className="text-slate-400 hover:text-white text-xs px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 transition"
                   >
                     ✕ Close
                   </button>
                 </div>
 
-                <div className="space-y-3 text-xs text-slate-300">
-                  <div className="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                <div className="space-y-3.5 text-xs text-slate-300">
+                  <div className="grid grid-cols-2 gap-2.5 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
                     <div>
-                      <span className="text-[10px] text-slate-500 block uppercase">Qualification</span>
-                      <strong>{inspectDoctor.qualification}</strong>
+                      <span className="text-[10px] text-slate-400 block uppercase font-bold">Qualification</span>
+                      <strong className="text-white text-xs">{inspectDoctor.qualification}</strong>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-500 block uppercase">Experience</span>
-                      <strong>{inspectDoctor.experience}</strong>
+                      <span className="text-[10px] text-slate-400 block uppercase font-bold">Experience</span>
+                      <strong className="text-white text-xs">{inspectDoctor.experience}</strong>
                     </div>
-                    <div className="mt-2">
-                      <span className="text-[10px] text-slate-500 block uppercase">Consultation Fee</span>
-                      <strong className="text-emerald-400">{inspectDoctor.fee}</strong>
+                    <div className="mt-1">
+                      <span className="text-[10px] text-slate-400 block uppercase font-bold">Consultation Fee</span>
+                      <strong className="text-emerald-400 text-sm font-mono">{inspectDoctor.fee}</strong>
                     </div>
-                    <div className="mt-2">
-                      <span className="text-[10px] text-slate-500 block uppercase">Rating</span>
-                      <strong className="text-yellow-400">{inspectDoctor.rating || '4.9 ★'}</strong>
+                    <div className="mt-1">
+                      <span className="text-[10px] text-slate-400 block uppercase font-bold">Rating</span>
+                      <strong className="text-yellow-400 text-xs">{inspectDoctor.rating || '4.9 ★'}</strong>
                     </div>
                   </div>
 
                   <div>
-                    <span className="text-[10px] text-slate-500 block uppercase mb-1">Affiliated Hospital</span>
-                    <p className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 font-medium">{inspectDoctor.hospital}</p>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-slate-500 block uppercase mb-1">Physician Bio & Specialties</span>
-                    <p className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 leading-relaxed text-slate-300">
-                      {inspectDoctor.bio}
+                    <span className="text-[10px] text-slate-400 block uppercase font-bold mb-1">Affiliated Hospital</span>
+                    <p className="bg-slate-950 p-3 rounded-xl border border-slate-800 font-semibold text-slate-200">
+                      {inspectDoctor.hospital}
                     </p>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] text-slate-400 block uppercase font-bold mb-1">Physician Bio & Specialties</span>
+                    <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 leading-relaxed text-slate-200 text-[11px] space-y-2">
+                      <p>
+                        {inspectDoctor.bio || `Senior Clinical Specialist in ${inspectDoctor.specialisation} with extensive clinical expertise across non-invasive therapeutics, diagnosis, and patient care.`}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        <span className="px-2 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[10px] font-semibold">
+                          Specialist Consultation
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[10px] font-semibold">
+                          Outpatient Diagnostic
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -834,7 +828,7 @@ export default function BookAppointmentPage() {
                     setSelectedDoctor(inspectDoctor);
                     setInspectDoctor(null);
                   }}
-                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition"
+                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold rounded-2xl text-xs transition shadow-lg shadow-emerald-500/20"
                 >
                   Select {inspectDoctor.name} for Booking
                 </button>
