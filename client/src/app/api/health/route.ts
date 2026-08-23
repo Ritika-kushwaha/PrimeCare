@@ -1,0 +1,11 @@
+﻿import { NextResponse } from "next/navigation";
+
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  return NextResponse.json({ 
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    hasDbEnv: Boolean(process.env.DATABASE_URL)
+  });
+}
