@@ -1,5 +1,5 @@
 ﻿import { NextResponse } from "next/navigation";
-import { getDbPool, initDb } from "@/lib/db";
+import { getDb, initDb } from "@/lib/db";
 
 const DEFAULT_DOCTORS = [
   { id: 'doc-cardio-01', email: 'ritikakushwaha62@gmail.com', name: 'Dr. Ritika Kushwaha', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, diagnostic angiographies, coronary interventions, and comprehensive lipid management.' },
@@ -13,24 +13,23 @@ const DEFAULT_DOCTORS = [
 
 export async function GET() {
   await initDb();
-  const pool = getDbPool();
-  if (pool) {
+  const sql = getDb();
+  if (sql) {
     try {
-      const result = await pool.query(`SELECT id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio FROM pc_doctors`);
-      if (result.rows.length === 0) {
+      const rows = await sql`SELECT id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio FROM pc_doctors`;
+      if (rows.length === 0) {
         for (const doc of DEFAULT_DOCTORS) {
-          await pool.query(
-            `INSERT INTO pc_doctors (id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-             ON CONFLICT (id) DO NOTHING`,
-            [doc.id, doc.email, doc.name, doc.specialisation, doc.qualification, doc.experience, doc.hospital, doc.fee, doc.rating, doc.bio]
-          );
+          await sql`
+            INSERT INTO pc_doctors (id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio)
+            VALUES (${doc.id}, ${doc.email}, ${doc.name}, ${doc.specialisation}, ${doc.qualification}, ${doc.experience}, ${doc.hospital}, ${doc.fee}, ${doc.rating}, ${doc.bio})
+            ON CONFLICT (id) DO NOTHING
+          `;
         }
         return NextResponse.json({ success: true, doctors: DEFAULT_DOCTORS });
       }
-      return NextResponse.json({ success: true, doctors: result.rows });
+      return NextResponse.json({ success: true, doctors: rows });
     } catch (err: any) {
-      console.error("Neon GET doctors error:", err);
+      console.error("GET doctors error:", err);
     }
   }
   return NextResponse.json({ success: true, doctors: DEFAULT_DOCTORS });
@@ -38,27 +37,26 @@ export async function GET() {
 
 export async function POST(req: Request) {
   await initDb();
-  const pool = getDbPool();
+  const sql = getDb();
   try {
     const data = await req.json();
     const docs = data.doctors || (data.doctor ? [data.doctor] : []);
 
-    if (pool && docs.length > 0) {
+    if (sql && docs.length > 0) {
       for (const d of docs) {
-        await pool.query(
-          `INSERT INTO pc_doctors (id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-           ON CONFLICT (id) DO UPDATE SET
-             name = EXCLUDED.name,
-             specialisation = EXCLUDED.specialisation,
-             qualification = EXCLUDED.qualification,
-             experience = EXCLUDED.experience,
-             hospital = EXCLUDED.hospital,
-             fee = EXCLUDED.fee,
-             rating = EXCLUDED.rating,
-             bio = EXCLUDED.bio`,
-          [d.id, d.email, d.name, d.specialisation, d.qualification, d.experience, d.hospital, d.fee, d.rating, d.bio]
-        );
+        await sql`
+          INSERT INTO pc_doctors (id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio)
+          VALUES (${d.id}, ${d.email}, ${d.name}, ${d.specialisation}, ${d.qualification}, ${d.experience}, ${d.hospital}, ${d.fee}, ${d.rating}, ${d.bio})
+          ON CONFLICT (id) DO UPDATE SET
+            name = EXCLUDED.name,
+            specialisation = EXCLUDED.specialisation,
+            qualification = EXCLUDED.qualification,
+            experience = EXCLUDED.experience,
+            hospital = EXCLUDED.hospital,
+            fee = EXCLUDED.fee,
+            rating = EXCLUDED.rating,
+            bio = EXCLUDED.bio
+        `;
       }
     }
     return NextResponse.json({ success: true });
