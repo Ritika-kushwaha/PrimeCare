@@ -1,480 +1,596 @@
-﻿"use client";
+﻿'use client';
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import Navbar from "@/components/Navbar";
+import { useState, useEffect, useMemo } from 'react';
+import Navbar from '@/components/Navbar';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Stethoscope, Calendar, Clock, User, Mail, 
-  Phone, Users, CheckCircle2, AlertCircle, Award, 
-  Briefcase, Star, Sparkles 
-} from "lucide-react";
+  Calendar, Clock, Stethoscope, User, 
+  CheckCircle2, AlertCircle, ArrowRight, ShieldCheck, 
+  Search, Building2, Award, CalendarX2, Ban, Users, Printer, CalendarPlus
+} from 'lucide-react';
 
-interface Doctor {
+interface DoctorProfile {
   id: string;
   name: string;
   specialisation: string;
   qualification: string;
   experience: string;
-  fees: string;
-  rating: string;
-  availableDays: string;
-  bio: string;
+  hospital: string;
+  fee: string;
+  bio?: string;
 }
 
-const DEFAULT_DOCTORS: Doctor[] = [
-  {
-    id: "doc-1",
-    name: "Dr. Aarav Sharma",
-    specialisation: "Cardiology",
-    qualification: "MBBS, MD, DM (Cardiology)",
-    experience: "12+ Years",
-    fees: "₹800",
-    rating: "4.9 ★",
-    availableDays: "Mon - Sat",
-    bio: "Senior Interventional Cardiologist specializing in preventive heart health, ECG, and echocardiography."
-  },
-  {
-    id: "doc-2",
-    name: "Dr. Priya Patel",
-    specialisation: "Neurology",
-    qualification: "MBBS, MD (Medicine), DM (Neurology)",
-    experience: "9+ Years",
-    fees: "₹950",
-    rating: "4.8 ★",
-    availableDays: "Mon - Fri",
-    bio: "Consultant Neurologist focused on headache syndromes, neuropathies, and stroke rehabilitation."
-  },
-  {
-    id: "doc-3",
-    name: "Dr. Rajesh Verma",
-    specialisation: "Orthopedics",
-    qualification: "MBBS, MS (Ortho), DNB (Ortho)",
-    experience: "15+ Years",
-    fees: "₹750",
-    rating: "4.9 ★",
-    availableDays: "Tue - Sun",
-    bio: "Joint replacement and sports injury specialist with extensive arthroscopic surgical experience."
-  },
-  {
-    id: "doc-4",
-    name: "Dr. Ananya Iyer",
-    specialisation: "Pediatrics",
-    qualification: "MBBS, MD (Pediatrics), DCH",
-    experience: "8+ Years",
-    fees: "₹600",
-    rating: "5.0 ★",
-    availableDays: "Mon - Sat",
-    bio: "Dedicated child care specialist offering immunizations, developmental assessments, and pediatric triage."
-  }
+interface LeaveRecord {
+  id: string;
+  doctorId?: string;
+  doctorName?: string;
+  specialisation?: string;
+  leaveDate?: string;
+  reason?: string;
+}
+
+interface AppointmentItem {
+  id: string;
+  tokenNumber: string;
+  doctorId?: string;
+  doctorName?: string;
+  department?: string;
+  fee?: string;
+  hospital?: string;
+  date?: string;
+  timeSlot?: string;
+  symptoms?: string;
+  patientName?: string;
+  patientEmail?: string;
+  age?: string;
+  gender?: string;
+  bookingDate?: string;
+  status?: string;
+}
+
+const DEFAULT_DOCTORS: DoctorProfile[] = [
+  { id: 'doc-cardio-01', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', bio: 'Senior Interventional Cardiologist specializing in preventive heart health and echo.' },
+  { id: 'doc-cardio-02', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', bio: 'Specialist in non-invasive imaging and complex coronary care.' },
+  { id: 'doc-neuro-01', name: 'Dr. Priya Nair', specialisation: 'Neurology', qualification: 'MD, DM (Neurology - NIMHANS)', experience: '12 Years Practice', hospital: 'PrimeCare Neuroscience Center', fee: '₹1,500', bio: 'Neurologist with stroke and epilepsy expertise.' },
+  { id: 'doc-ortho-01', name: 'Dr. Vikram Patel', specialisation: 'Orthopedics', qualification: 'MS (Orthopedics), MCh', experience: '15 Years Practice', hospital: 'PrimeCare Ortho Wing', fee: '₹1,000', bio: 'Joint replacement and arthroscopy surgeon.' },
+  { id: 'doc-pedia-01', name: 'Dr. Ananya Deshmukh', specialisation: 'Pediatrics', qualification: 'MD (Pediatrics), DCH', experience: '9 Years Practice', hospital: 'PrimeCare Children Pavilion', fee: '₹900', bio: 'Pediatric care and immunization specialist.' },
+  { id: 'doc-derma-01', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', bio: 'Clinical dermatology & aesthetics.' },
 ];
 
-export default function AppointmentsPage() {
-  const [doctors, setDoctors] = useState<Doctor[]>(DEFAULT_DOCTORS);
-  const [selectedDoctorId, setSelectedDoctorId] = useState<string>(DEFAULT_DOCTORS[0].id);
+const TIME_SLOTS = [
+  '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', 
+  '11:00 AM', '11:30 AM', '02:00 PM', '02:30 PM', 
+  '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM'
+];
+
+export default function BookAppointmentPage() {
+  const [doctors, setDoctors] = useState<DoctorProfile[]>(DEFAULT_DOCTORS);
+  const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
+  const [existingAppointments, setExistingAppointments] = useState<AppointmentItem[]>([]);
   
-  // Booking Form State
-  const [accountEmail, setAccountEmail] = useState("");
-  const [bookingFor, setBookingFor] = useState<"SELF" | "FAMILY">("SELF");
-  const [patientName, setPatientName] = useState("");
-  const [familyRelation, setFamilyRelation] = useState("Spouse");
-  const [patientAge, setPatientAge] = useState("");
-  const [patientPhone, setPatientPhone] = useState("");
-  const [appointmentDate, setAppointmentDate] = useState("");
-  const [appointmentTime, setAppointmentTime] = useState("10:00 AM");
-  const [symptoms, setSymptoms] = useState("");
+  const [selectedDoctor, setSelectedDoctor] = useState<DoctorProfile>(DEFAULT_DOCTORS[0]);
+  const [selectedDate, setSelectedDate] = useState('2026-08-28');
+  const [selectedSlot, setSelectedSlot] = useState('10:00 AM');
+  
+  const [patientFirstName, setPatientFirstName] = useState('Ritika');
+  const [patientLastName, setPatientLastName] = useState('Kushwaha');
+  const [patientAge, setPatientAge] = useState('21');
+  const [patientGender, setPatientGender] = useState('Female');
+  const [sharedEmail, setSharedEmail] = useState('ritikakushwaha62@gmail.com');
+  const [symptoms, setSymptoms] = useState('Routine cardiovascular checkup');
+  
+  const [searchDoc, setSearchDoc] = useState('');
+  const [bookingSuccess, setBookingSuccess] = useState<AppointmentItem | null>(null);
+  const [slotConflictError, setSlotConflictError] = useState<string | null>(null);
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [successBooking, setSuccessBooking] = useState<any>(null);
-
-  // Load dynamically registered doctors from local cache if present
   useEffect(() => {
     try {
-      const storedRegisteredUsers = JSON.parse(localStorage.getItem("primecare_registered_users") || "[]");
-      const loggedIn = storedRegisteredUsers.find((u: any) => u.role === "PATIENT");
-      if (loggedIn) {
-        setAccountEmail(loggedIn.email || "");
-        setPatientName(`${loggedIn.firstName || ""} ${loggedIn.lastName || ""}`.trim());
+      const storedRoster = localStorage.getItem('primecare_doctor_profiles');
+      if (storedRoster) {
+        const parsed = JSON.parse(storedRoster);
+        const map = new Map<string, DoctorProfile>();
+        DEFAULT_DOCTORS.forEach(d => map.set(d.id, d));
+        parsed.forEach((d: any) => map.set(d.id, d));
+        const allDocs = Array.from(map.values());
+        setDoctors(allDocs);
+        if (allDocs.length > 0) setSelectedDoctor(allDocs[0]);
       }
+    } catch {}
 
-      const storedDocs = JSON.parse(localStorage.getItem("primecare_doctor_profiles") || "[]");
-      if (storedDocs.length > 0) {
-        setDoctors([...DEFAULT_DOCTORS, ...storedDocs]);
-      }
+    try {
+      const storedLeaves = localStorage.getItem('primecare_leaves');
+      if (storedLeaves) setLeaves(JSON.parse(storedLeaves));
+    } catch {}
+
+    try {
+      const storedAppts = localStorage.getItem('primecare_appointments');
+      if (storedAppts) setExistingAppointments(JSON.parse(storedAppts));
     } catch {}
   }, []);
 
-  const selectedDoctor = doctors.find((d) => d.id === selectedDoctorId) || doctors[0];
+  const isDoctorOnLeave = useMemo(() => {
+    return leaves.find(l => l.doctorId === selectedDoctor.id && l.leaveDate === selectedDate);
+  }, [leaves, selectedDoctor, selectedDate]);
 
-  const handleBooking = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  // Count slot usage for the shared email (allowing up to 2 family members in same slot)
+  const bookedSlotsForEmail = useMemo(() => {
+    const cleanEmail = (sharedEmail || '').trim().toLowerCase();
+    const map = new Map<string, AppointmentItem[]>();
+    
+    if (!cleanEmail) return map;
 
-    const cleanEmail = accountEmail.trim().toLowerCase();
-    const cleanPatient = patientName.trim();
+    existingAppointments.forEach((a) => {
+      if (!a) return;
+      const aEmail = (a.patientEmail || '').toLowerCase().trim();
+      const aDate = (a.date || '').trim();
+      const aSlot = (a.timeSlot || '').trim();
 
-    if (!cleanPatient) {
-      setError("Please enter the patient's full name.");
-      setLoading(false);
-      return;
-    }
+      if (aEmail === cleanEmail && aDate === selectedDate && aSlot) {
+        const currentList = map.get(aSlot) || [];
+        map.set(aSlot, [...currentList, a]);
+      }
+    });
+    return map;
+  }, [existingAppointments, sharedEmail, selectedDate]);
 
+  const filteredDoctors = useMemo(() => {
+    const query = (searchDoc || '').toLowerCase().trim();
+    return doctors.filter((d) => {
+      if (!d) return false;
+      const full = `${d.name || ''} ${d.specialisation || ''} ${d.hospital || ''}`.toLowerCase();
+      return full.includes(query);
+    });
+  }, [doctors, searchDoc]);
+
+  const getGoogleCalendarUrl = (item: AppointmentItem) => {
     try {
-      const storedBookings = JSON.parse(localStorage.getItem("primecare_appointments") || "[]");
+      const dateParts = (item.date || '2026-08-28').split('-');
+      const year = dateParts[0];
+      const month = dateParts[1];
+      const day = dateParts[2];
 
-      // 1. Same Slot Multi-Family Member Logic (Allow up to 2 distinct members per slot)
-      const slotAppointments = storedBookings.filter(
-        (b: any) =>
-          b.doctorId === selectedDoctor.id &&
-          b.date === appointmentDate &&
-          b.time === appointmentTime
-      );
+      const slot = item.timeSlot || '10:00 AM';
+      const [time, meridian] = slot.split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
 
-      // Check if slot reached hard capacity of 2
-      if (slotAppointments.length >= 2) {
-        setError(`This time slot (${appointmentTime} on ${appointmentDate}) is fully booked. Please select another slot.`);
-        setLoading(false);
-        return;
+      if (meridian === 'PM' && hours < 12) hours += 12;
+      if (meridian === 'AM' && hours === 12) hours = 0;
+
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      const startUtc = `${year}${month}${day}T${pad(hours)}${pad(minutes)}00`;
+      
+      let endHours = hours;
+      let endMinutes = minutes + 45;
+      if (endMinutes >= 60) {
+        endHours += 1;
+        endMinutes -= 60;
       }
+      const endUtc = `${year}${month}${day}T${pad(endHours)}${pad(endMinutes)}00`;
 
-      // Check if the exact SAME family member name is already registered for this slot
-      const duplicatePerson = slotAppointments.some(
-        (b: any) => b.patientName.toLowerCase() === cleanPatient.toLowerCase()
-      );
-      if (duplicatePerson) {
-        setError(`${cleanPatient} already has a confirmed booking for this exact slot.`);
-        setLoading(false);
-        return;
-      }
+      const title = encodeURIComponent(`🩺 Consultation: ${item.doctorName} (${item.department})`);
+      const details = encodeURIComponent(`Patient: ${item.patientName}\nToken: ${item.tokenNumber}\nDepartment: ${item.department}\nHospital: ${item.hospital}`);
+      const location = encodeURIComponent(item.hospital || 'PrimeCare Hospital');
 
-      const newBooking = {
-        id: `apt-${Date.now()}`,
-        doctorId: selectedDoctor.id,
-        doctorName: selectedDoctor.name,
-        specialisation: selectedDoctor.specialisation,
-        fees: selectedDoctor.fees,
-        accountEmail: cleanEmail,
-        patientName: cleanPatient,
-        bookingFor,
-        familyRelation: bookingFor === "FAMILY" ? familyRelation : "Self",
-        patientAge,
-        patientPhone,
-        date: appointmentDate,
-        time: appointmentTime,
-        symptoms,
-        status: "CONFIRMED",
-        createdAt: new Date().toISOString()
-      };
-
-      localStorage.setItem("primecare_appointments", JSON.stringify([newBooking, ...storedBookings]));
-      setSuccessBooking(newBooking);
-    } catch (err) {
-      setError("Failed to reserve appointment. Please try again.");
-    } finally {
-      setLoading(false);
+      return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startUtc}/${endUtc}&details=${details}&location=${location}`;
+    } catch {
+      return 'https://calendar.google.com';
     }
   };
 
+  const handleBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSlotConflictError(null);
+
+    const cleanEmail = (sharedEmail || '').trim().toLowerCase();
+    const fullName = `${(patientFirstName || '').trim()} ${(patientLastName || '').trim()}`.trim();
+
+    if (isDoctorOnLeave) {
+      alert(`${selectedDoctor.name} is on approved leave on ${selectedDate}.`);
+      return;
+    }
+
+    const slotBookings = bookedSlotsForEmail.get(selectedSlot) || [];
+
+    // Allow up to 2 family members per slot
+    if (slotBookings.length >= 2) {
+      setSlotConflictError(
+        `Slot ${selectedSlot} on ${selectedDate} has reached maximum family limit (2 members already booked). Please pick another slot.`
+      );
+      return;
+    }
+
+    // Check if the same member name is already booked in that slot
+    const duplicateMember = slotBookings.find(
+      (b) => (b.patientName || '').toLowerCase() === fullName.toLowerCase()
+    );
+    if (duplicateMember) {
+      setSlotConflictError(
+        `${fullName} already has a confirmed booking in slot ${selectedSlot}. You can book a second family member in this slot.`
+      );
+      return;
+    }
+
+    const tokenNumber = `TK-${Math.floor(100 + Math.random() * 900)}`;
+
+    const appointment: AppointmentItem = {
+      id: 'apt-' + Date.now(),
+      tokenNumber,
+      doctorId: selectedDoctor.id,
+      doctorName: selectedDoctor.name,
+      department: selectedDoctor.specialisation,
+      fee: selectedDoctor.fee,
+      hospital: selectedDoctor.hospital,
+      date: selectedDate,
+      timeSlot: selectedSlot,
+      symptoms: symptoms || 'General Consultation',
+      patientName: fullName || 'Patient Member',
+      patientEmail: cleanEmail || 'patient@primecare.in',
+      age: patientAge,
+      gender: patientGender,
+      bookingDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      status: 'CONFIRMED',
+    };
+
+    const updated = [appointment, ...existingAppointments];
+    setExistingAppointments(updated);
+    localStorage.setItem('primecare_appointments', JSON.stringify(updated));
+
+    try {
+      await fetch('/api/appointments/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(appointment),
+      });
+    } catch {}
+
+    setBookingSuccess(appointment);
+  };
+
+  const handlePrintSlip = () => {
+    window.print();
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      <Navbar />
+    <ProtectedRoute allowedRoles={['PATIENT', 'DOCTOR', 'ADMIN']}>
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
+        
+        {/* PRINTABLE BOOKING SLIP */}
+        {bookingSuccess && (
+          <div className="hidden print:block p-8 bg-white text-black font-sans min-h-screen">
+            <div className="border-2 border-black p-6 rounded-lg space-y-6 max-w-2xl mx-auto">
+              <div className="border-b-2 border-black pb-4 flex justify-between items-start">
+                <div>
+                  <h1 className="text-2xl font-black tracking-tight text-gray-950">PrimeCare Multispecialty Hospital</h1>
+                  <p className="text-xs font-semibold text-gray-700">{bookingSuccess.hospital || 'PrimeCare Apex Health Institute'}</p>
+                </div>
+                <div className="text-right border-l-2 border-gray-300 pl-4">
+                  <span className="text-[10px] uppercase font-bold text-gray-500 block">Queue Token</span>
+                  <span className="text-2xl font-black text-gray-950">{bookingSuccess.tokenNumber}</span>
+                </div>
+              </div>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8">
-        <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl flex items-center gap-3">
-            <Calendar className="w-8 h-8 text-emerald-400" /> Book Consultation
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Schedule appointments for yourself and multiple family members using a single email. Up to 2 family members can be booked in the same slot.
-          </p>
-        </div>
+              <div className="grid grid-cols-2 gap-3 text-xs border border-gray-300 p-4 rounded bg-gray-50/50">
+                <div><strong>Patient:</strong> {bookingSuccess.patientName}</div>
+                <div><strong>Age/Gender:</strong> {bookingSuccess.age || '21'}Y • {bookingSuccess.gender || 'Female'}</div>
+                <div><strong>Email:</strong> {bookingSuccess.patientEmail}</div>
+                <div><strong>Status:</strong> {bookingSuccess.status}</div>
+              </div>
 
-        {successBooking ? (
-          <div className="max-w-2xl mx-auto bg-slate-900 border border-emerald-500/40 rounded-3xl p-8 space-y-6 shadow-2xl">
-            <div className="flex items-center gap-3 text-emerald-400">
-              <CheckCircle2 className="w-8 h-8" />
-              <div>
-                <h2 className="text-xl font-bold text-white">Appointment Confirmed!</h2>
-                <p className="text-xs text-slate-400">Booking ID: {successBooking.id}</p>
+              <div className="border border-gray-300 rounded divide-y divide-gray-200 text-xs">
+                <div className="grid grid-cols-3 p-3 bg-gray-100 font-semibold text-gray-700">
+                  <div>Physician</div>
+                  <div>Department</div>
+                  <div className="text-right">Date & Time</div>
+                </div>
+                <div className="grid grid-cols-3 p-3 font-medium">
+                  <div><strong>{bookingSuccess.doctorName}</strong></div>
+                  <div>{bookingSuccess.department}</div>
+                  <div className="text-right font-bold">{bookingSuccess.date} • {bookingSuccess.timeSlot}</div>
+                </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4 bg-slate-950/60 p-4 rounded-2xl border border-slate-800 text-xs">
-              <div>
-                <span className="text-slate-400">Patient:</span>
-                <p className="font-bold text-white text-sm">{successBooking.patientName} ({successBooking.familyRelation})</p>
+              <div className="flex justify-between items-center border-t-2 border-dashed border-gray-400 pt-4 text-xs">
+                <p className="text-[10px] text-gray-500">Please arrive 15 minutes before your scheduled slot.</p>
+                <div className="text-right">
+                  <span className="text-[10px] text-gray-500 uppercase block">Fee</span>
+                  <strong className="text-lg font-black text-gray-950">{bookingSuccess.fee}</strong>
+                </div>
               </div>
-              <div>
-                <span className="text-slate-400">Account Email:</span>
-                <p className="font-bold text-white text-sm">{successBooking.accountEmail}</p>
-              </div>
-              <div>
-                <span className="text-slate-400">Doctor:</span>
-                <p className="font-bold text-white text-sm">{successBooking.doctorName}</p>
-              </div>
-              <div>
-                <span className="text-slate-400">Specialisation:</span>
-                <p className="font-bold text-emerald-400 text-sm">{successBooking.specialisation}</p>
-              </div>
-              <div>
-                <span className="text-slate-400">Date & Slot:</span>
-                <p className="font-bold text-white text-sm">{successBooking.date} at {successBooking.time}</p>
-              </div>
-              <div>
-                <span className="text-slate-400">Consultation Fee:</span>
-                <p className="font-bold text-white text-sm">{successBooking.fees}</p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <button
-                onClick={() => {
-                  setSuccessBooking(null);
-                  setPatientName("");
-                }}
-                className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition"
-              >
-                + Book Another Family Member
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* DOCTOR DETAILS COLUMN */}
-            <div className="lg:col-span-5 space-y-4">
-              <h2 className="text-base font-bold text-slate-300 flex items-center gap-2">
-                <Stethoscope className="w-5 h-5 text-emerald-400" /> Select Specialist
-              </h2>
+        )}
 
-              <div className="space-y-3">
-                {doctors.map((doc) => (
-                  <div
-                    key={doc.id}
-                    onClick={() => setSelectedDoctorId(doc.id)}
-                    className={`p-4 rounded-2xl border cursor-pointer transition-all space-y-2 ${
-                      selectedDoctor.id === doc.id
-                        ? "bg-slate-900 border-emerald-500 shadow-xl ring-2 ring-emerald-500/20"
-                        : "bg-slate-900/40 border-slate-800 hover:border-slate-700"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-sm text-white">{doc.name}</h3>
-                      <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">
-                        {doc.fees}
-                      </span>
-                    </div>
+        <div className="print:hidden">
+          <Navbar />
+        </div>
 
-                    <div className="text-xs text-emerald-400 font-medium">
-                      {doc.specialisation}
-                    </div>
-
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-400">
-                      <span className="flex items-center gap-1">
-                        <Award className="w-3.5 h-3.5 text-blue-400" /> {doc.qualification}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Briefcase className="w-3.5 h-3.5 text-amber-400" /> {doc.experience}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" /> {doc.rating}
-                      </span>
-                    </div>
-
-                    <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-800/80 leading-relaxed">
-                      {doc.bio}
-                    </p>
-                  </div>
-                ))}
-              </div>
+        <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8 print:hidden">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400 mb-2">
+              <Calendar className="w-3.5 h-3.5" /> Outpatient Booking Desk
             </div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              Book Doctor Consultation
+            </h1>
+          </div>
 
-            {/* APPOINTMENT FORM COLUMN */}
-            <div className="lg:col-span-7">
-              <form
-                onSubmit={handleBooking}
-                className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl"
+          <AnimatePresence>
+            {bookingSuccess && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-6 rounded-3xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
-                <div>
-                  <h2 className="text-lg font-bold text-white">Appointment Details</h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Booking with <span className="text-emerald-400 font-bold">{selectedDoctor.name}</span> ({selectedDoctor.specialisation})
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-base font-bold text-emerald-100">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-400" /> Confirmed • Token {bookingSuccess.tokenNumber}
+                  </div>
+                  <p className="text-xs text-emerald-300">
+                    {bookingSuccess.patientName} with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}.
                   </p>
                 </div>
 
-                {error && (
-                  <div className="p-3.5 bg-red-950/40 border border-red-500/40 text-red-300 text-xs rounded-xl flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                    <span>{error}</span>
-                  </div>
-                )}
+                <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
+                  <a
+                    href={getGoogleCalendarUrl(bookingSuccess)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition"
+                  >
+                    <CalendarPlus className="w-4 h-4" /> Add to Google Calendar
+                  </a>
 
-                {/* Account / Contact Email */}
+                  <button
+                    type="button"
+                    onClick={handlePrintSlip}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition"
+                  >
+                    <Printer className="w-4 h-4" /> Print Booking Slip
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {slotConflictError && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-5 rounded-2xl bg-red-950/50 border border-red-500/50 text-red-200 text-xs shadow-xl flex items-center gap-3"
+              >
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                <span>{slotConflictError}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* DOCTOR DIRECTORY */}
+            <div className="lg:col-span-5 space-y-4">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                <input
+                  type="text"
+                  value={searchDoc}
+                  onChange={(e) => setSearchDoc(e.target.value)}
+                  placeholder="Search doctor..."
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
+                />
+              </div>
+
+              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                {filteredDoctors.map((doc, idx) => {
+                  const isSelected = selectedDoctor.id === doc.id;
+                  const hasLeave = leaves.some(l => l.doctorId === doc.id && l.leaveDate === selectedDate);
+                  const docKey = doc.id || `doc-card-${idx}`;
+
+                  return (
+                    <div
+                      key={docKey}
+                      onClick={() => setSelectedDoctor(doc)}
+                      className={`p-4 rounded-2xl border cursor-pointer transition-all space-y-2 ${
+                        isSelected
+                          ? 'bg-emerald-950/40 border-emerald-500 shadow-xl ring-2 ring-emerald-500/30'
+                          : 'bg-slate-900/70 border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-bold text-sm text-white">{doc.name}</h4>
+                          <span className="text-xs text-emerald-400 font-semibold">{doc.specialisation}</span>
+                        </div>
+                        <span className="text-xs font-mono font-bold text-emerald-300 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                          {doc.fee}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-[10px] text-slate-400">
+                        <span className="flex items-center gap-1"><Award className="w-3 h-3 text-blue-400" /> {doc.qualification}</span>
+                        <span>•</span>
+                        <span>{doc.experience}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-400">{doc.hospital}</p>
+                      {hasLeave && (
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold">
+                          <CalendarX2 className="w-3 h-3" /> On Leave on {selectedDate}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* FORM */}
+            <div className="lg:col-span-7 space-y-6">
+              <form onSubmit={handleBooking} className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-6">
+                <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+                  <div>
+                    <h3 className="font-bold text-lg text-white">{selectedDoctor.name}</h3>
+                    <p className="text-xs text-emerald-400">{selectedDoctor.specialisation} • {selectedDoctor.hospital}</p>
+                    <p className="text-[11px] text-slate-400 mt-1">{selectedDoctor.qualification} ({selectedDoctor.experience})</p>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-emerald-300 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                    Fee: {selectedDoctor.fee}
+                  </span>
+                </div>
+
+                <div className="space-y-3 p-4 bg-slate-950 rounded-2xl border border-slate-800">
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5" /> Patient Details (Book for Family / Self)
+                  </span>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">First Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={patientFirstName}
+                        onChange={(e) => setPatientFirstName(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Last Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={patientLastName}
+                        onChange={(e) => setPatientLastName(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Age</label>
+                      <input
+                        type="number"
+                        required
+                        value={patientAge}
+                        onChange={(e) => setPatientAge(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Gender</label>
+                      <select
+                        value={patientGender}
+                        onChange={(e) => setPatientGender(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                      >
+                        <option value="Female">Female</option>
+                        <option value="Male">Male</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Account Email</label>
+                      <input
+                        type="email"
+                        required
+                        value={sharedEmail}
+                        onChange={(e) => setSharedEmail(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5 text-emerald-400" /> Account Email (Receives All Family Booking Confirmations)
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Select Date</label>
                   <input
-                    type="email"
+                    type="date"
                     required
-                    value={accountEmail}
-                    onChange={(e) => setAccountEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none [color-scheme:dark]"
                   />
                 </div>
 
-                {/* WHO IS THIS APPOINTMENT FOR? (SELF OR FAMILY MEMBER) */}
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-2 flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5 text-emerald-400" /> Who is this appointment for?
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setBookingFor("SELF")}
-                      className={`py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 border ${
-                        bookingFor === "SELF"
-                          ? "bg-emerald-500 text-slate-950 border-emerald-500 shadow-md"
-                          : "bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700"
-                      }`}
-                    >
-                      <User className="w-4 h-4" /> Myself
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setBookingFor("FAMILY")}
-                      className={`py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 border ${
-                        bookingFor === "FAMILY"
-                          ? "bg-emerald-500 text-slate-950 border-emerald-500 shadow-md"
-                          : "bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700"
-                      }`}
-                    >
-                      <Users className="w-4 h-4" /> Family Member
-                    </button>
+                {isDoctorOnLeave ? (
+                  <div className="p-5 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs">
+                    Physician is on approved leave on {selectedDate}.
                   </div>
-                </div>
-
-                {/* Patient Information Fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="sm:col-span-2">
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">
-                      {bookingFor === "SELF" ? "Patient Full Name" : "Family Member's Full Name"}
+                ) : (
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                      Available Slots (Max 2 Members per Slot)
                     </label>
-                    <input
-                      type="text"
-                      required
-                      value={patientName}
-                      onChange={(e) => setPatientName(e.target.value)}
-                      placeholder={bookingFor === "SELF" ? "Your full name" : "e.g. Ramesh Kushwaha"}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+                      {TIME_SLOTS.map((slot) => {
+                        const slotBookings = bookedSlotsForEmail.get(slot) || [];
+                        const isFull = slotBookings.length >= 2;
+                        const isSlotSelected = selectedSlot === slot;
 
-                  {bookingFor === "FAMILY" && (
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Relationship</label>
-                      <select
-                        value={familyRelation}
-                        onChange={(e) => setFamilyRelation(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none"
-                      >
-                        <option value="Spouse">Spouse</option>
-                        <option value="Parent">Parent / Mother / Father</option>
-                        <option value="Child">Child / Son / Daughter</option>
-                        <option value="Sibling">Brother / Sister</option>
-                        <option value="Other">Other Family Relative</option>
-                      </select>
+                        if (isFull) {
+                          return (
+                            <button
+                              key={slot}
+                              type="button"
+                              disabled
+                              className="py-2 px-2 rounded-xl text-[11px] font-semibold bg-red-950/30 border border-red-500/40 text-red-400 opacity-60 cursor-not-allowed text-left"
+                            >
+                              <span className="block font-bold">{slot}</span>
+                              <span className="text-[9px] text-red-300 block truncate">2/2 Booked</span>
+                            </button>
+                          );
+                        }
+
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => {
+                              setSelectedSlot(slot);
+                              setSlotConflictError(null);
+                            }}
+                            className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition text-left flex flex-col justify-between ${
+                              isSlotSelected
+                                ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
+                                : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+                            }`}
+                          >
+                            <span>{slot}</span>
+                            {slotBookings.length === 1 && (
+                              <span className={`text-[9px] font-semibold ${isSlotSelected ? 'text-slate-900' : 'text-emerald-400'}`}>
+                                (1 member in slot)
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
-                  )}
-
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Age</label>
-                    <input
-                      type="number"
-                      required
-                      value={patientAge}
-                      onChange={(e) => setPatientAge(e.target.value)}
-                      placeholder="e.g. 28"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
                   </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
-                      <Phone className="w-3.5 h-3.5 text-emerald-400" /> Contact Phone
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={patientPhone}
-                      onChange={(e) => setPatientPhone(e.target.value)}
-                      placeholder="+91 9876543210"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-                </div>
-
-                {/* SLOT SELECTION (DATE & TIME) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-emerald-400" /> Consultation Date
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={appointmentDate}
-                      onChange={(e) => setAppointmentDate(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-emerald-400" /> Consultation Time Slot
-                    </label>
-                    <select
-                      value={appointmentTime}
-                      onChange={(e) => setAppointmentTime(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none"
-                    >
-                      <option value="09:00 AM">09:00 AM - Morning</option>
-                      <option value="10:00 AM">10:00 AM - Morning</option>
-                      <option value="11:30 AM">11:30 AM - Morning</option>
-                      <option value="02:00 PM">02:00 PM - Afternoon</option>
-                      <option value="03:30 PM">03:30 PM - Afternoon</option>
-                      <option value="05:00 PM">05:00 PM - Evening</option>
-                      <option value="06:30 PM">06:30 PM - Evening</option>
-                    </select>
-                  </div>
-                </div>
+                )}
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
-                    Reason / Chief Complaints (Optional)
-                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Chief Complaint</label>
                   <textarea
                     rows={2}
+                    required
                     value={symptoms}
                     onChange={(e) => setSymptoms(e.target.value)}
-                    placeholder="Describe symptoms, medical history, or specific health concerns..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="Brief description..."
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold rounded-2xl text-xs transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+                  disabled={Boolean(isDoctorOnLeave)}
+                  className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2 disabled:opacity-40"
                 >
-                  {loading ? "Confirming Slot..." : `Confirm Booking for ${selectedDoctor.fees}`}
+                  Confirm Appointment & Generate Slip <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
             </div>
           </div>
-        )}
-      </main>
-    </div>
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 }

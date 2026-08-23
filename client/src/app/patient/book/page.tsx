@@ -50,12 +50,12 @@ interface AppointmentItem {
 }
 
 const DEFAULT_DOCTORS: DoctorProfile[] = [
-  { id: 'doc-cardio-01', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', bio: 'Senior Interventional Cardiologist.' },
-  { id: 'doc-cardio-02', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', bio: 'Specialist in non-invasive imaging.' },
+  { id: 'doc-cardio-01', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', bio: 'Senior Interventional Cardiologist specializing in preventive heart health and echo.' },
+  { id: 'doc-cardio-02', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', bio: 'Specialist in non-invasive imaging and complex coronary care.' },
   { id: 'doc-neuro-01', name: 'Dr. Priya Nair', specialisation: 'Neurology', qualification: 'MD, DM (Neurology - NIMHANS)', experience: '12 Years Practice', hospital: 'PrimeCare Neuroscience Center', fee: '₹1,500', bio: 'Neurologist with stroke and epilepsy expertise.' },
   { id: 'doc-ortho-01', name: 'Dr. Vikram Patel', specialisation: 'Orthopedics', qualification: 'MS (Orthopedics), MCh', experience: '15 Years Practice', hospital: 'PrimeCare Ortho Wing', fee: '₹1,000', bio: 'Joint replacement and arthroscopy surgeon.' },
-  { id: 'doc-pedia-01', name: 'Dr. Ananya Deshmukh', specialisation: 'Pediatrics', qualification: 'MD (Pediatrics), DCH', experience: '9 Years Practice', hospital: 'PrimeCare Children Pavilion', fee: '₹900', bio: 'Pediatric care specialist.' },
-  { id: 'doc-derma-01', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', bio: 'Dermatology & aesthetics.' },
+  { id: 'doc-pedia-01', name: 'Dr. Ananya Deshmukh', specialisation: 'Pediatrics', qualification: 'MD (Pediatrics), DCH', experience: '9 Years Practice', hospital: 'PrimeCare Children Pavilion', fee: '₹900', bio: 'Pediatric care and immunization specialist.' },
+  { id: 'doc-derma-01', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', bio: 'Clinical dermatology & aesthetics.' },
 ];
 
 const TIME_SLOTS = [
@@ -113,9 +113,10 @@ export default function BookAppointmentPage() {
     return leaves.find(l => l.doctorId === selectedDoctor.id && l.leaveDate === selectedDate);
   }, [leaves, selectedDoctor, selectedDate]);
 
+  // Count slot usage for the shared email (allowing up to 2 family members in same slot)
   const bookedSlotsForEmail = useMemo(() => {
     const cleanEmail = (sharedEmail || '').trim().toLowerCase();
-    const map = new Map<string, AppointmentItem>();
+    const map = new Map<string, AppointmentItem[]>();
     
     if (!cleanEmail) return map;
 
@@ -126,7 +127,8 @@ export default function BookAppointmentPage() {
       const aSlot = (a.timeSlot || '').trim();
 
       if (aEmail === cleanEmail && aDate === selectedDate && aSlot) {
-        map.set(aSlot, a);
+        const currentList = map.get(aSlot) || [];
+        map.set(aSlot, [...currentList, a]);
       }
     });
     return map;
@@ -188,10 +190,23 @@ export default function BookAppointmentPage() {
       return;
     }
 
-    const existingBookingOnSlot = bookedSlotsForEmail.get(selectedSlot);
-    if (existingBookingOnSlot) {
+    const slotBookings = bookedSlotsForEmail.get(selectedSlot) || [];
+
+    // Allow up to 2 family members per slot
+    if (slotBookings.length >= 2) {
       setSlotConflictError(
-        `Slot ${selectedSlot} on ${selectedDate} is already reserved under this email for ${existingBookingOnSlot.patientName}.`
+        `Slot ${selectedSlot} on ${selectedDate} has reached maximum family limit (2 members already booked). Please pick another slot.`
+      );
+      return;
+    }
+
+    // Check if the same member name is already booked in that slot
+    const duplicateMember = slotBookings.find(
+      (b) => (b.patientName || '').toLowerCase() === fullName.toLowerCase()
+    );
+    if (duplicateMember) {
+      setSlotConflictError(
+        `${fullName} already has a confirmed booking in slot ${selectedSlot}. You can book a second family member in this slot.`
       );
       return;
     }
@@ -221,7 +236,6 @@ export default function BookAppointmentPage() {
     setExistingAppointments(updated);
     localStorage.setItem('primecare_appointments', JSON.stringify(updated));
 
-    // Dispatch background automatic calendar invite
     try {
       await fetch('/api/appointments/book', {
         method: 'POST',
@@ -287,7 +301,6 @@ export default function BookAppointmentPage() {
           </div>
         )}
 
-        {/* WEB INTERFACE */}
         <div className="print:hidden">
           <Navbar />
         </div>
@@ -392,6 +405,11 @@ export default function BookAppointmentPage() {
                           {doc.fee}
                         </span>
                       </div>
+                      <div className="flex flex-wrap gap-2 text-[10px] text-slate-400">
+                        <span className="flex items-center gap-1"><Award className="w-3 h-3 text-blue-400" /> {doc.qualification}</span>
+                        <span>•</span>
+                        <span>{doc.experience}</span>
+                      </div>
                       <p className="text-[11px] text-slate-400">{doc.hospital}</p>
                       {hasLeave && (
                         <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold">
@@ -411,6 +429,7 @@ export default function BookAppointmentPage() {
                   <div>
                     <h3 className="font-bold text-lg text-white">{selectedDoctor.name}</h3>
                     <p className="text-xs text-emerald-400">{selectedDoctor.specialisation} • {selectedDoctor.hospital}</p>
+                    <p className="text-[11px] text-slate-400 mt-1">{selectedDoctor.qualification} ({selectedDoctor.experience})</p>
                   </div>
                   <span className="text-xs font-mono font-bold text-emerald-300 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                     Fee: {selectedDoctor.fee}
@@ -419,7 +438,7 @@ export default function BookAppointmentPage() {
 
                 <div className="space-y-3 p-4 bg-slate-950 rounded-2xl border border-slate-800">
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5" /> Patient Details
+                    <Users className="w-3.5 h-3.5" /> Patient Details (Book for Family / Self)
                   </span>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -469,7 +488,7 @@ export default function BookAppointmentPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Calendar Email</label>
+                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Account Email</label>
                       <input
                         type="email"
                         required
@@ -498,13 +517,16 @@ export default function BookAppointmentPage() {
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Available Slots</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                      Available Slots (Max 2 Members per Slot)
+                    </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
                       {TIME_SLOTS.map((slot) => {
-                        const conflict = bookedSlotsForEmail.get(slot);
+                        const slotBookings = bookedSlotsForEmail.get(slot) || [];
+                        const isFull = slotBookings.length >= 2;
                         const isSlotSelected = selectedSlot === slot;
 
-                        if (conflict) {
+                        if (isFull) {
                           return (
                             <button
                               key={slot}
@@ -513,7 +535,7 @@ export default function BookAppointmentPage() {
                               className="py-2 px-2 rounded-xl text-[11px] font-semibold bg-red-950/30 border border-red-500/40 text-red-400 opacity-60 cursor-not-allowed text-left"
                             >
                               <span className="block font-bold">{slot}</span>
-                              <span className="text-[9px] text-red-300 block truncate">Reserved</span>
+                              <span className="text-[9px] text-red-300 block truncate">2/2 Booked</span>
                             </button>
                           );
                         }
@@ -526,13 +548,18 @@ export default function BookAppointmentPage() {
                               setSelectedSlot(slot);
                               setSlotConflictError(null);
                             }}
-                            className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition ${
+                            className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition text-left flex flex-col justify-between ${
                               isSlotSelected
                                 ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
                                 : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
                             }`}
                           >
-                            {slot}
+                            <span>{slot}</span>
+                            {slotBookings.length === 1 && (
+                              <span className={`text-[9px] font-semibold ${isSlotSelected ? 'text-slate-900' : 'text-emerald-400'}`}>
+                                (1 member in slot)
+                              </span>
+                            )}
                           </button>
                         );
                       })}
