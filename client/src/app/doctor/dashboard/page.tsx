@@ -10,7 +10,7 @@ import {
   Pill, FileText, Send, Calendar, 
   Printer, Receipt, Lock, Search, History, FolderHeart, User, Users, X, 
   Edit3, Save, BadgeCheck, Sparkles, AlertTriangle, HelpCircle, Check, ArrowRight,
-  Filter, RefreshCw, Award, Briefcase, Building2, Star, Mail, CheckCheck, CalendarX2, AlertCircle
+  Filter, RefreshCw, Award, Briefcase, Building2, Star, Mail, CheckCheck, CalendarX2, AlertCircle, CalendarPlus
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -92,6 +92,12 @@ const DEFAULT_DOCTORS: DoctorProfile[] = [
   { id: 'doc-derma-01', email: 'rohan.mehta@primecare.in', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', rating: '4.8 ★', bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' },
 ];
 
+const TIME_SLOTS = [
+  '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', 
+  '11:00 AM', '11:30 AM', '02:00 PM', '02:30 PM', 
+  '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM'
+];
+
 const getNormalizedPatientKey = (email?: string, name?: string) => {
   const cleanEmail = (email || 'patient@primecare.in').trim().toLowerCase();
   const cleanName = (name || 'Patient Member').trim().toLowerCase().replace(/\s+/g, ' ');
@@ -138,6 +144,11 @@ export default function DoctorDashboardPage() {
   const [filterMode, setFilterMode] = useState<'MY_PATIENTS' | 'ALL'>('MY_PATIENTS');
   const [searchQueue, setSearchQueue] = useState('');
   
+  // Reschedule Modal State
+  const [reschedulingApt, setReschedulingApt] = useState<AppointmentItem | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState('2026-08-29');
+  const [rescheduleSlot, setRescheduleSlot] = useState('10:00 AM');
+
   // AI Triage State
   const [aiTriageLoading, setAiTriageLoading] = useState(false);
   const [preVisitTriage, setPreVisitTriage] = useState<{
@@ -367,7 +378,32 @@ export default function DoctorDashboardPage() {
     }
   };
 
-  // Finalize consultation: emails patient, appends EHR, and removes from queue
+  // RESCHEDULE ACTION: Move shifted appointment back to active queue
+  const handleConfirmReschedule = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reschedulingApt) return;
+
+    const updatedAppts = allAppointments.map(a => {
+      if (a.id === reschedulingApt.id) {
+        return {
+          ...a,
+          date: rescheduleDate,
+          timeSlot: rescheduleSlot,
+          status: 'CONFIRMED',
+          leaveReason: undefined
+        };
+      }
+      return a;
+    });
+
+    localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
+    setAllAppointments(updatedAppts);
+    setReschedulingApt(null);
+    setProfileSuccessMsg(`Appointment for ${reschedulingApt.patientName} successfully rescheduled to ${rescheduleDate} at ${rescheduleSlot} and moved back to Active Queue.`);
+    setTimeout(() => setProfileSuccessMsg(''), 5000);
+  };
+
+  // Finalize consultation
   const handleFinalizeConsultation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activePatient) return;
@@ -585,7 +621,7 @@ export default function DoctorDashboardPage() {
               </p>
             </div>
 
-            {/* TAB SELECTORS INCLUDING 'DUE TO DR. ON LEAVE' */}
+            {/* TAB SELECTORS */}
             <div className="flex items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto">
               <button
                 type="button"
@@ -628,6 +664,17 @@ export default function DoctorDashboardPage() {
               </button>
             </div>
           </div>
+
+          {profileSuccessMsg && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 bg-emerald-950/50 border border-emerald-500/50 text-emerald-200 text-xs rounded-2xl flex items-center gap-3"
+            >
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+              <span>{profileSuccessMsg}</span>
+            </motion.div>
+          )}
 
           {/* TAB 1: ACTIVE CLINICAL QUEUE & AI TRIAGE */}
           {activeTab === 'CLINICAL' && (
@@ -905,7 +952,7 @@ export default function DoctorDashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: DUE TO DR. ON LEAVE SECTION (DOCTOR WORKSPACE) */}
+          {/* TAB 2: DUE TO DR. ON LEAVE SECTION WITH RESCHEDULE BUTTON */}
           {activeTab === 'LEAVE_AFFECTED' && (
             <div className="space-y-6">
               <div className="p-6 rounded-3xl bg-amber-950/20 border border-amber-500/30 space-y-2">
@@ -914,7 +961,7 @@ export default function DoctorDashboardPage() {
                   <span>Considered Appointments Shifted Due to Doctor on Leave</span>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  These patient appointments were automatically removed from the active queue because an approved duty leave was scheduled. Patients have been sent automated reschedule notifications.
+                  These patient appointments were shifted because of an approved leave date. You can click <strong>&quot;Reschedule Slot&quot;</strong> to allocate a new date and time, which instantly restores them into the active queue.
                 </p>
               </div>
 
@@ -944,7 +991,7 @@ export default function DoctorDashboardPage() {
 
                         <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 text-xs space-y-1.5">
                           <div className="flex justify-between">
-                            <span className="text-slate-400">Scheduled Date:</span>
+                            <span className="text-slate-400">Original Slot:</span>
                             <strong className="text-amber-300">{a.date} ({a.timeSlot})</strong>
                           </div>
                           <div className="flex justify-between">
@@ -963,11 +1010,18 @@ export default function DoctorDashboardPage() {
                         </div>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px]">
-                        <span className="text-amber-400 flex items-center gap-1 font-semibold">
-                          <Mail className="w-3.5 h-3.5" /> Reschedule Notice Emailed
-                        </span>
-                        <span className="font-mono text-slate-500">{a.id}</span>
+                      <div className="pt-2 border-t border-slate-800 space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReschedulingApt(a);
+                            setRescheduleDate(a.date || '2026-08-29');
+                            setRescheduleSlot(a.timeSlot || '10:00 AM');
+                          }}
+                          className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20"
+                        >
+                          <CalendarPlus className="w-4 h-4" /> Reschedule Slot & Restore to Queue
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -1137,17 +1191,6 @@ export default function DoctorDashboardPage() {
                   </p>
                 </div>
 
-                {profileSuccessMsg && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-4 bg-emerald-950/50 border border-emerald-500/50 text-emerald-200 text-xs rounded-2xl flex items-center gap-3"
-                  >
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                    <span>{profileSuccessMsg}</span>
-                  </motion.div>
-                )}
-
                 <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -1270,6 +1313,83 @@ export default function DoctorDashboardPage() {
           )}
 
         </main>
+
+        {/* RESCHEDULE MODAL */}
+        <AnimatePresence>
+          {reschedulingApt && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-slate-900 border border-emerald-500/40 shadow-2xl space-y-6"
+              >
+                <div className="flex justify-between items-start border-b border-slate-800 pb-3">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase mb-1">
+                      <CalendarPlus className="w-3 h-3" /> Reschedule Appointment
+                    </div>
+                    <h3 className="text-xl font-bold text-white">{reschedulingApt.patientName}</h3>
+                    <p className="text-xs text-slate-400">{reschedulingApt.patientEmail} • Token {reschedulingApt.tokenNumber}</p>
+                  </div>
+                  <button onClick={() => setReschedulingApt(null)} className="text-slate-400 hover:text-white px-2 py-1 rounded-lg bg-slate-800">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleConfirmReschedule} className="space-y-4 text-xs">
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1.5">Select New Date</label>
+                    <input
+                      type="date"
+                      required
+                      value={rescheduleDate}
+                      onChange={(e) => setRescheduleDate(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 [color-scheme:dark]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1.5">Select New Time Slot</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {TIME_SLOTS.map(slot => (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => setRescheduleSlot(slot)}
+                          className={`py-2 px-2.5 rounded-xl font-bold border transition text-center ${
+                            rescheduleSlot === slot
+                              ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
+                              : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+                          }`}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => setReschedulingApt(null)}
+                      className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-lg shadow-emerald-500/20"
+                    >
+                      Confirm Reschedule & Restore
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
       </div>
     </ProtectedRoute>
   );

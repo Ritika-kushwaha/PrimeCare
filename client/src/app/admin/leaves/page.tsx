@@ -10,7 +10,7 @@ import {
   AlertCircle, Search, Trash2, Check, X, 
   Stethoscope, Users, RefreshCw, Award, Filter, ArrowRight,
   CheckCheck, Archive, FileText, BadgeCheck, CalendarX2,
-  Edit3, UserX, Building2, Briefcase, DollarSign, Save, AlertTriangle, Mail
+  Edit3, UserX, Building2, Briefcase, DollarSign, Save, AlertTriangle, Mail, CalendarPlus
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -74,6 +74,12 @@ const DEFAULT_DOCTORS: DoctorProfile[] = [
   { id: 'doc-derma-01', email: 'rohan.mehta@primecare.in', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', rating: '4.8 ★', bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' },
 ];
 
+const TIME_SLOTS = [
+  '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', 
+  '11:00 AM', '11:30 AM', '02:00 PM', '02:30 PM', 
+  '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM'
+];
+
 export default function AdminDashboardPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'CONSULTATIONS' | 'LEAVE_AFFECTED' | 'DONE' | 'DOCTORS' | 'LEAVES'>('CONSULTATIONS');
@@ -84,6 +90,11 @@ export default function AdminDashboardPage() {
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [actionSuccessMsg, setActionSuccessMsg] = useState('');
+
+  // Reschedule Modal State
+  const [reschedulingApt, setReschedulingApt] = useState<AppointmentItem | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState('2026-08-29');
+  const [rescheduleSlot, setRescheduleSlot] = useState('10:00 AM');
 
   // Admin Doctor Editor State
   const [editingDoctor, setEditingDoctor] = useState<DoctorProfile | null>(null);
@@ -188,6 +199,31 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Reschedule and restore to active queue
+  const handleConfirmReschedule = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reschedulingApt) return;
+
+    const updatedAppts = appointments.map(a => {
+      if (a.id === reschedulingApt.id) {
+        return {
+          ...a,
+          date: rescheduleDate,
+          timeSlot: rescheduleSlot,
+          status: 'CONFIRMED',
+          leaveReason: undefined
+        };
+      }
+      return a;
+    });
+
+    localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
+    setAppointments(updatedAppts);
+    setReschedulingApt(null);
+    setActionSuccessMsg(`Appointment for ${reschedulingApt.patientName} successfully rescheduled to ${rescheduleDate} at ${rescheduleSlot} and restored to Active Queue.`);
+    setTimeout(() => setActionSuccessMsg(''), 5000);
+  };
+
   // Save Doctor Edit
   const handleSaveDoctorEdit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -287,7 +323,7 @@ export default function AdminDashboardPage() {
     setDoctorApplications(updatedApps);
   };
 
-  // RECORD LEAVE: AUTOMATICALLY SHIFTS APPOINTMENTS TO 'LEAVE_CANCELLED' AND SENDS NOTICES
+  // RECORD LEAVE: AUTOMATICALLY SHIFTS APPOINTMENTS TO 'LEAVE_CANCELLED'
   const handleAddLeave = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionSuccessMsg('Recording leave & notifying affected patients...');
@@ -315,14 +351,12 @@ export default function AdminDashboardPage() {
     localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
     setLeaves(updatedLeaves);
 
-    // 1. Identify affected patients booked on this date for this doctor
     const affected = appointments.filter(a => {
       if (a.date !== leaveDate || a.status === 'COMPLETED' || a.status === 'LEAVE_CANCELLED') return false;
       const aDoc = (a.doctorName || '').toLowerCase().replace('dr. ', '').trim();
       return (a.doctorId && a.doctorId === docId) || aDoc.includes(docClean);
     });
 
-    // 2. Mark affected appointments as LEAVE_CANCELLED (removes from active queue)
     if (affected.length > 0) {
       const updatedAppts = appointments.map(a => {
         const isAffected = affected.some(aff => aff.id === a.id);
@@ -332,7 +366,6 @@ export default function AdminDashboardPage() {
       setAppointments(updatedAppts);
     }
 
-    // 3. Dispatch Email Reschedule Notices
     try {
       const res = await fetch('/api/admin/leave-reschedule', {
         method: 'POST',
@@ -380,7 +413,7 @@ export default function AdminDashboardPage() {
               </p>
             </div>
 
-            {/* TAB SELECTORS INCLUDING 'DUE TO DR. ON LEAVE' */}
+            {/* TAB SELECTORS */}
             <div className="flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto text-xs font-bold">
               <button
                 type="button"
@@ -536,7 +569,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: DUE TO DOCTOR ON LEAVE (ADMIN PORTAL) */}
+          {/* TAB 2: DUE TO DOCTOR ON LEAVE WITH RESCHEDULE BUTTON (ADMIN PORTAL) */}
           {activeTab === 'LEAVE_AFFECTED' && (
             <div className="space-y-4">
               <div className="p-6 rounded-3xl bg-amber-950/20 border border-amber-500/30 space-y-2">
@@ -545,7 +578,7 @@ export default function AdminDashboardPage() {
                   <span>Considered Appointments Shifted Due to Doctor on Leave ({leaveAffectedConsultations.length})</span>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  These patient appointments were automatically removed from the active queue because a doctor leave was recorded. Automatic reschedule notices with Google Calendar cancellations were emailed to each patient.
+                  These patient appointments were automatically removed from the active queue because a doctor leave was recorded. You can click <strong>&quot;Reschedule Slot&quot;</strong> to reassign a date/time and restore the appointment to the active queue.
                 </p>
               </div>
 
@@ -598,11 +631,18 @@ export default function AdminDashboardPage() {
                         </div>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px]">
-                        <span className="text-amber-400 flex items-center gap-1 font-semibold">
-                          <Mail className="w-3.5 h-3.5" /> Reschedule Notice Sent
-                        </span>
-                        <span className="font-mono text-slate-500">{a.id}</span>
+                      <div className="pt-2 border-t border-slate-800 space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReschedulingApt(a);
+                            setRescheduleDate(a.date || '2026-08-29');
+                            setRescheduleSlot(a.timeSlot || '10:00 AM');
+                          }}
+                          className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20"
+                        >
+                          <CalendarPlus className="w-4 h-4" /> Reschedule Slot & Restore to Queue
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -899,6 +939,82 @@ export default function AdminDashboardPage() {
           )}
 
         </main>
+
+        {/* RESCHEDULE MODAL */}
+        <AnimatePresence>
+          {reschedulingApt && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-slate-900 border border-emerald-500/40 shadow-2xl space-y-6"
+              >
+                <div className="flex justify-between items-start border-b border-slate-800 pb-3">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase mb-1">
+                      <CalendarPlus className="w-3 h-3" /> Reschedule Shifted Slot
+                    </div>
+                    <h3 className="text-xl font-bold text-white">{reschedulingApt.patientName}</h3>
+                    <p className="text-xs text-slate-400">{reschedulingApt.patientEmail} • Token {reschedulingApt.tokenNumber}</p>
+                  </div>
+                  <button onClick={() => setReschedulingApt(null)} className="text-slate-400 hover:text-white px-2 py-1 rounded-lg bg-slate-800">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleConfirmReschedule} className="space-y-4 text-xs">
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1.5">Select New Date</label>
+                    <input
+                      type="date"
+                      required
+                      value={rescheduleDate}
+                      onChange={(e) => setRescheduleDate(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 [color-scheme:dark]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1.5">Select New Time Slot</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {TIME_SLOTS.map(slot => (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => setRescheduleSlot(slot)}
+                          className={`py-2 px-2.5 rounded-xl font-bold border transition text-center ${
+                            rescheduleSlot === slot
+                              ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
+                              : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+                          }`}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => setReschedulingApt(null)}
+                      className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-lg shadow-emerald-500/20"
+                    >
+                      Confirm Reschedule & Restore
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* MODAL: ADMIN EDIT DOCTOR */}
         <AnimatePresence>
