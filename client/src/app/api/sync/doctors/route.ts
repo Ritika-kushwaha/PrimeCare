@@ -1,4 +1,5 @@
-﻿import { NextResponse } from "next/navigation";
+﻿export const runtime = 'nodejs';
+import { NextResponse } from "next/navigation";
 import { getDb, initDb } from "@/lib/db";
 
 export const dynamic = 'force-dynamic';
@@ -67,3 +68,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
