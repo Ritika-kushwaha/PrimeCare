@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(JSON.parse(storedUser));
       }
     } catch (e) {
-      console.error("Failed to restore auth session", e);
+      console.error("Failed to restore session", e);
     } finally {
       setLoading(false);
     }
@@ -64,53 +64,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!cleanEmail) throw new Error("Please enter your email address.");
     if (!cleanPassword || cleanPassword.length < 4) throw new Error("Password must be at least 4 characters long.");
 
-    let registeredUsers: any[] = [];
-    try {
-      const stored = localStorage.getItem("primecare_registered_users");
-      if (stored) registeredUsers = JSON.parse(stored);
-    } catch {}
+    const res = await fetch('/api/auth/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'LOGIN',
+        email: cleanEmail,
+        password: cleanPassword,
+        role
+      })
+    });
 
-    const existingUser = registeredUsers.find(
-      (u) => u.email.toLowerCase() === cleanEmail && u.role === role
-    );
-
-    const userKey = `pwd_${role}_${cleanEmail}`;
-    const savedPassword = localStorage.getItem(userKey);
-
-    if (savedPassword && savedPassword !== cleanPassword && cleanPassword !== "Password@123") {
-      throw new Error(`Invalid password for ${role} profile.`);
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Login failed.');
     }
 
-    if (!savedPassword) {
-      localStorage.setItem(userKey, cleanPassword);
-    }
-
-    const nameParts = cleanEmail.split("@")[0].split(/[._-]/);
-    const firstName = existingUser?.firstName || (nameParts[0] ? nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1) : "Member");
-    const lastName = existingUser?.lastName || (nameParts[1] ? nameParts[1].charAt(0).toUpperCase() + nameParts[1].slice(1) : "");
-
-    const isApproved = existingUser?.isApproved !== undefined ? existingUser.isApproved : (role !== "DOCTOR" || cleanEmail.includes("ritikakushwaha"));
-
-    const authenticatedUser: User = {
-      id: existingUser?.id || `usr-${Date.now()}`,
-      email: cleanEmail,
-      role: role,
-      firstName: firstName,
-      lastName: lastName,
-      specialisation: existingUser?.specialisation || (role === "DOCTOR" ? "General Medicine" : undefined),
-      regNumber: existingUser?.regNumber,
-      isApproved: isApproved,
-    };
-
-    if (!existingUser) {
-      registeredUsers.push({ ...authenticatedUser, password: cleanPassword });
-      localStorage.setItem("primecare_registered_users", JSON.stringify(registeredUsers));
-    }
-
+    const authenticatedUser: User = data.user;
     const generatedToken = `jwt-primecare-${Date.now()}`;
+
     localStorage.setItem("token", generatedToken);
     localStorage.setItem("user", JSON.stringify(authenticatedUser));
-
     setUser(authenticatedUser);
     setToken(generatedToken);
 
@@ -136,84 +110,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }): Promise<boolean> => {
     const cleanEmail = userData.email.trim().toLowerCase();
     const cleanPassword = (userData.password || "Password@123").trim();
-    const fName = userData.firstName.trim();
-    const lName = userData.lastName.trim();
 
-    if (!fName || !lName) throw new Error("First and Last name are required.");
+    if (!userData.firstName.trim() || !userData.lastName.trim()) {
+      throw new Error("First and Last name are required.");
+    }
+
     if (userData.role === "DOCTOR" && !userData.regNumber) {
-      throw new Error("Medical Council Registration Number (MCI/NMC ID) is required for doctor verification.");
+      throw new Error("Medical Council Registration Number (NMC/MCI ID) is required.");
     }
 
-    const userKey = `pwd_${userData.role}_${cleanEmail}`;
-    localStorage.setItem(userKey, cleanPassword);
+    const res = await fetch('/api/auth/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'REGISTER',
+        email: cleanEmail,
+        password: cleanPassword,
+        role: userData.role,
+        firstName: userData.firstName.trim(),
+        lastName: userData.lastName.trim(),
+        specialisation: userData.specialisation,
+        regNumber: userData.regNumber
+      })
+    });
 
-    let registeredUsers: any[] = [];
-    try {
-      const stored = localStorage.getItem("primecare_registered_users");
-      if (stored) registeredUsers = JSON.parse(stored);
-    } catch {}
-
-    // Doctors start as unapproved until Admin approves from Admin Dashboard
-    const isApproved = userData.role !== "DOCTOR" || cleanEmail.includes("ritikakushwaha");
-
-    const newUser: User = {
-      id: `usr-${Date.now()}`,
-      email: cleanEmail,
-      role: userData.role,
-      firstName: fName,
-      lastName: lName,
-      specialisation: userData.specialisation || "General Medicine",
-      regNumber: userData.regNumber,
-      isApproved,
-    };
-
-    // Save to Doctor Application list for Admin review
-    if (userData.role === "DOCTOR") {
-      try {
-        const storedApps = JSON.parse(localStorage.getItem("primecare_doctor_applications") || "[]");
-        const newApp = {
-          id: `app-${Date.now()}`,
-          name: `Dr. ${fName} ${lName}`.trim(),
-          email: cleanEmail,
-          regNumber: userData.regNumber,
-          specialisation: userData.specialisation || "General Medicine",
-          qualification: "MBBS, MD",
-          experience: "5+ Years Practice",
-          status: isApproved ? "APPROVED" : "PENDING",
-        };
-        const updatedApps = [newApp, ...storedApps.filter((a: any) => a.email !== cleanEmail)];
-        localStorage.setItem("primecare_doctor_applications", JSON.stringify(updatedApps));
-
-        if (isApproved) {
-          const newDocProfile = {
-            id: `doc-${Date.now()}`,
-            email: cleanEmail,
-            name: `Dr. ${fName} ${lName}`.trim(),
-            specialisation: userData.specialisation || "General Medicine",
-            qualification: "MBBS, MD",
-            experience: "5+ Years Practice",
-            hospital: "PrimeCare Multispecialty Hospital",
-            fee: "₹1,000",
-            rating: "5.0 ★",
-            bio: `Verified Specialist in ${userData.specialisation || "General Medicine"}. NMC ID: ${userData.regNumber}`,
-          };
-          fetch('/api/sync/doctors', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ doctor: newDocProfile }),
-          });
-        }
-      } catch {}
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Registration failed.');
     }
 
-    const filtered = registeredUsers.filter((u) => !(u.email.toLowerCase() === cleanEmail && u.role === userData.role));
-    filtered.push({ ...newUser, password: cleanPassword });
-    localStorage.setItem("primecare_registered_users", JSON.stringify(filtered));
-
+    const newUser: User = data.user;
     const generatedToken = `jwt-primecare-${Date.now()}`;
+
     localStorage.setItem("token", generatedToken);
     localStorage.setItem("user", JSON.stringify(newUser));
-
     setUser(newUser);
     setToken(generatedToken);
 
