@@ -197,7 +197,8 @@ export default function DoctorDashboardPage() {
       let myProfile = roster.find((d: any) => (d.email || '').toLowerCase().trim() === doctorEmail);
 
       if (!myProfile) {
-        const genName = user ? 'Dr. ' + (user.firstName || '') + ' ' + (user.lastName || '') : 'Dr. Ritika Kushwaha';
+                const userName = user?.firstName ? ('Dr. ' + user.firstName + (user.lastName ? ' ' + user.lastName : '')).trim() : 'Dr. Practitioner';
+        const genName = userName.startsWith('Dr.') ? userName : 'Dr. ' + userName;
         const finalName = genName.trim().startsWith('Dr.') ? genName.trim() : 'Dr. ' + genName.trim();
         myProfile = {
           id: 'doc-' + Date.now(),
@@ -943,3 +944,4 @@ export default function DoctorDashboardPage() {
     </ProtectedRoute>
   );
 }
+

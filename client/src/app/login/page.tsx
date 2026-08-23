@@ -6,7 +6,7 @@ import { useAuth, Role } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Lock, Mail, User, Stethoscope, ShieldCheck, 
-  ArrowRight, KeyRound, AlertCircle, CheckCircle2, UserPlus, LogIn 
+  ArrowRight, KeyRound, AlertCircle, CheckCircle2, UserPlus, LogIn, FileBadge
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -20,6 +20,7 @@ export default function LoginPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [specialisation, setSpecialisation] = useState('Cardiology');
+  const [regNumber, setRegNumber] = useState('');
 
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -51,6 +52,7 @@ export default function LoginPage() {
           lastName,
           password,
           specialisation: role === 'DOCTOR' ? specialisation : undefined,
+          regNumber: role === 'DOCTOR' ? regNumber : undefined,
         });
       } else {
         await login(email, role, password);
@@ -108,14 +110,16 @@ export default function LoginPage() {
                 {isForgotMode
                   ? `Reset ${role} Password`
                   : isRegisterMode
-                  ? `Create ${role} Account`
+                  ? `Register as ${role}`
                   : `Sign In as ${role}`}
               </h2>
               <p className="text-xs text-slate-400 mt-1">
                 {isForgotMode
                   ? 'Enter your email to receive a temporary reset password.'
                   : isRegisterMode
-                  ? 'Fill out your details to get started on any device.'
+                  ? role === 'DOCTOR'
+                    ? 'Enter your details & NMC/MCI registration ID for verification.'
+                    : 'Fill out your details to start booking outpatient consultations.'
                   : 'Enter your email and password to access your dashboard.'}
               </p>
             </div>
@@ -131,13 +135,6 @@ export default function LoginPage() {
                 <div className="space-y-1">
                   <strong className="block font-bold">Authentication Error</strong>
                   <span>{errorMsg}</span>
-                  <button
-                    type="button"
-                    onClick={() => { setIsForgotMode(true); setErrorMsg(''); }}
-                    className="block text-emerald-400 font-semibold underline mt-1"
-                  >
-                    Forgot or Reset Password?
-                  </button>
                 </div>
               </motion.div>
             )}
@@ -166,7 +163,7 @@ export default function LoginPage() {
                         required
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="First Name"
+                        placeholder="e.g. Ananya"
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
@@ -177,28 +174,44 @@ export default function LoginPage() {
                         required
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Last Name"
+                        placeholder="e.g. Verma"
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
                   </div>
 
                   {role === 'DOCTOR' && (
-                    <div>
-                      <label className="block text-slate-400 font-semibold mb-1">Specialisation</label>
-                      <select
-                        value={specialisation}
-                        onChange={(e) => setSpecialisation(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
-                      >
-                        <option value="Cardiology">Cardiology</option>
-                        <option value="Neurology">Neurology</option>
-                        <option value="Orthopedics">Orthopedics</option>
-                        <option value="Pediatrics">Pediatrics</option>
-                        <option value="Dermatology">Dermatology</option>
-                        <option value="General Medicine">General Medicine</option>
-                      </select>
-                    </div>
+                    <>
+                      <div>
+                        <label className="block text-slate-400 font-semibold mb-1">Specialisation Department</label>
+                        <select
+                          value={specialisation}
+                          onChange={(e) => setSpecialisation(e.target.value)}
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
+                        >
+                          <option value="Cardiology">Cardiology</option>
+                          <option value="Neurology">Neurology</option>
+                          <option value="Orthopedics">Orthopedics</option>
+                          <option value="Pediatrics">Pediatrics</option>
+                          <option value="Dermatology">Dermatology</option>
+                          <option value="General Medicine">General Medicine</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-slate-400 font-semibold mb-1 flex items-center gap-1.5">
+                          <FileBadge className="w-3.5 h-3.5 text-blue-400" /> NMC / MCI Medical Registration ID
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={regNumber}
+                          onChange={(e) => setRegNumber(e.target.value)}
+                          placeholder="e.g. MCI-2024-88910"
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 uppercase font-mono"
+                        />
+                      </div>
+                    </>
                   )}
                 </>
               )}
@@ -236,7 +249,7 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
+                    placeholder="Enter password"
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
@@ -254,11 +267,11 @@ export default function LoginPage() {
                 }`}
               >
                 {loading ? (
-                  'Authenticating...'
+                  'Processing...'
                 ) : isForgotMode ? (
                   'Reset Password & Sign In'
                 ) : isRegisterMode ? (
-                  <><UserPlus className="w-4 h-4" /> Create {role} Account</>
+                  <><UserPlus className="w-4 h-4" /> Register {role} Account</>
                 ) : (
                   <><LogIn className="w-4 h-4" /> Sign In as {role} <ArrowRight className="w-4 h-4" /></>
                 )}
@@ -268,7 +281,7 @@ export default function LoginPage() {
             <div className="text-center pt-2 border-t border-slate-800/80 text-xs">
               {isRegisterMode ? (
                 <p className="text-slate-400">
-                  Already have an account?{' '}
+                  Already registered?{' '}
                   <button
                     type="button"
                     onClick={() => { setIsRegisterMode(false); setIsForgotMode(false); setErrorMsg(''); }}
@@ -277,23 +290,15 @@ export default function LoginPage() {
                     Sign In
                   </button>
                 </p>
-              ) : isForgotMode ? (
-                <button
-                  type="button"
-                  onClick={() => { setIsForgotMode(false); setErrorMsg(''); }}
-                  className="text-emerald-400 font-bold hover:underline"
-                >
-                  Back to Sign In
-                </button>
               ) : (
                 <p className="text-slate-400">
-                  Don&apos;t have an account on this device?{' '}
+                  Need a new account?{' '}
                   <button
                     type="button"
                     onClick={() => { setIsRegisterMode(true); setIsForgotMode(false); setErrorMsg(''); }}
                     className="text-emerald-400 font-bold hover:underline"
                   >
-                    Create Account
+                    Create {role} Account
                   </button>
                 </p>
               )}
