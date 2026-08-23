@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
@@ -90,6 +90,7 @@ export default function AdminDashboardPage() {
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [actionSuccessMsg, setActionSuccessMsg] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Reschedule Modal State
   const [reschedulingApt, setReschedulingApt] = useState<AppointmentItem | null>(null);
@@ -106,92 +107,109 @@ export default function AdminDashboardPage() {
   const [leaveDate, setLeaveDate] = useState('2026-08-28');
   const [leaveReason, setLeaveReason] = useState('Medical Conference');
 
-  const loadData = () => {
+  const loadData = useCallback(async () => {
+    setIsRefreshing(true);
     try {
-      const storedAppts = localStorage.getItem('primecare_appointments');
-      if (storedAppts) setAppointments(JSON.parse(storedAppts));
-    } catch {}
-
-    try {
-      const storedRoster = localStorage.getItem('primecare_doctor_profiles');
-      if (storedRoster) {
-        setDoctorProfiles(JSON.parse(storedRoster));
-      } else {
-        localStorage.setItem('primecare_doctor_profiles', JSON.stringify(DEFAULT_DOCTORS));
-        setDoctorProfiles(DEFAULT_DOCTORS);
+      const apptRes = await fetch('/api/sync/appointments', { cache: 'no-store' });
+      const apptData = await apptRes.json();
+      if (apptData.success && Array.isArray(apptData.appointments)) {
+        setAppointments(apptData.appointments);
+        localStorage.setItem('primecare_appointments', JSON.stringify(apptData.appointments));
       }
-    } catch {
-      setDoctorProfiles(DEFAULT_DOCTORS);
-    }
-
-    try {
-      const storedApps = localStorage.getItem('primecare_doctor_applications');
-      if (storedApps) setDoctorApplications(JSON.parse(storedApps));
     } catch {}
 
     try {
-      const storedLeaves = localStorage.getItem('primecare_leaves');
-      if (storedLeaves) setLeaves(JSON.parse(storedLeaves));
+      const docRes = await fetch('/api/sync/doctors', { cache: 'no-store' });
+      const docData = await docRes.json();
+      if (docData.success && Array.isArray(docData.doctors) && docData.doctors.length > 0) {
+        setDoctorProfiles(docData.doctors);
+        localStorage.setItem('primecare_doctor_profiles', JSON.stringify(docData.doctors));
+      }
     } catch {}
-  };
+
+    try {
+      const appRes = await fetch('/api/sync/applications', { cache: 'no-store' });
+      const appData = await appRes.json();
+      if (appData.success && Array.isArray(appData.applications)) {
+        setDoctorApplications(appData.applications);
+        localStorage.setItem('primecare_doctor_applications', JSON.stringify(appData.applications));
+      }
+    } catch {}
+
+    try {
+      const leaveRes = await fetch('/api/sync/leaves', { cache: 'no-store' });
+      const leaveData = await leaveRes.json();
+      if (leaveData.success && Array.isArray(leaveData.leaves)) {
+        setLeaves(leaveData.leaves);
+        localStorage.setItem('primecare_leaves', JSON.stringify(leaveData.leaves));
+      }
+    } catch {}
+
+    setIsRefreshing(false);
+  }, []);
 
   useEffect(() => {
     loadData();
-    window.addEventListener('storage', loadData);
-    return () => window.removeEventListener('storage', loadData);
-  }, [user]);
+    const interval = setInterval(loadData, 6000);
+    return () => clearInterval(interval);
+  }, [loadData]);
 
-  // Section 1: Active Consultations (Excludes COMPLETED, CANCELLED, and LEAVE_CANCELLED)
+  // Active Consultations
   const activeConsultations = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return appointments.filter(a => {
       if (!a || a.status === 'COMPLETED' || a.status === 'CANCELLED' || a.status === 'LEAVE_CANCELLED') return false;
-      return `${a.patientName || ''} ${a.patientEmail || ''} ${a.doctorName || ''} ${a.department || ''} ${a.tokenNumber || ''}`.toLowerCase().includes(q);
+      return ((a.patientName || '') + ' ' + (a.patientEmail || '') + ' ' + (a.doctorName || '') + ' ' + (a.department || '') + ' ' + (a.tokenNumber || '')).toLowerCase().includes(q);
     });
   }, [appointments, searchQuery]);
 
-  // Section 2: Due to Doctor on Leave (Global Clinic Shifted Appointments)
+  // Leave Displaced Consultations
   const leaveAffectedConsultations = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return appointments.filter(a => {
       if (!a || a.status !== 'LEAVE_CANCELLED') return false;
-      return `${a.patientName || ''} ${a.patientEmail || ''} ${a.doctorName || ''} ${a.department || ''} ${a.tokenNumber || ''}`.toLowerCase().includes(q);
+      return ((a.patientName || '') + ' ' + (a.patientEmail || '') + ' ' + (a.doctorName || '') + ' ' + (a.department || '') + ' ' + (a.tokenNumber || '')).toLowerCase().includes(q);
     });
   }, [appointments, searchQuery]);
 
-  // Section 3: Finalized / Done Consultations
+  // Finalized Consultations
   const doneConsultations = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return appointments.filter(a => {
       if (!a || a.status !== 'COMPLETED') return false;
-      return `${a.patientName || ''} ${a.patientEmail || ''} ${a.doctorName || ''} ${a.department || ''} ${a.tokenNumber || ''}`.toLowerCase().includes(q);
+      return ((a.patientName || '') + ' ' + (a.patientEmail || '') + ' ' + (a.doctorName || '') + ' ' + (a.department || '') + ' ' + (a.tokenNumber || '')).toLowerCase().includes(q);
     });
   }, [appointments, searchQuery]);
 
-  // Section 4: Filtered Doctors
+  // Filtered Doctors
   const filteredDoctors = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return doctorProfiles.filter(d => 
-      `${d.name || ''} ${d.specialisation || ''} ${d.email || ''} ${d.hospital || ''}`.toLowerCase().includes(q)
+      ((d.name || '') + ' ' + (d.specialisation || '') + ' ' + (d.email || '') + ' ' + (d.hospital || '')).toLowerCase().includes(q)
     );
   }, [doctorProfiles, searchQuery]);
 
-  // Admin Manual Action: Mark as Done
-  const handleMarkAsDone = (aptId: string) => {
+  const handleMarkAsDone = async (aptId: string) => {
     try {
       const updated = appointments.map(a => {
         if (a.id === aptId) {
           return {
             ...a,
-            status: 'COMPLETED' as const,
+            status: 'COMPLETED',
             finalizedAt: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
           };
         }
         return a;
       });
 
-      localStorage.setItem('primecare_appointments', JSON.stringify(updated));
       setAppointments(updated);
+      localStorage.setItem('primecare_appointments', JSON.stringify(updated));
+      await fetch('/api/sync/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointments: updated })
+      });
+
       setActionSuccessMsg('Consultation marked as Done and moved to Finalized Archive.');
       setTimeout(() => setActionSuccessMsg(''), 4000);
     } catch {
@@ -199,8 +217,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Reschedule and restore to active queue
-  const handleConfirmReschedule = (e: React.FormEvent) => {
+  const handleConfirmReschedule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reschedulingApt) return;
 
@@ -217,120 +234,104 @@ export default function AdminDashboardPage() {
       return a;
     });
 
-    localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
     setAppointments(updatedAppts);
+    localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
+    await fetch('/api/sync/appointments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appointments: updatedAppts })
+    });
+
     setReschedulingApt(null);
-    setActionSuccessMsg(`Appointment for ${reschedulingApt.patientName} successfully rescheduled to ${rescheduleDate} at ${rescheduleSlot} and restored to Active Queue.`);
+    setActionSuccessMsg('Appointment for ' + reschedulingApt.patientName + ' rescheduled and restored to Active Queue.');
     setTimeout(() => setActionSuccessMsg(''), 5000);
   };
 
-  // Save Doctor Edit
-  const handleSaveDoctorEdit = (e: React.FormEvent) => {
+  const handleSaveDoctorEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingDoctor) return;
 
     try {
       const updatedRoster = doctorProfiles.map(d => d.id === editingDoctor.id ? editingDoctor : d);
-      localStorage.setItem('primecare_doctor_profiles', JSON.stringify(updatedRoster));
       setDoctorProfiles(updatedRoster);
+      localStorage.setItem('primecare_doctor_profiles', JSON.stringify(updatedRoster));
 
-      const updatedAppointments = appointments.map(a => {
-        if (a.doctorId === editingDoctor.id || a.doctorEmail?.toLowerCase() === editingDoctor.email?.toLowerCase()) {
-          return {
-            ...a,
-            doctorName: editingDoctor.name,
-            department: editingDoctor.specialisation,
-            fee: editingDoctor.fee
-          };
-        }
-        return a;
+      await fetch('/api/sync/doctors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ doctor: editingDoctor })
       });
-      localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppointments));
-      setAppointments(updatedAppointments);
 
       setEditingDoctor(null);
-      setActionSuccessMsg(`Doctor profile for ${editingDoctor.name} updated successfully.`);
+      setActionSuccessMsg('Doctor profile for ' + editingDoctor.name + ' updated in cloud database.');
       setTimeout(() => setActionSuccessMsg(''), 4000);
     } catch {
       alert('Failed to update doctor details.');
     }
   };
 
-  // Permanent Doctor Removal
   const handlePermanentDoctorRemoval = (doctor: DoctorProfile) => {
+    const docEmailClean = (doctor.email || '').toLowerCase().trim();
+    const docId = doctor.id;
+
+    const updatedRoster = doctorProfiles.filter(d => d.id !== docId && (d.email || '').toLowerCase().trim() !== docEmailClean);
+    setDoctorProfiles(updatedRoster);
+    localStorage.setItem('primecare_doctor_profiles', JSON.stringify(updatedRoster));
+
+    setDoctorToDelete(null);
+    setActionSuccessMsg('Doctor account for ' + doctor.name + ' has been permanently removed.');
+    setTimeout(() => setActionSuccessMsg(''), 5000);
+  };
+
+  const handleApproveDoctor = async (app: DoctorApplication) => {
     try {
-      const docEmailClean = (doctor.email || '').toLowerCase().trim();
-      const docId = doctor.id;
+      await fetch('/api/sync/applications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: app.id, email: app.email, status: 'APPROVED' })
+      });
 
-      const updatedRoster = doctorProfiles.filter(d => d.id !== docId && (d.email || '').toLowerCase().trim() !== docEmailClean);
-      localStorage.setItem('primecare_doctor_profiles', JSON.stringify(updatedRoster));
-      setDoctorProfiles(updatedRoster);
+      const newDocProfile: DoctorProfile = {
+        id: app.id || ('doc-' + Date.now()),
+        email: app.email,
+        name: app.name.startsWith('Dr.') ? app.name : 'Dr. ' + app.name,
+        specialisation: app.specialisation || 'General Medicine',
+        qualification: app.qualification || 'MBBS, MD',
+        experience: app.experience || 'Practice Specialist',
+        hospital: 'PrimeCare Multispecialty Hospital',
+        fee: '₹1,000',
+        rating: '5.0 ★',
+        bio: 'Verified Clinical Specialist in ' + app.specialisation + '. NMC/MCI Reg: ' + app.regNumber
+      };
 
-      const storedApps: DoctorApplication[] = JSON.parse(localStorage.getItem('primecare_doctor_applications') || '[]');
-      const filteredApps = storedApps.filter(a => (a.email || '').toLowerCase().trim() !== docEmailClean);
-      localStorage.setItem('primecare_doctor_applications', JSON.stringify(filteredApps));
-      setDoctorApplications(filteredApps);
+      await fetch('/api/sync/doctors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ doctor: newDocProfile })
+      });
 
-      const storedUsers = JSON.parse(localStorage.getItem('primecare_registered_users') || '[]');
-      const filteredUsers = storedUsers.filter((u: any) => (u.email || '').toLowerCase().trim() !== docEmailClean);
-      localStorage.setItem('primecare_registered_users', JSON.stringify(filteredUsers));
-
-      localStorage.removeItem(`role_pwd_doctor_${docEmailClean}`);
-      localStorage.removeItem(`role_pwd_ADMIN_${docEmailClean}`);
-
-      const updatedLeaves = leaves.filter(l => l.doctorId !== docId && l.doctorName.toLowerCase() !== doctor.name.toLowerCase());
-          localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
-    fetch('/api/sync/leaves', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leaves: updatedLeaves }) });
-      setLeaves(updatedLeaves);
-
-      setDoctorToDelete(null);
-      setActionSuccessMsg(`Doctor account for ${doctor.name} (${doctor.email}) has been permanently deleted.`);
+      loadData();
+      setActionSuccessMsg('Physician ' + app.name + ' approved and added to live roster across all devices.');
       setTimeout(() => setActionSuccessMsg(''), 5000);
     } catch {
-      alert('Failed to delete doctor account.');
+      alert('Failed to approve doctor.');
     }
   };
 
-  const handleApproveDoctor = (app: DoctorApplication) => {
-    try {
-      const updatedApps = doctorApplications.map(a => a.id === app.id ? { ...a, status: 'APPROVED' as const } : a);
-      localStorage.setItem('primecare_doctor_applications', JSON.stringify(updatedApps));
-      setDoctorApplications(updatedApps);
-
-      const newDocProfile: DoctorProfile = {
-        id: app.id,
-        email: app.email,
-        name: app.name,
-        specialisation: app.specialisation,
-        qualification: app.qualification,
-        experience: app.experience,
-        hospital: 'PrimeCare Multispecialty Hospital',
-        fee: '₹1,200',
-        rating: '5.0 ★',
-        bio: `Verified Clinical Specialist in ${app.specialisation}. NMC/MCI Reg: ${app.regNumber}`
-      };
-      const updatedRoster = [newDocProfile, ...doctorProfiles];
-      localStorage.setItem('primecare_doctor_profiles', JSON.stringify(updatedRoster));
-      setDoctorProfiles(updatedRoster);
-
-      setActionSuccessMsg(`Physician ${app.name} approved and added to live roster.`);
-      setTimeout(() => setActionSuccessMsg(''), 4000);
-    } catch {}
+  const handleRejectDoctor = async (appId: string) => {
+    await fetch('/api/sync/applications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: appId, status: 'REJECTED' })
+    });
+    loadData();
   };
 
-  const handleRejectDoctor = (appId: string) => {
-    const updatedApps = doctorApplications.map(a => a.id === appId ? { ...a, status: 'REJECTED' as const } : a);
-    localStorage.setItem('primecare_doctor_applications', JSON.stringify(updatedApps));
-    setDoctorApplications(updatedApps);
-  };
-
-  // RECORD LEAVE: AUTOMATICALLY SHIFTS APPOINTMENTS TO 'LEAVE_CANCELLED'
   const handleAddLeave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setActionSuccessMsg('Recording leave & notifying affected patients...');
+    setActionSuccessMsg('Recording leave & shifting affected patient appointments...');
 
     const docClean = leaveDoctorName.toLowerCase().replace('dr. ', '').trim();
-
     const matchedDoc = doctorProfiles.find(d => 
       d.name.toLowerCase().replace('dr. ', '').trim() === docClean ||
       d.name.toLowerCase().includes(docClean)
@@ -349,9 +350,14 @@ export default function AdminDashboardPage() {
     };
 
     const updatedLeaves = [newLeave, ...leaves];
-        localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
-    fetch('/api/sync/leaves', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leaves: updatedLeaves }) });
     setLeaves(updatedLeaves);
+    localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
+
+    await fetch('/api/sync/leaves', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leaves: updatedLeaves })
+    });
 
     const affected = appointments.filter(a => {
       if (a.date !== leaveDate || a.status === 'COMPLETED' || a.status === 'LEAVE_CANCELLED') return false;
@@ -364,12 +370,17 @@ export default function AdminDashboardPage() {
         const isAffected = affected.some(aff => aff.id === a.id);
         return isAffected ? { ...a, status: 'LEAVE_CANCELLED', leaveReason } : a;
       });
-      localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
       setAppointments(updatedAppts);
+      localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
+      await fetch('/api/sync/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointments: updatedAppts })
+      });
     }
 
     try {
-      const res = await fetch('/api/admin/leave-reschedule', {
+      await fetch('/api/admin/leave-reschedule', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -380,19 +391,21 @@ export default function AdminDashboardPage() {
           affectedAppointments: affected
         })
       });
-      const data = await res.json();
-      setActionSuccessMsg(data.message || `Leave recorded. ${affected.length} patient(s) moved to "Due to Dr. on Leave" section.`);
-    } catch {
-      setActionSuccessMsg(`Leave recorded. Shifted ${affected.length} appointment(s) to "Due to Dr. on Leave".`);
-    }
+    } catch {}
 
+    setActionSuccessMsg('Leave recorded. ' + affected.length + ' appointment(s) moved to "Due to Dr. on Leave" tab.');
     setTimeout(() => setActionSuccessMsg(''), 5000);
   };
 
-  const handleDeleteLeave = (id: string) => {
+  const handleDeleteLeave = async (id: string) => {
     const updated = leaves.filter(l => l.id !== id);
-    localStorage.setItem('primecare_leaves', JSON.stringify(updated));
     setLeaves(updated);
+    localStorage.setItem('primecare_leaves', JSON.stringify(updated));
+    await fetch('/api/sync/leaves', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leaves: updated })
+    });
   };
 
   return (
@@ -411,11 +424,10 @@ export default function AdminDashboardPage() {
                 Clinic Operations & Doctor Governance
               </h1>
               <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                Full authority to track consultations, handle doctor leaves, verify doctors, or permanently delete accounts.
+                Full authority to approve newly registered physicians, manage leaves, and oversee outpatient queues across all devices.
               </p>
             </div>
 
-            {/* TAB SELECTORS */}
             <div className="flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto text-xs font-bold">
               <button
                 type="button"
@@ -454,7 +466,7 @@ export default function AdminDashboardPage() {
                   activeTab === 'DOCTORS' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <Stethoscope className="w-3.5 h-3.5" /> Doctor Directory ({doctorProfiles.length})
+                <Stethoscope className="w-3.5 h-3.5" /> Doctors & Approvals ({doctorProfiles.length})
               </button>
 
               <button
@@ -498,7 +510,7 @@ export default function AdminDashboardPage() {
               onClick={loadData}
               className="text-xs text-emerald-400 hover:underline flex items-center gap-1 font-semibold self-end sm:self-center"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Refresh Live Data
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} /> Refresh Cloud Data
             </button>
           </div>
 
@@ -571,7 +583,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: DUE TO DOCTOR ON LEAVE WITH RESCHEDULE BUTTON (ADMIN PORTAL) */}
+          {/* TAB 2: DUE TO DOCTOR ON LEAVE */}
           {activeTab === 'LEAVE_AFFECTED' && (
             <div className="space-y-4">
               <div className="p-6 rounded-3xl bg-amber-950/20 border border-amber-500/30 space-y-2">
@@ -580,7 +592,7 @@ export default function AdminDashboardPage() {
                   <span>Considered Appointments Shifted Due to Doctor on Leave ({leaveAffectedConsultations.length})</span>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  These patient appointments were automatically removed from the active queue because a doctor leave was recorded. You can click <strong>&quot;Reschedule Slot&quot;</strong> to reassign a date/time and restore the appointment to the active queue.
+                  These patient appointments were displaced due to an approved leave date. Click <strong>&quot;Reschedule Slot&quot;</strong> to allocate a new date and time.
                 </p>
               </div>
 
@@ -588,7 +600,6 @@ export default function AdminDashboardPage() {
                 <div className="p-12 text-center text-slate-500 border border-slate-800 rounded-3xl bg-slate-900/40 space-y-2">
                   <CheckCircle2 className="w-10 h-10 mx-auto text-slate-600" />
                   <p className="text-sm font-semibold text-slate-300">No Shifted Appointments</p>
-                  <p className="text-xs text-slate-500">No patient bookings across any department have been displaced by doctor leaves.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -617,35 +628,24 @@ export default function AdminDashboardPage() {
                             <span className="text-slate-400">Original Date & Slot:</span>
                             <strong className="text-amber-300">{a.date} ({a.timeSlot})</strong>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">Department:</span>
-                            <span className="text-slate-300">{a.department}</span>
-                          </div>
                           <div className="flex justify-between pt-1 border-t border-slate-800 text-slate-400">
                             <span>Duty Leave Reason:</span>
                             <span className="text-amber-400 font-medium">{a.leaveReason || 'Doctor on Approved Leave'}</span>
                           </div>
                         </div>
-
-                        <div>
-                          <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Patient Chief Complaint:</span>
-                          <p className="text-xs text-slate-300 italic">&quot;{a.symptoms}&quot;</p>
-                        </div>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-800 space-y-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setReschedulingApt(a);
-                            setRescheduleDate(a.date || '2026-08-29');
-                            setRescheduleSlot(a.timeSlot || '10:00 AM');
-                          }}
-                          className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20"
-                        >
-                          <CalendarPlus className="w-4 h-4" /> Reschedule Slot & Restore to Queue
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReschedulingApt(a);
+                          setRescheduleDate(a.date || '2026-08-29');
+                          setRescheduleSlot(a.timeSlot || '10:00 AM');
+                        }}
+                        className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20"
+                      >
+                        <CalendarPlus className="w-4 h-4" /> Reschedule Slot & Restore to Queue
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -653,7 +653,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 3: FINALIZED CONSULTATIONS (DONE) */}
+          {/* TAB 3: FINALIZED CONSULTATIONS */}
           {activeTab === 'DONE' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -661,9 +661,6 @@ export default function AdminDashboardPage() {
                   <h2 className="text-base font-bold text-white flex items-center gap-2">
                     <CheckCheck className="w-4 h-4 text-emerald-400" /> Finalized & Done Consultations ({doneConsultations.length})
                   </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Consultations completed by physicians or marked as done by administrators.
-                  </p>
                 </div>
               </div>
 
@@ -671,7 +668,6 @@ export default function AdminDashboardPage() {
                 <div className="p-12 text-center text-slate-500 border border-slate-800 rounded-3xl bg-slate-900/40 space-y-2">
                   <Archive className="w-10 h-10 mx-auto text-slate-600" />
                   <p className="text-sm font-semibold">No Finalized Consultations Yet</p>
-                  <p className="text-xs text-slate-500">When doctors finalize consultations or click 'Mark as Done', records move here.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -704,25 +700,7 @@ export default function AdminDashboardPage() {
                             <span className="text-slate-400">Consultation Date:</span>
                             <span className="text-slate-300">{a.date} • {a.timeSlot}</span>
                           </div>
-                          {a.finalizedAt && (
-                            <div className="flex justify-between pt-1 border-t border-slate-800 text-[10px] text-slate-400">
-                              <span>Finalized At:</span>
-                              <span className="text-emerald-300 font-mono">{a.finalizedAt}</span>
-                            </div>
-                          )}
                         </div>
-
-                        <div>
-                          <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Clinical Chief Complaint:</span>
-                          <p className="text-xs text-slate-300 italic">&quot;{a.symptoms}&quot;</p>
-                        </div>
-                      </div>
-
-                      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
-                        <span className="text-emerald-400 flex items-center gap-1 font-semibold">
-                          <BadgeCheck className="w-3.5 h-3.5" /> Care Plan Dispatched
-                        </span>
-                        <span className="font-mono text-slate-500">{a.id}</span>
                       </div>
                     </div>
                   ))}
@@ -731,7 +709,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 4: DOCTOR DIRECTORY */}
+          {/* TAB 4: DOCTOR DIRECTORY & APPROVAL APPLICATIONS */}
           {activeTab === 'DOCTORS' && (
             <div className="space-y-6">
               {doctorApplications.filter(a => a.status === 'PENDING').length > 0 && (
@@ -749,15 +727,14 @@ export default function AdminDashboardPage() {
                             <p className="text-slate-400 font-mono">{app.email}</p>
                           </div>
                           <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold uppercase text-[10px]">
-                            Pending
+                            Pending Review
                           </span>
                         </div>
 
                         <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-                          <p><strong>NMC/MCI ID:</strong> <span className="text-blue-400 uppercase font-mono">{app.regNumber}</span></p>
+                          <p><strong>NMC/MCI ID:</strong> <span className="text-blue-400 uppercase font-mono font-bold">{app.regNumber}</span></p>
                           <p><strong>Specialisation:</strong> {app.specialisation}</p>
                           <p><strong>Qualification:</strong> {app.qualification}</p>
-                          <p><strong>Experience:</strong> {app.experience}</p>
                         </div>
 
                         <div className="flex gap-2 pt-1">
@@ -766,7 +743,7 @@ export default function AdminDashboardPage() {
                             onClick={() => handleApproveDoctor(app)}
                             className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition"
                           >
-                            Approve
+                            Approve & Add to Roster
                           </button>
                           <button
                             type="button"
@@ -787,7 +764,6 @@ export default function AdminDashboardPage() {
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <Stethoscope className="w-4 h-4 text-emerald-400" /> Active Doctor Roster ({filteredDoctors.length})
                   </h3>
-                  <span className="text-xs text-slate-400">Admins can edit credentials or permanently remove accounts</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -829,7 +805,6 @@ export default function AdminDashboardPage() {
                           type="button"
                           onClick={() => setDoctorToDelete(doc)}
                           className="py-2 px-3 bg-red-950/30 hover:bg-red-900/50 border border-red-500/40 text-red-400 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1"
-                          title="Permanently remove doctor account"
                         >
                           <UserX className="w-4 h-4" />
                         </button>
@@ -942,7 +917,7 @@ export default function AdminDashboardPage() {
 
         </main>
 
-        {/* RESCHEDULE MODAL */}
+        {/* MODAL: RESCHEDULE */}
         <AnimatePresence>
           {reschedulingApt && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
@@ -1148,7 +1123,7 @@ export default function AdminDashboardPage() {
           )}
         </AnimatePresence>
 
-        {/* MODAL: PERMANENT REMOVAL */}
+        {/* MODAL: REMOVAL */}
         <AnimatePresence>
           {doctorToDelete && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
@@ -1170,7 +1145,6 @@ export default function AdminDashboardPage() {
 
                 <p className="text-xs text-slate-300 leading-relaxed bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
                   Are you sure you want to delete <strong className="text-white">{doctorToDelete.name}</strong> (<span className="text-slate-400">{doctorToDelete.email}</span>)?
-                  This will revoke their login credentials, remove their directory profile, and cancel their active schedule.
                 </p>
 
                 <div className="flex gap-3">
@@ -1186,7 +1160,7 @@ export default function AdminDashboardPage() {
                     onClick={() => handlePermanentDoctorRemoval(doctorToDelete)}
                     className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-red-600/30"
                   >
-                    Delete Permanently
+                    Delete
                   </button>
                 </div>
               </motion.div>
@@ -1198,4 +1172,3 @@ export default function AdminDashboardPage() {
     </ProtectedRoute>
   );
 }
-
