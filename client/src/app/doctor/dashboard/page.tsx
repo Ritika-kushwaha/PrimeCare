@@ -10,11 +10,12 @@ import {
   Pill, FileText, Send, Calendar, 
   Printer, Receipt, Lock, Search, History, FolderHeart, User, Users, X, 
   Edit3, Save, BadgeCheck, Sparkles, AlertTriangle, HelpCircle, Check, ArrowRight,
-  Filter, RefreshCw, Award, Briefcase, Building2, Star
+  Filter, RefreshCw, Award, Briefcase, Building2, Star, ShieldAlert
 } from 'lucide-react';
 
 interface DoctorProfile {
   id: string;
+  email: string;
   name: string;
   specialisation: string;
   qualification: string;
@@ -29,6 +30,7 @@ interface VisitRecord {
   visitId: string;
   date: string;
   doctorName: string;
+  doctorEmail: string;
   department: string;
   symptoms: string;
   clinicalNotes: string;
@@ -78,41 +80,13 @@ interface AppointmentItem {
 }
 
 const DEFAULT_DOCTORS: DoctorProfile[] = [
-  { id: 'doc-cardio-01', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, angiographies, and lipidology.' },
-  { id: 'doc-cardio-02', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', rating: '4.8 ★', bio: 'Specialist in non-invasive coronary imaging, pediatric cardiology, and heart rhythm management.' },
-  { id: 'doc-neuro-01', name: 'Dr. Priya Nair', specialisation: 'Neurology', qualification: 'MD, DM (Neurology - NIMHANS)', experience: '12 Years Practice', hospital: 'PrimeCare Neuroscience Center', fee: '₹1,500', rating: '4.9 ★', bio: 'Consultant Neurologist focused on headache disorders, neuropathies, epilepsy, and acute stroke treatment.' },
-  { id: 'doc-ortho-01', name: 'Dr. Vikram Patel', specialisation: 'Orthopedics', qualification: 'MS (Orthopedics), MCh', experience: '15 Years Practice', hospital: 'PrimeCare Ortho Wing', fee: '₹1,000', rating: '4.7 ★', bio: 'Joint replacement, arthroscopic ligament surgery, and complex sports injury rehabilitation specialist.' },
-  { id: 'doc-pedia-01', name: 'Dr. Ananya Deshmukh', specialisation: 'Pediatrics', qualification: 'MD (Pediatrics), DCH', experience: '9 Years Practice', hospital: 'PrimeCare Children Pavilion', fee: '₹900', rating: '5.0 ★', bio: 'Pediatrician handling newborn intensive care, routine growth assessments, and childhood immunizations.' },
-  { id: 'doc-derma-01', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', rating: '4.8 ★', bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' },
-];
-
-const SEED_APPOINTMENTS: AppointmentItem[] = [
-  {
-    id: 'apt-seed-101',
-    tokenNumber: 'TK-401',
-    doctorName: 'Dr. Aarav Sharma',
-    department: 'Cardiology',
-    fee: '₹1,200',
-    date: '2026-08-28',
-    timeSlot: '10:00 AM',
-    symptoms: 'Persistent dry cough for 4 days with mild throat irritation and fever spikes',
-    patientName: 'Ritika Kushwaha',
-    patientEmail: 'ritikakushwaha62@gmail.com',
-    status: 'CONFIRMED',
-  },
-  {
-    id: 'apt-seed-102',
-    tokenNumber: 'TK-402',
-    doctorName: 'Dr. Meera Kulkarni',
-    department: 'Cardiology',
-    fee: '₹1,400',
-    date: '2026-08-28',
-    timeSlot: '11:30 AM',
-    symptoms: 'Mild chest heaviness after physical exertion, elevated BP',
-    patientName: 'Suresh Kushwaha',
-    patientEmail: 'ritikakushwaha62@gmail.com',
-    status: 'CONFIRMED',
-  }
+  { id: 'doc-cardio-01', email: 'ritikakushwaha62@gmail.com', name: 'Dr. Ritika Kushwaha', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, diagnostic angiographies, coronary interventions, and comprehensive lipid management.' },
+  { id: 'doc-cardio-02', email: 'aarav.sharma@primecare.in', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS)', experience: '12 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease.' },
+  { id: 'doc-cardio-03', email: 'meera.kulkarni@primecare.in', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', rating: '4.8 ★', bio: 'Specialist in non-invasive coronary imaging, pediatric cardiology, and heart rhythm management.' },
+  { id: 'doc-neuro-01', email: 'priya.nair@primecare.in', name: 'Dr. Priya Nair', specialisation: 'Neurology', qualification: 'MD, DM (Neurology - NIMHANS)', experience: '12 Years Practice', hospital: 'PrimeCare Neuroscience Center', fee: '₹1,500', rating: '4.9 ★', bio: 'Consultant Neurologist focused on headache disorders, neuropathies, epilepsy, and acute stroke treatment.' },
+  { id: 'doc-ortho-01', email: 'vikram.patel@primecare.in', name: 'Dr. Vikram Patel', specialisation: 'Orthopedics', qualification: 'MS (Orthopedics), MCh', experience: '15 Years Practice', hospital: 'PrimeCare Ortho Wing', fee: '₹1,000', rating: '4.7 ★', bio: 'Joint replacement, arthroscopic ligament surgery, and complex sports injury rehabilitation specialist.' },
+  { id: 'doc-pedia-01', email: 'ananya.deshmukh@primecare.in', name: 'Dr. Ananya Deshmukh', specialisation: 'Pediatrics', qualification: 'MD (Pediatrics), DCH', experience: '9 Years Practice', hospital: 'PrimeCare Children Pavilion', fee: '₹900', rating: '5.0 ★', bio: 'Pediatrician handling newborn intensive care, routine growth assessments, and childhood immunizations.' },
+  { id: 'doc-derma-01', email: 'rohan.mehta@primecare.in', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', rating: '4.8 ★', bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' },
 ];
 
 export default function DoctorDashboardPage() {
@@ -120,7 +94,7 @@ export default function DoctorDashboardPage() {
   const [activeTab, setActiveTab] = useState<'CLINICAL' | 'EHR' | 'PROFILE'>('CLINICAL');
   const [allAppointments, setAllAppointments] = useState<AppointmentItem[]>([]);
   const [activePatient, setActivePatient] = useState<AppointmentItem | null>(null);
-  const [filterMode, setFilterMode] = useState<'ALL' | 'MY_PATIENTS'>('ALL');
+  const [filterMode, setFilterMode] = useState<'MY_PATIENTS' | 'ALL'>('MY_PATIENTS');
   const [searchQueue, setSearchQueue] = useState('');
   
   // AI Triage State
@@ -135,23 +109,20 @@ export default function DoctorDashboardPage() {
   const [ehrRegistry, setEhrRegistry] = useState<PatientEHR[]>([]);
   const [selectedEhrPatient, setSelectedEhrPatient] = useState<PatientEHR | null>(null);
 
-  // Doctor Details & Edit Profile Form State
-  const [doctorProfiles, setDoctorProfiles] = useState<DoctorProfile[]>(DEFAULT_DOCTORS);
-  const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
+  // Doctor Email Binding
+  const doctorEmail = (user?.email || 'ritikakushwaha62@gmail.com').toLowerCase().trim();
 
-  const currentDoctorName = user ? `Dr. ${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Dr. Aarav Sharma';
-  const currentSpecialty = user?.specialisation || 'Cardiology';
-
-  // Profile Form Inputs
-  const [docName, setDocName] = useState(currentDoctorName);
-  const [docSpecialty, setDocSpecialty] = useState(currentSpecialty);
+  // Profile Form Inputs (Strictly Scoped to Current Doctor's Email)
+  const [docName, setDocName] = useState('Dr. Ritika Kushwaha');
+  const [docSpecialty, setDocSpecialty] = useState('Cardiology');
   const [docQualification, setDocQualification] = useState('MD, DM (Cardiology - AIIMS Delhi)');
   const [docExperience, setDocExperience] = useState('14 Years Practice');
   const [docHospital, setDocHospital] = useState('PrimeCare Apex Heart Institute');
   const [docFee, setDocFee] = useState('₹1,200');
   const [docBio, setDocBio] = useState('Senior Interventional Cardiologist specializing in preventive heart disease, diagnostic angiographies, coronary interventions, and comprehensive lipid management.');
+  const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
 
-  // Clinical Form
+  // Clinical Consultation Form State
   const [clinicalNotes, setClinicalNotes] = useState('Patient presents with stable vitals. Initiating standard therapeutic regimen.');
   const [medication, setMedication] = useState('Amoxicillin 500mg');
   const [frequencyHours, setFrequencyHours] = useState(8);
@@ -163,40 +134,44 @@ export default function DoctorDashboardPage() {
   const loadData = () => {
     try {
       const storedRoster = localStorage.getItem('primecare_doctor_profiles');
-      let roster = DEFAULT_DOCTORS;
-      if (storedRoster) {
-        roster = JSON.parse(storedRoster);
-      } else {
-        localStorage.setItem('primecare_doctor_profiles', JSON.stringify(DEFAULT_DOCTORS));
-      }
-      setDoctorProfiles(roster);
+      let roster: DoctorProfile[] = storedRoster ? JSON.parse(storedRoster) : DEFAULT_DOCTORS;
 
-      // Populate edit fields for current doctor if exists in roster
-      const cleanDoc = (user ? `${user.firstName || ''} ${user.lastName || ''}` : 'Aarav Sharma').toLowerCase().trim();
-      const existingDoc = roster.find(d => d.name.toLowerCase().includes(cleanDoc) || d.id === 'doc-cardio-01');
-      if (existingDoc) {
-        setDocName(existingDoc.name);
-        setDocSpecialty(existingDoc.specialisation);
-        setDocQualification(existingDoc.qualification);
-        setDocExperience(existingDoc.experience);
-        setDocHospital(existingDoc.hospital);
-        setDocFee(existingDoc.fee);
-        setDocBio(existingDoc.bio);
+      // Find or auto-create doctor profile for the current logged-in email
+      let myProfile = roster.find(d => (d.email || '').toLowerCase().trim() === doctorEmail);
+
+      if (!myProfile) {
+        const generatedName = user ? `Dr. ${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Dr. Ritika Kushwaha';
+        myProfile = {
+          id: `doc-${Date.now()}`,
+          email: doctorEmail,
+          name: generatedName.startsWith('Dr.') ? generatedName : `Dr. ${generatedName}`,
+          specialisation: user?.specialisation || 'Cardiology',
+          qualification: 'MD, DM (Cardiology - AIIMS Delhi)',
+          experience: '14 Years Practice',
+          hospital: 'PrimeCare Apex Heart Institute',
+          fee: '₹1,200',
+          rating: '4.9 ★',
+          bio: 'Senior Clinical Specialist specializing in cardiovascular disease and outpatient care.'
+        };
+        roster = [myProfile, ...roster];
+        localStorage.setItem('primecare_doctor_profiles', JSON.stringify(roster));
       }
+
+      setDocName(myProfile.name);
+      setDocSpecialty(myProfile.specialisation);
+      setDocQualification(myProfile.qualification);
+      setDocExperience(myProfile.experience);
+      setDocHospital(myProfile.hospital);
+      setDocFee(myProfile.fee);
+      setDocBio(myProfile.bio);
     } catch {}
 
     try {
       const stored = localStorage.getItem('primecare_appointments');
       if (stored) {
-        const parsed = JSON.parse(stored);
-        setAllAppointments(parsed.length === 0 ? SEED_APPOINTMENTS : parsed);
-      } else {
-        setAllAppointments(SEED_APPOINTMENTS);
-        localStorage.setItem('primecare_appointments', JSON.stringify(SEED_APPOINTMENTS));
+        setAllAppointments(JSON.parse(stored));
       }
-    } catch {
-      setAllAppointments(SEED_APPOINTMENTS);
-    }
+    } catch {}
 
     try {
       const storedEHR = localStorage.getItem('primecare_ehr_registry');
@@ -212,64 +187,94 @@ export default function DoctorDashboardPage() {
     return () => window.removeEventListener('storage', loadData);
   }, [user]);
 
-  // Save Doctor Profile Details
+  // SAVE DOCTOR DETAILS & CASCADE NAME UPDATES GLOBALLY
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     setProfileSuccessMsg('');
 
     try {
-      const storedRoster: DoctorProfile[] = JSON.parse(localStorage.getItem('primecare_doctor_profiles') || JSON.stringify(DEFAULT_DOCTORS));
-      const cleanDoc = docName.toLowerCase().trim();
-      
-      const existingIndex = storedRoster.findIndex(d => 
-        d.name.toLowerCase().trim() === cleanDoc || (user?.email && d.id.includes(user.email))
-      );
+      const formattedName = docName.trim().startsWith('Dr.') ? docName.trim() : `Dr. ${docName.trim()}`;
+      const formattedFee = docFee.trim().startsWith('₹') ? docFee.trim() : `₹${docFee.trim()}`;
 
-      const updatedDoc: DoctorProfile = {
-        id: existingIndex > -1 ? storedRoster[existingIndex].id : `doc-${Date.now()}`,
-        name: docName.startsWith('Dr.') ? docName : `Dr. ${docName}`,
+      // 1. Update Roster for THIS doctor email
+      const storedRoster: DoctorProfile[] = JSON.parse(localStorage.getItem('primecare_doctor_profiles') || JSON.stringify(DEFAULT_DOCTORS));
+      const myIndex = storedRoster.findIndex(d => (d.email || '').toLowerCase().trim() === doctorEmail);
+
+      const updatedDoctorData: DoctorProfile = {
+        id: myIndex > -1 ? storedRoster[myIndex].id : `doc-${Date.now()}`,
+        email: doctorEmail,
+        name: formattedName,
         specialisation: docSpecialty,
         qualification: docQualification,
         experience: docExperience,
         hospital: docHospital,
-        fee: docFee.startsWith('₹') ? docFee : `₹${docFee}`,
+        fee: formattedFee,
         rating: '4.9 ★',
         bio: docBio
       };
 
       let newRoster: DoctorProfile[];
-      if (existingIndex > -1) {
+      if (myIndex > -1) {
         newRoster = [...storedRoster];
-        newRoster[existingIndex] = updatedDoc;
+        newRoster[myIndex] = updatedDoctorData;
       } else {
-        newRoster = [updatedDoc, ...storedRoster];
+        newRoster = [updatedDoctorData, ...storedRoster];
       }
-
       localStorage.setItem('primecare_doctor_profiles', JSON.stringify(newRoster));
-      setDoctorProfiles(newRoster);
-      setProfileSuccessMsg('Doctor details updated successfully! These changes are now active across the booking desk.');
-      setTimeout(() => setProfileSuccessMsg(''), 4000);
+
+      // 2. Cascade Name & Info to ALL Appointments linked to this doctor's email / previous name
+      const storedAppointments: AppointmentItem[] = JSON.parse(localStorage.getItem('primecare_appointments') || '[]');
+      const oldNameClean = docName.toLowerCase().trim();
+
+      const updatedAppointments = storedAppointments.map(a => {
+        const isMyAppointment = 
+          ((a.doctorEmail || '').toLowerCase().trim() === doctorEmail) ||
+          ((a.doctorName || '').toLowerCase().trim() === oldNameClean) ||
+          ((a.doctorId || '') === updatedDoctorData.id);
+
+        if (isMyAppointment) {
+          return {
+            ...a,
+            doctorId: updatedDoctorData.id,
+            doctorEmail: doctorEmail,
+            doctorName: formattedName,
+            department: docSpecialty,
+            fee: formattedFee
+          };
+        }
+        return a;
+      });
+
+      localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppointments));
+      setAllAppointments(updatedAppointments);
+
+      setDocName(formattedName);
+      setDocFee(formattedFee);
+      setProfileSuccessMsg('Doctor identity & clinical records updated everywhere! All patients now reflect your updated practitioner details.');
+      setTimeout(() => setProfileSuccessMsg(''), 5000);
     } catch {
       alert('Failed to update details. Please try again.');
     }
   };
 
-  // Queue computation
+  // Compute Queue (Strictly checks doctorEmail OR assigned doctorName)
   const displayedQueue = useMemo(() => {
     const query = searchQueue.toLowerCase().trim();
-    const cleanDoc = docName.toLowerCase().replace('dr. ', '').trim();
+    const cleanDocName = docName.toLowerCase().replace('dr. ', '').trim();
 
     return allAppointments.filter((a) => {
       if (!a) return false;
       const matchSearch = `${a.patientName || ''} ${a.patientEmail || ''} ${a.doctorName || ''} ${a.department || ''}`.toLowerCase().includes(query);
       if (!matchSearch) return false;
 
-      if (filterMode === 'MY_PATIENTS' && cleanDoc) {
-        return (a.doctorName || '').toLowerCase().includes(cleanDoc);
+      if (filterMode === 'MY_PATIENTS') {
+        const isMyDocEmail = (a.doctorEmail || '').toLowerCase().trim() === doctorEmail;
+        const isMyDocName = (a.doctorName || '').toLowerCase().includes(cleanDocName);
+        return isMyDocEmail || isMyDocName;
       }
       return true;
     });
-  }, [allAppointments, filterMode, docName, searchQueue]);
+  }, [allAppointments, filterMode, docName, doctorEmail, searchQueue]);
 
   useEffect(() => {
     if (displayedQueue.length > 0 && (!activePatient || !displayedQueue.some(p => p.id === activePatient.id))) {
@@ -315,7 +320,7 @@ export default function DoctorDashboardPage() {
     const pEmail = (activePatient.patientEmail || 'patient@primecare.in').toLowerCase();
 
     let aiPostVisit = {
-      patientSummary: `Diagnosis: ${clinicalNotes}. Targeted outpatient clinical therapy initiated.`,
+      patientSummary: `Diagnosis: ${clinicalNotes}. Targeted clinical therapy initiated.`,
       medicationSchedule: `Take ${medication} every ${frequencyHours} hours for ${durationDays} days.`,
       followUpSteps: 'Maintain hydration, monitor symptom resolution, and return if condition does not improve.',
     };
@@ -339,6 +344,7 @@ export default function DoctorDashboardPage() {
       visitId: 'VST-' + Math.floor(1000 + Math.random() * 9000),
       date: new Date().toISOString().split('T')[0],
       doctorName: docName,
+      doctorEmail: doctorEmail,
       department: docSpecialty,
       symptoms: activePatient.symptoms || 'General Consultation',
       clinicalNotes,
@@ -467,7 +473,7 @@ export default function DoctorDashboardPage() {
 
         <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8 print:hidden">
           
-          {/* TOP HEADER & TABS */}
+          {/* TOP HEADER */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-semibold text-blue-400 mb-2">
@@ -481,7 +487,7 @@ export default function DoctorDashboardPage() {
               </p>
             </div>
 
-            {/* TAB SELECTORS: CLINICAL QUEUE | PATIENT EHR | EDIT DR DETAILS */}
+            {/* TAB SELECTORS */}
             <div className="flex items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto">
               <button
                 type="button"
@@ -490,7 +496,7 @@ export default function DoctorDashboardPage() {
                   activeTab === 'CLINICAL' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Patient Queue ({allAppointments.length})
+                Patient Queue ({displayedQueue.length})
               </button>
               <button
                 type="button"
@@ -579,21 +585,21 @@ export default function DoctorDashboardPage() {
                     <div className="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-semibold">
                       <button
                         type="button"
-                        onClick={() => setFilterMode('ALL')}
+                        onClick={() => setFilterMode('MY_PATIENTS')}
                         className={`py-1.5 rounded-lg transition ${
-                          filterMode === 'ALL' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'
+                          filterMode === 'MY_PATIENTS' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
                         }`}
                       >
-                        All Clinic Queue
+                        Assigned to Me ({docName})
                       </button>
                       <button
                         type="button"
-                        onClick={() => setFilterMode('MY_PATIENTS')}
+                        onClick={() => setFilterMode('ALL')}
                         className={`py-1.5 rounded-lg transition ${
-                          filterMode === 'MY_PATIENTS' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'
+                          filterMode === 'ALL' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
                         }`}
                       >
-                        Assigned to Me
+                        All Clinic Patients
                       </button>
                     </div>
 
@@ -603,7 +609,7 @@ export default function DoctorDashboardPage() {
                         type="text"
                         value={searchQueue}
                         onChange={(e) => setSearchQueue(e.target.value)}
-                        placeholder="Search patient or symptom..."
+                        placeholder="Search patient name or symptom..."
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
@@ -612,7 +618,13 @@ export default function DoctorDashboardPage() {
                       {displayedQueue.length === 0 ? (
                         <div className="p-8 text-center text-xs text-slate-500 space-y-2">
                           <Users className="w-8 h-8 mx-auto text-slate-600" />
-                          <p>No patients in this queue view.</p>
+                          <p>No patients currently assigned to {docName}.</p>
+                          <button
+                            onClick={() => setFilterMode('ALL')}
+                            className="text-emerald-400 hover:underline block mx-auto"
+                          >
+                            View All Clinic Patients
+                          </button>
                         </div>
                       ) : (
                         displayedQueue.map((p) => {
@@ -643,7 +655,7 @@ export default function DoctorDashboardPage() {
                               </div>
                               
                               <div className="mt-2 pt-2 border-t border-slate-900 flex justify-between items-center text-[10px] text-slate-400">
-                                <span>Dr: <strong className="text-slate-300">{p.doctorName}</strong></span>
+                                <span>Assisting Dr: <strong className="text-slate-300">{p.doctorName}</strong></span>
                                 <span>{p.date}</span>
                               </div>
 
@@ -770,7 +782,11 @@ export default function DoctorDashboardPage() {
                         </button>
                       </form>
                     </div>
-                  ) : null}
+                  ) : (
+                    <div className="p-12 text-center text-slate-500 border border-slate-800 rounded-3xl bg-slate-900/40">
+                      Select a patient from the queue to start consultation.
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -799,7 +815,6 @@ export default function DoctorDashboardPage() {
                 ))}
               </div>
 
-              {/* MODAL */}
               <AnimatePresence>
                 {selectedEhrPatient && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
@@ -848,18 +863,18 @@ export default function DoctorDashboardPage() {
             </div>
           )}
 
-          {/* TAB 3: EDIT DR. DETAILS & CREDENTIALS */}
+          {/* TAB 3: EDIT DR. DETAILS (EMAIL-BOUND) */}
           {activeTab === 'PROFILE' && (
             <div className="max-w-3xl mx-auto space-y-6">
               <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-2xl space-y-6">
                 
                 <div className="border-b border-slate-800 pb-4">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400 mb-2">
-                    <BadgeCheck className="w-3.5 h-3.5" /> Verified Practitioner Profile
+                    <BadgeCheck className="w-3.5 h-3.5" /> Bound to Account: {doctorEmail}
                   </div>
-                  <h2 className="text-2xl font-extrabold text-white">Edit Doctor Profile & Credentials</h2>
+                  <h2 className="text-2xl font-extrabold text-white">Edit Practitioner Details</h2>
                   <p className="text-xs text-slate-400 mt-1">
-                    Keep your clinical credentials, hospital affiliations, fees, and bio updated across the patient booking platform.
+                    Updating your details here will automatically synchronize and update all your assigned patient appointments and public directory profiles.
                   </p>
                 </div>
 
@@ -878,7 +893,7 @@ export default function DoctorDashboardPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-slate-400 font-semibold mb-1 flex items-center gap-1.5">
-                        <User className="w-3.5 h-3.5 text-emerald-400" /> Full Practitioner Name
+                        <User className="w-3.5 h-3.5 text-emerald-400" /> Practitioner Name
                       </label>
                       <input
                         type="text"
@@ -912,7 +927,7 @@ export default function DoctorDashboardPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-slate-400 font-semibold mb-1 flex items-center gap-1.5">
-                        <Award className="w-3.5 h-3.5 text-blue-400" /> Medical Qualifications
+                        <Award className="w-3.5 h-3.5 text-blue-400" /> Qualifications
                       </label>
                       <input
                         type="text"
@@ -926,14 +941,14 @@ export default function DoctorDashboardPage() {
 
                     <div>
                       <label className="block text-slate-400 font-semibold mb-1 flex items-center gap-1.5">
-                        <Briefcase className="w-3.5 h-3.5 text-amber-400" /> Years of Practice
+                        <Briefcase className="w-3.5 h-3.5 text-amber-400" /> Experience
                       </label>
                       <input
                         type="text"
                         required
                         value={docExperience}
                         onChange={(e) => setDocExperience(e.target.value)}
-                        placeholder="e.g. 12 Years Practice"
+                        placeholder="e.g. 14 Years Practice"
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
                       />
                     </div>
@@ -942,7 +957,7 @@ export default function DoctorDashboardPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-slate-400 font-semibold mb-1 flex items-center gap-1.5">
-                        <Building2 className="w-3.5 h-3.5 text-emerald-400" /> Affiliated Hospital / Clinic
+                        <Building2 className="w-3.5 h-3.5 text-emerald-400" /> Hospital Affiliation
                       </label>
                       <input
                         type="text"
@@ -971,14 +986,14 @@ export default function DoctorDashboardPage() {
 
                   <div>
                     <label className="block text-slate-400 font-semibold mb-1">
-                      Physician Bio & Clinical Specialties
+                      Professional Bio & Specialties
                     </label>
                     <textarea
                       rows={3}
                       required
                       value={docBio}
                       onChange={(e) => setDocBio(e.target.value)}
-                      placeholder="Write your professional bio, clinical focus, and procedural specialties..."
+                      placeholder="Write your clinical focus..."
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
                     />
                   </div>
@@ -987,7 +1002,7 @@ export default function DoctorDashboardPage() {
                     type="submit"
                     className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold rounded-xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2"
                   >
-                    <Save className="w-4 h-4" /> Save & Update Doctor Details
+                    <Save className="w-4 h-4" /> Save & Update Everywhere
                   </button>
                 </form>
 
