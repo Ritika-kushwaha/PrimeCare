@@ -77,7 +77,10 @@ export default function BookAppointmentPage() {
   const [existingAppointments, setExistingAppointments] = useState<AppointmentItem[]>([]);
   
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorProfile>(DEFAULT_DOCTORS[0]);
-  const [selectedDate, setSelectedDate] = useState('2026-08-28');
+  
+  // Dynamic Initial Date (Today formatted as YYYY-MM-DD)
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const [selectedDate, setSelectedDate] = useState(todayStr);
   const [selectedSlot, setSelectedSlot] = useState('10:00 AM');
   
   const [sharedEmail, setSharedEmail] = useState(user?.email || 'patient@primecare.in');
@@ -93,6 +96,20 @@ export default function BookAppointmentPage() {
   const [bookingSuccess, setBookingSuccess] = useState<AppointmentItem | null>(null);
   const [slotConflictError, setSlotConflictError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Generate Next 6 Upcoming Dates for Quick Selection
+  const quickDates = useMemo(() => {
+    const list = [];
+    const base = new Date();
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(base);
+      d.setDate(base.getDate() + i);
+      const iso = d.toISOString().split('T')[0];
+      const label = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+      list.push({ iso, label });
+    }
+    return list;
+  }, []);
 
   const loadData = useCallback(async () => {
     try {
@@ -130,10 +147,9 @@ export default function BookAppointmentPage() {
     return () => clearInterval(interval);
   }, [user, loadData]);
 
-  // Clean Name Helper
   const cleanDoctorName = (name?: string) => (name || '').toLowerCase().replace('dr. ', '').trim();
 
-  // Check if Selected Doctor is On Approved Leave
+  // Check if Selected Doctor is On Approved Leave on Selected Date
   const doctorLeaveRecord = useMemo(() => {
     const selClean = cleanDoctorName(selectedDoctor.name);
     const selId = selectedDoctor.id;
@@ -149,7 +165,7 @@ export default function BookAppointmentPage() {
     return `${(patientFirstName || '').trim()} ${(patientLastName || '').trim()}`.trim() || 'Patient Member';
   }, [patientFirstName, patientLastName]);
 
-  // Strictly per-doctor isolated slot availability check
+  // Per-doctor slot availability check
   const getSlotAvailability = (slot: string) => {
     if (doctorLeaveRecord) {
       return {
@@ -163,7 +179,6 @@ export default function BookAppointmentPage() {
     const selId = selectedDoctor.id;
     const cleanMember = currentMemberName.toLowerCase();
 
-    // Check if THIS specific doctor already has a patient at this time slot
     const existingDoctorBooking = existingAppointments.find(a => {
       if (a.date !== selectedDate || a.timeSlot !== slot) return false;
       if (a.status === 'CANCELLED' || a.status === 'LEAVE_CANCELLED') return false;
@@ -204,13 +219,11 @@ export default function BookAppointmentPage() {
     return ['ALL', ...Array.from(set)];
   }, [doctors]);
 
-  // Generate Google Calendar Link
   const getGoogleCalendarUrl = (apt: AppointmentItem) => {
     const title = encodeURIComponent(`PrimeCare Appointment with ${apt.doctorName}`);
     const details = encodeURIComponent(`Outpatient Consultation with ${apt.doctorName} (${apt.department}) at ${apt.hospital}.\nToken: ${apt.tokenNumber}\nChief Complaint: ${apt.symptoms}`);
     const location = encodeURIComponent(apt.hospital || 'PrimeCare Hospital');
 
-    // Parse date and time into YYYYMMDDTHHMMSSZ format
     const [year, month, day] = apt.date.split('-');
     const [time, period] = apt.timeSlot.split(' ');
     let [hours, mins] = time.split(':').map(Number);
@@ -224,7 +237,6 @@ export default function BookAppointmentPage() {
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
   };
 
-  // Download .ics file for Apple Calendar / Outlook
   const downloadICS = (apt: AppointmentItem) => {
     const [year, month, day] = apt.date.split('-');
     const [time, period] = apt.timeSlot.split(' ');
@@ -380,7 +392,6 @@ export default function BookAppointmentPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2.5">
-                    {/* PRINT TICKET BUTTON */}
                     <button
                       type="button"
                       onClick={() => window.print()}
@@ -389,7 +400,6 @@ export default function BookAppointmentPage() {
                       <Printer className="w-4 h-4" /> Print Appointment Slip
                     </button>
 
-                    {/* ADD TO GOOGLE CALENDAR */}
                     <a
                       href={getGoogleCalendarUrl(bookingSuccess)}
                       target="_blank"
@@ -399,7 +409,6 @@ export default function BookAppointmentPage() {
                       <ExternalLink className="w-4 h-4" /> Add to Google Calendar
                     </a>
 
-                    {/* DOWNLOAD .ICS */}
                     <button
                       type="button"
                       onClick={() => downloadICS(bookingSuccess)}
@@ -470,7 +479,6 @@ export default function BookAppointmentPage() {
                   />
                 </div>
 
-                {/* SPECIALTY FILTER CHIPS */}
                 <div className="flex gap-1.5 overflow-x-auto pb-1 text-[11px] font-bold">
                   {specialties.map(spec => (
                     <button
@@ -572,7 +580,6 @@ export default function BookAppointmentPage() {
                   </div>
                 </div>
 
-                {/* DOCTOR ON LEAVE WARNING BANNER */}
                 {doctorLeaveRecord && (
                   <motion.div
                     initial={{ opacity: 0, y: -6 }}
@@ -661,9 +668,32 @@ export default function BookAppointmentPage() {
                   </div>
                 </div>
 
-                {/* SELECT DATE */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Select Date</label>
+                {/* SELECT DATE & QUICK DATE CHIPS */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">Select Date</label>
+                    <span className="text-[10px] text-emerald-400 font-semibold">Active: {selectedDate}</span>
+                  </div>
+
+                  {/* QUICK DATE BUTTONS */}
+                  <div className="flex gap-2 overflow-x-auto pb-1 text-xs">
+                    {quickDates.map((q) => (
+                      <button
+                        key={q.iso}
+                        type="button"
+                        onClick={() => setSelectedDate(q.iso)}
+                        className={`px-3 py-2 rounded-xl border transition whitespace-nowrap flex flex-col items-center ${
+                          selectedDate === q.iso
+                            ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-extrabold shadow-md shadow-emerald-500/20'
+                            : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+                        }`}
+                      >
+                        <span className="text-[11px]">{q.label}</span>
+                        <span className="text-[9px] opacity-75">{q.iso}</span>
+                      </button>
+                    ))}
+                  </div>
+
                   <input
                     type="date"
                     required
@@ -708,7 +738,7 @@ export default function BookAppointmentPage() {
                           onClick={() => setSelectedSlot(slot)}
                           className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition text-left flex flex-col justify-between ${
                             isSlotSelected
-                              ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
+                              ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20 font-black'
                               : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
                           }`}
                         >

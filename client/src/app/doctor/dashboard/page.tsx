@@ -1279,7 +1279,7 @@ export default function DoctorDashboardPage() {
                       type="date"
                       required
                       value={rescheduleDate}
-                      onChange={(e) => setSelectedRescheduleDate(e.target.value)}
+                      onChange={(e) => setRescheduleDate(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 [color-scheme:dark]"
                     />
                   </div>
@@ -1354,3 +1354,4 @@ export default function DoctorDashboardPage() {
     </ProtectedRoute>
   );
 }
+
