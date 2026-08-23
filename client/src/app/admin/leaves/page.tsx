@@ -10,7 +10,7 @@ import {
   AlertCircle, Search, Trash2, Check, X, 
   Stethoscope, Users, RefreshCw, Award, Filter, ArrowRight,
   CheckCheck, Archive, FileText, BadgeCheck, CalendarX2,
-  Edit3, UserX, Building2, Briefcase, DollarSign, Save, AlertTriangle, Mail, CalendarPlus
+  Edit3, UserX, Building2, Briefcase, DollarSign, Save, AlertTriangle, Mail, CalendarPlus, History
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -67,8 +67,8 @@ interface LeaveRecord {
 const DEFAULT_DOCTORS: DoctorProfile[] = [
   { id: 'doc-cardio-01', email: 'ritikakushwaha62@gmail.com', name: 'Dr. Ritika Kushwaha', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, diagnostic angiographies, coronary interventions, and comprehensive lipid management.' },
   { id: 'doc-cardio-02', email: 'aarav.sharma@primecare.in', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS)', experience: '12 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease.' },
-  { id: 'doc-cardio-03', email: 'meera.kulkarni@primecare.in', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', rating: '4.8 ★', bio: 'Specialist in non-invasive coronary imaging, pediatric cardiology, and heart rhythm management.' },
-  { id: 'doc-neuro-01', email: 'priya.nair@primecare.in', name: 'Dr. Priya Nair', specialisation: 'Neurology', qualification: 'MD, DM (Neurology - NIMHANS)', experience: '12 Years Practice', hospital: 'PrimeCare Neuroscience Center', fee: '₹1,500', rating: '4.9 ★', bio: 'Consultant Neurologist focused on headache disorders, neuropathies, epilepsy, and acute stroke treatment.' },
+  { id: 'doc-cardio-03', email: 'meera.kulkarni@primecare.in', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', rating: '4.8 ★', bio: 'Specialist in non-invasive coronary imaging, pediatric cardiology, heart rhythm management.' },
+  { id: 'doc-neuro-01', email: 'priya.nair@primecare.in', name: 'Dr. Priya Nair', specialisation: 'Neurology', qualification: 'MD, DM (Neurology - NIMHANS)', experience: '12 Years Practice', hospital: 'PrimeCare Neuroscience Center', fee: '₹1,500', rating: '4.9 ★', bio: 'Consultant Neurologist focused on headache disorders, neuropathies, epilepsy, acute stroke.' },
   { id: 'doc-ortho-01', email: 'vikram.patel@primecare.in', name: 'Dr. Vikram Patel', specialisation: 'Orthopedics', qualification: 'MS (Orthopedics), MCh', experience: '15 Years Practice', hospital: 'PrimeCare Ortho Wing', fee: '₹1,000', rating: '4.7 ★', bio: 'Joint replacement, arthroscopic ligament surgery, and complex sports injury rehabilitation specialist.' },
   { id: 'doc-pedia-01', email: 'ananya.deshmukh@primecare.in', name: 'Dr. Ananya Deshmukh', specialisation: 'Pediatrics', qualification: 'MD (Pediatrics), DCH', experience: '9 Years Practice', hospital: 'PrimeCare Children Pavilion', fee: '₹900', rating: '5.0 ★', bio: 'Pediatrician handling newborn intensive care, routine growth assessments, and childhood immunizations.' },
   { id: 'doc-derma-01', email: 'rohan.mehta@primecare.in', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', rating: '4.8 ★', bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' },
@@ -94,7 +94,8 @@ export default function AdminDashboardPage() {
 
   // Reschedule Modal State
   const [reschedulingApt, setReschedulingApt] = useState<AppointmentItem | null>(null);
-  const [rescheduleDate, setRescheduleDate] = useState('2026-08-29');
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const [rescheduleDate, setRescheduleDate] = useState(todayStr);
   const [rescheduleSlot, setRescheduleSlot] = useState('10:00 AM');
 
   // Admin Doctor Editor State
@@ -102,10 +103,13 @@ export default function AdminDashboardPage() {
   const [doctorToDelete, setDoctorToDelete] = useState<DoctorProfile | null>(null);
 
   // Leave Form State
-  const [leaveDoctorName, setLeaveDoctorName] = useState('Dr. Ritika Kushwaha');
-  const [leaveDoctorSpec, setLeaveDoctorSpec] = useState('Cardiology');
-  const [leaveDate, setLeaveDate] = useState('2026-08-28');
-  const [leaveReason, setLeaveReason] = useState('Medical Conference');
+  const [selectedLeaveDoctorId, setSelectedLeaveDoctorId] = useState(DEFAULT_DOCTORS[0].id);
+  const [leaveDate, setLeaveDate] = useState(todayStr);
+  const [leaveReason, setLeaveReason] = useState('Medical Conference / Duty Leave');
+
+  const selectedLeaveDoctor = useMemo(() => {
+    return doctorProfiles.find(d => d.id === selectedLeaveDoctorId) || doctorProfiles[0] || DEFAULT_DOCTORS[0];
+  }, [doctorProfiles, selectedLeaveDoctorId]);
 
   const loadData = useCallback(async () => {
     setIsRefreshing(true);
@@ -114,7 +118,6 @@ export default function AdminDashboardPage() {
       const apptData = await apptRes.json();
       if (apptData.success && Array.isArray(apptData.appointments)) {
         setAppointments(apptData.appointments);
-        localStorage.setItem('primecare_appointments', JSON.stringify(apptData.appointments));
       }
     } catch {}
 
@@ -123,7 +126,6 @@ export default function AdminDashboardPage() {
       const docData = await docRes.json();
       if (docData.success && Array.isArray(docData.doctors) && docData.doctors.length > 0) {
         setDoctorProfiles(docData.doctors);
-        localStorage.setItem('primecare_doctor_profiles', JSON.stringify(docData.doctors));
       }
     } catch {}
 
@@ -132,16 +134,15 @@ export default function AdminDashboardPage() {
       const appData = await appRes.json();
       if (appData.success && Array.isArray(appData.applications)) {
         setDoctorApplications(appData.applications);
-        localStorage.setItem('primecare_doctor_applications', JSON.stringify(appData.applications));
       }
     } catch {}
 
     try {
-      const leaveRes = await fetch('/api/sync/leaves', { cache: 'no-store' });
+      // Fetch leaves including active and past records for doctor summaries
+      const leaveRes = await fetch('/api/sync/leaves?includePast=true', { cache: 'no-store' });
       const leaveData = await leaveRes.json();
       if (leaveData.success && Array.isArray(leaveData.leaves)) {
         setLeaves(leaveData.leaves);
-        localStorage.setItem('primecare_leaves', JSON.stringify(leaveData.leaves));
       }
     } catch {}
 
@@ -150,9 +151,15 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 6000);
+    const interval = setInterval(loadData, 5000);
     return () => clearInterval(interval);
   }, [loadData]);
+
+  // Active Leaves (Only Today & Future)
+  const activeLeaves = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return leaves.filter(l => l.leaveDate >= today).sort((a, b) => a.leaveDate.localeCompare(b.leaveDate));
+  }, [leaves]);
 
   // Active Consultations
   const activeConsultations = useMemo(() => {
@@ -189,6 +196,25 @@ export default function AdminDashboardPage() {
     );
   }, [doctorProfiles, searchQuery]);
 
+  const cleanDoctorName = (name?: string) => (name || '').toLowerCase().replace('dr. ', '').trim();
+
+  // Helper: Get Leave History for a specific Doctor
+  const getDoctorLeaves = useCallback((doc: DoctorProfile) => {
+    const docClean = cleanDoctorName(doc.name);
+    const docId = doc.id;
+    const today = new Date().toISOString().split('T')[0];
+
+    const docLeaves = leaves.filter(l => {
+      const lClean = cleanDoctorName(l.doctorName);
+      return (l.doctorId && l.doctorId === docId) || (lClean && (lClean.includes(docClean) || docClean.includes(lClean)));
+    });
+
+    const upcoming = docLeaves.filter(l => l.leaveDate >= today);
+    const past = docLeaves.filter(l => l.leaveDate < today);
+
+    return { total: docLeaves.length, upcoming, past };
+  }, [leaves]);
+
   const handleMarkAsDone = async (aptId: string) => {
     try {
       const updated = appointments.map(a => {
@@ -203,34 +229,31 @@ export default function AdminDashboardPage() {
       });
 
       setAppointments(updated);
-      localStorage.setItem('primecare_appointments', JSON.stringify(updated));
       await fetch('/api/sync/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ appointments: updated })
       });
 
-      setActionSuccessMsg('Consultation marked as Done and moved to Finalized Archive.');
+      setActionSuccessMsg('Consultation marked as Done.');
       setTimeout(() => setActionSuccessMsg(''), 4000);
     } catch {
       alert('Failed to update status.');
     }
   };
 
-  const cleanDoctorName = (name?: string) => (name || '').toLowerCase().replace('dr. ', '').trim();
-
-  // Reschedule Slot Check for Selected Doctor & Target Date
+  // Reschedule Slot Check
   const isRescheduleDoctorOnLeave = useMemo(() => {
     if (!reschedulingApt) return null;
     const docClean = cleanDoctorName(reschedulingApt.doctorName);
     const docId = reschedulingApt.doctorId;
 
-    return leaves.find(l => {
+    return activeLeaves.find(l => {
       if (l.leaveDate !== rescheduleDate) return false;
       const lDocClean = cleanDoctorName(l.doctorName);
       return (l.doctorId && l.doctorId === docId) || (lDocClean && (lDocClean.includes(docClean) || docClean.includes(lDocClean)));
     });
-  }, [reschedulingApt, rescheduleDate, leaves]);
+  }, [reschedulingApt, rescheduleDate, activeLeaves]);
 
   const getRescheduleSlotStatus = (slot: string) => {
     if (isRescheduleDoctorOnLeave) {
@@ -268,7 +291,7 @@ export default function AdminDashboardPage() {
 
     const slotStatus = getRescheduleSlotStatus(rescheduleSlot);
     if (!slotStatus.available) {
-      alert(`Cannot reschedule: Slot is ${slotStatus.reason}. Please pick a free available slot.`);
+      alert(`Cannot reschedule: Slot is ${slotStatus.reason}. Please pick a free slot.`);
       return;
     }
 
@@ -286,7 +309,6 @@ export default function AdminDashboardPage() {
     });
 
     setAppointments(updatedAppts);
-    localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
     await fetch('/api/sync/appointments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -294,7 +316,7 @@ export default function AdminDashboardPage() {
     });
 
     setReschedulingApt(null);
-    setActionSuccessMsg('Appointment for ' + reschedulingApt.patientName + ' rescheduled and restored to Active Queue.');
+    setActionSuccessMsg(`Appointment for ${reschedulingApt.patientName} rescheduled & restored to Active Queue.`);
     setTimeout(() => setActionSuccessMsg(''), 5000);
   };
 
@@ -305,7 +327,6 @@ export default function AdminDashboardPage() {
     try {
       const updatedRoster = doctorProfiles.map(d => d.id === editingDoctor.id ? editingDoctor : d);
       setDoctorProfiles(updatedRoster);
-      localStorage.setItem('primecare_doctor_profiles', JSON.stringify(updatedRoster));
 
       await fetch('/api/sync/doctors', {
         method: 'POST',
@@ -314,23 +335,22 @@ export default function AdminDashboardPage() {
       });
 
       setEditingDoctor(null);
-      setActionSuccessMsg('Doctor profile for ' + editingDoctor.name + ' updated in cloud database.');
+      setActionSuccessMsg(`Doctor profile for ${editingDoctor.name} updated.`);
       setTimeout(() => setActionSuccessMsg(''), 4000);
     } catch {
       alert('Failed to update doctor details.');
     }
   };
 
-  const handlePermanentDoctorRemoval = (doctor: DoctorProfile) => {
+  const handlePermanentDoctorRemoval = async (doctor: DoctorProfile) => {
     const docEmailClean = (doctor.email || '').toLowerCase().trim();
     const docId = doctor.id;
 
     const updatedRoster = doctorProfiles.filter(d => d.id !== docId && (d.email || '').toLowerCase().trim() !== docEmailClean);
     setDoctorProfiles(updatedRoster);
-    localStorage.setItem('primecare_doctor_profiles', JSON.stringify(updatedRoster));
 
     setDoctorToDelete(null);
-    setActionSuccessMsg('Doctor account for ' + doctor.name + ' has been permanently removed.');
+    setActionSuccessMsg(`Doctor account for ${doctor.name} removed.`);
     setTimeout(() => setActionSuccessMsg(''), 5000);
   };
 
@@ -362,7 +382,7 @@ export default function AdminDashboardPage() {
       });
 
       loadData();
-      setActionSuccessMsg('Physician ' + app.name + ' approved and added to live roster across all devices.');
+      setActionSuccessMsg(`Physician ${app.name} approved and added to live roster.`);
       setTimeout(() => setActionSuccessMsg(''), 5000);
     } catch {
       alert('Failed to approve doctor.');
@@ -378,71 +398,48 @@ export default function AdminDashboardPage() {
     loadData();
   };
 
+  // ADD LEAVE: Permanent Server-Side Record & Shift
   const handleAddLeave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setActionSuccessMsg('Recording leave & shifting affected patient appointments...');
-
-    const docClean = leaveDoctorName.toLowerCase().replace('dr. ', '').trim();
-    const matchedDoc = doctorProfiles.find(d => 
-      d.name.toLowerCase().replace('dr. ', '').trim() === docClean ||
-      d.name.toLowerCase().includes(docClean)
-    );
-
-    const docId = matchedDoc ? matchedDoc.id : 'doc-auto';
-    const formattedDoctorName = leaveDoctorName.startsWith('Dr.') ? leaveDoctorName : 'Dr. ' + leaveDoctorName;
+    setActionSuccessMsg('Recording leave & shifting affected patient appointments in database...');
 
     const newLeave: LeaveRecord = {
       id: 'leave-' + Date.now(),
-      doctorId: docId,
-      doctorName: formattedDoctorName,
-      specialisation: leaveDoctorSpec,
+      doctorId: selectedLeaveDoctor.id,
+      doctorName: selectedLeaveDoctor.name,
+      specialisation: selectedLeaveDoctor.specialisation,
       leaveDate,
       reason: leaveReason
     };
 
-    const updatedLeaves = [newLeave, ...leaves];
-    setLeaves(updatedLeaves);
-    localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
-
-    await fetch('/api/sync/leaves', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ leaves: updatedLeaves })
-    });
-
-    const affected = appointments.filter(a => {
-      if (a.date !== leaveDate || a.status === 'COMPLETED' || a.status === 'LEAVE_CANCELLED') return false;
-      const aDoc = (a.doctorName || '').toLowerCase().replace('dr. ', '').trim();
-      return (a.doctorId && a.doctorId === docId) || aDoc.includes(docClean);
-    });
-
-    if (affected.length > 0) {
-      const updatedAppts = appointments.map(a => {
-        const isAffected = affected.some(aff => aff.id === a.id);
-        return isAffected ? { ...a, status: 'LEAVE_CANCELLED', leaveReason } : a;
-      });
-      setAppointments(updatedAppts);
-      localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
-      await fetch('/api/sync/appointments', {
+    try {
+      const res = await fetch('/api/sync/leaves', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appointments: updatedAppts })
+        body: JSON.stringify({ leave: newLeave })
       });
-    }
 
-    setActionSuccessMsg('Leave recorded. ' + affected.length + ' appointment(s) moved to "Due to Dr. on Leave" tab.');
-    setTimeout(() => setActionSuccessMsg(''), 5000);
+      if (!res.ok) {
+        throw new Error('Failed to save leave.');
+      }
+
+      await loadData();
+      setActionSuccessMsg(`Approved leave recorded for ${selectedLeaveDoctor.name} on ${leaveDate}. Matching patients shifted to "Due to Dr. on Leave" tab.`);
+      setTimeout(() => setActionSuccessMsg(''), 6000);
+    } catch (err: any) {
+      alert(`Failed to record leave: ${err.message}`);
+    }
   };
 
   const handleDeleteLeave = async (id: string) => {
-    const updated = leaves.filter(l => l.id !== id);
-    setLeaves(updated);
-    localStorage.setItem('primecare_leaves', JSON.stringify(updated));
-    await fetch('/api/sync/leaves', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ leaves: updated })
-    });
+    try {
+      await fetch('/api/sync/leaves', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'DELETE', id })
+      });
+      loadData();
+    } catch {}
   };
 
   return (
@@ -461,7 +458,7 @@ export default function AdminDashboardPage() {
                 Clinic Operations & Doctor Governance
               </h1>
               <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                Full authority to approve newly registered physicians, manage leaves, and oversee outpatient queues across all devices.
+                Full authority to approve physicians, manage leaves, view leave histories, and oversee outpatient queues across all devices.
               </p>
             </div>
 
@@ -513,7 +510,7 @@ export default function AdminDashboardPage() {
                   activeTab === 'LEAVES' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <Calendar className="w-3.5 h-3.5" /> Record Leaves ({leaves.length})
+                <Calendar className="w-3.5 h-3.5" /> Record Leaves ({activeLeaves.length})
               </button>
             </div>
           </div>
@@ -626,7 +623,7 @@ export default function AdminDashboardPage() {
               <div className="p-6 rounded-3xl bg-amber-950/20 border border-amber-500/30 space-y-2">
                 <div className="flex items-center gap-2 text-amber-400 font-bold text-base">
                   <CalendarX2 className="w-5 h-5" />
-                  <span>Appointments Shifted Due to Doctor on Leave ({leaveAffectedConsultations.length})</span>
+                  <span>Displaced Appointments Due to Doctor on Leave ({leaveAffectedConsultations.length})</span>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   These patient appointments were displaced due to an approved leave date. Click <strong>&quot;Reschedule Slot&quot;</strong> to allocate a new date and time.
@@ -676,7 +673,7 @@ export default function AdminDashboardPage() {
                         type="button"
                         onClick={() => {
                           setReschedulingApt(a);
-                          setRescheduleDate(a.date || '2026-08-29');
+                          setRescheduleDate(a.date || todayStr);
                           setRescheduleSlot('10:00 AM');
                         }}
                         className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20"
@@ -746,7 +743,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 4: DOCTOR DIRECTORY & APPROVAL APPLICATIONS */}
+          {/* TAB 4: DOCTOR DIRECTORY & APPROVAL APPLICATIONS (WITH LEAVE HISTORY) */}
           {activeTab === 'DOCTORS' && (
             <div className="space-y-6">
               {doctorApplications.filter(a => a.status === 'PENDING').length > 0 && (
@@ -799,55 +796,84 @@ export default function AdminDashboardPage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Stethoscope className="w-4 h-4 text-emerald-400" /> Active Doctor Roster ({filteredDoctors.length})
+                    <Stethoscope className="w-4 h-4 text-emerald-400" /> Active Doctor Roster & Leave Tracking ({filteredDoctors.length})
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {filteredDoctors.map((doc) => (
-                    <div key={doc.id} className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
-                      <div className="space-y-3">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h4 className="font-bold text-base text-white">{doc.name}</h4>
-                            <span className="text-xs font-semibold text-emerald-400">{doc.specialisation}</span>
-                            <p className="text-[11px] text-slate-400 font-mono mt-0.5">{doc.email}</p>
+                  {filteredDoctors.map((doc) => {
+                    const docLeaveStats = getDoctorLeaves(doc);
+
+                    return (
+                      <div key={doc.id} className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h4 className="font-bold text-base text-white">{doc.name}</h4>
+                              <span className="text-xs font-semibold text-emerald-400">{doc.specialisation}</span>
+                              <p className="text-[11px] text-slate-400 font-mono mt-0.5">{doc.email}</p>
+                            </div>
+                            <span className="text-xs font-mono font-bold text-emerald-300 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                              {doc.fee}
+                            </span>
                           </div>
-                          <span className="text-xs font-mono font-bold text-emerald-300 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                            {doc.fee}
-                          </span>
+
+                          <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1">
+                            <p><strong>Qualification:</strong> {doc.qualification}</p>
+                            <p><strong>Experience:</strong> {doc.experience}</p>
+                            <p><strong>Hospital:</strong> {doc.hospital}</p>
+                          </div>
+
+                          {/* LEAVE SUMMARY IN DOCTOR INFO */}
+                          <div className="p-3 bg-slate-950/90 rounded-xl border border-slate-800/80 text-xs space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-400 font-semibold flex items-center gap-1">
+                                <History className="w-3.5 h-3.5 text-amber-400" /> Leave Records:
+                              </span>
+                              <span className="text-[11px] font-bold text-slate-300">
+                                {docLeaveStats.total} Total ({docLeaveStats.upcoming.length} Upcoming)
+                              </span>
+                            </div>
+
+                            {docLeaveStats.upcoming.length > 0 ? (
+                              <div className="space-y-1 pt-1 border-t border-slate-900">
+                                {docLeaveStats.upcoming.map((l) => (
+                                  <div key={l.id} className="flex justify-between text-[11px] text-amber-300 bg-amber-950/30 px-2 py-1 rounded border border-amber-500/20">
+                                    <span>{l.leaveDate}</span>
+                                    <span className="truncate max-w-[140px] text-slate-300">{l.reason}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-[10px] text-slate-500 italic">No upcoming leaves scheduled.</p>
+                            )}
+                          </div>
+
+                          <p className="text-[11px] text-slate-300 leading-relaxed line-clamp-2 italic">
+                            &quot;{doc.bio}&quot;
+                          </p>
                         </div>
 
-                        <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1">
-                          <p><strong>Qualification:</strong> {doc.qualification}</p>
-                          <p><strong>Experience:</strong> {doc.experience}</p>
-                          <p><strong>Hospital:</strong> {doc.hospital}</p>
+                        <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
+                          <button
+                            type="button"
+                            onClick={() => setEditingDoctor(doc)}
+                            className="flex-1 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" /> Edit Details
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={() => setDoctorToDelete(doc)}
+                            className="py-2 px-3 bg-red-950/30 hover:bg-red-900/50 border border-red-500/40 text-red-400 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1"
+                          >
+                            <UserX className="w-4 h-4" />
+                          </button>
                         </div>
-
-                        <p className="text-[11px] text-slate-300 leading-relaxed line-clamp-2 italic">
-                          &quot;{doc.bio}&quot;
-                        </p>
                       </div>
-
-                      <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
-                        <button
-                          type="button"
-                          onClick={() => setEditingDoctor(doc)}
-                          className="flex-1 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" /> Edit Details
-                        </button>
-                        
-                        <button
-                          type="button"
-                          onClick={() => setDoctorToDelete(doc)}
-                          className="py-2 px-3 bg-red-950/30 hover:bg-red-900/50 border border-red-500/40 text-red-400 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1"
-                        >
-                          <UserX className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -864,29 +890,17 @@ export default function AdminDashboardPage() {
                   </h3>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Doctor Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={leaveDoctorName}
-                      onChange={(e) => setLeaveDoctorName(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Specialisation</label>
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Select Physician</label>
                     <select
-                      value={leaveDoctorSpec}
-                      onChange={(e) => setLeaveDoctorSpec(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                      value={selectedLeaveDoctorId}
+                      onChange={(e) => setSelectedLeaveDoctorId(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                     >
-                      <option value="Cardiology">Cardiology</option>
-                      <option value="Neurology">Neurology</option>
-                      <option value="Orthopedics">Orthopedics</option>
-                      <option value="Pediatrics">Pediatrics</option>
-                      <option value="Dermatology">Dermatology</option>
-                      <option value="General Medicine">General Medicine</option>
+                      {doctorProfiles.map(d => (
+                        <option key={d.id} value={d.id}>
+                          {d.name} ({d.specialisation})
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -897,7 +911,7 @@ export default function AdminDashboardPage() {
                       required
                       value={leaveDate}
                       onChange={(e) => setLeaveDate(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none [color-scheme:dark]"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 [color-scheme:dark]"
                     />
                   </div>
 
@@ -908,28 +922,28 @@ export default function AdminDashboardPage() {
                       required
                       value={leaveReason}
                       onChange={(e) => setLeaveReason(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition"
+                    className="w-full py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-lg shadow-amber-500/20"
                   >
-                    Lock Doctor Availability & Shift Patient Appointments
+                    Lock Availability & Shift Matching Appointments
                   </button>
                 </form>
               </div>
 
               <div className="lg:col-span-7 space-y-3">
-                <h3 className="font-bold text-base text-white">Active Approved Leaves ({leaves.length})</h3>
-                {leaves.length === 0 ? (
+                <h3 className="font-bold text-base text-white">Active Approved Leaves ({activeLeaves.length})</h3>
+                {activeLeaves.length === 0 ? (
                   <div className="p-8 text-center text-xs text-slate-500 border border-slate-800 rounded-2xl bg-slate-900/40">
-                    No doctor leaves currently scheduled.
+                    No active upcoming leaves. Past leaves have automatically expired from the active duty roster.
                   </div>
                 ) : (
                   <div className="space-y-2.5 max-h-[500px] overflow-y-auto">
-                    {leaves.map((l) => (
+                    {activeLeaves.map((l) => (
                       <div key={l.id} className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
                         <div>
                           <strong className="text-white text-sm block">{l.doctorName}</strong>
@@ -954,7 +968,7 @@ export default function AdminDashboardPage() {
 
         </main>
 
-        {/* MODAL: RESCHEDULE (ONLY SHOWS VALID AVAILABLE SLOTS) */}
+        {/* MODAL: RESCHEDULE */}
         <AnimatePresence>
           {reschedulingApt && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
