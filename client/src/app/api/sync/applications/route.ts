@@ -1,20 +1,15 @@
 ﻿import { NextResponse } from "next/navigation";
-import { getDb, initDb } from "@/lib/db";
+import { getDbPool, initDb } from "@/lib/db";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   await initDb();
-  const sql = getDb();
-  if (sql) {
+  const pool = getDbPool();
+  if (pool) {
     try {
-      const rows = await sql`
-        SELECT id, name, email, reg_number AS "regNumber", specialisation, 
-               qualification, experience, status 
-        FROM pc_doctor_applications 
-        ORDER BY created_at DESC
-      `;
-      return NextResponse.json({ success: true, applications: rows });
+      const res = await pool.query(`SELECT id, name, email, reg_number AS "regNumber", specialisation, qualification, experience, status FROM pc_doctor_applications ORDER BY created_at DESC`);
+      return NextResponse.json({ success: true, applications: res.rows || [] });
     } catch (err: any) {
       console.error("GET applications error:", err);
     }
@@ -24,19 +19,16 @@ export async function GET() {
 
 export async function POST(req: Request) {
   await initDb();
-  const sql = getDb();
+  const pool = getDbPool();
   try {
     const data = await req.json();
     const { id, email, status } = data;
 
-    if (sql && (id || email)) {
+    if (pool && (id || email)) {
       if (id) {
-        await sql`UPDATE pc_doctor_applications SET status = ${status} WHERE id = ${id}`;
+        await pool.query(`UPDATE pc_doctor_applications SET status = $1 WHERE id = $2`, [status, id]);
       } else if (email) {
-        await sql`UPDATE pc_doctor_applications SET status = ${status} WHERE email = ${email}`;
-      }
-      if (status === 'APPROVED' && email) {
-        await sql`UPDATE pc_users SET is_approved = TRUE WHERE email = ${email}`;
+        await pool.query(`UPDATE pc_doctor_applications SET status = $1 WHERE email = $2`, [status, email]);
       }
     }
     return NextResponse.json({ success: true });

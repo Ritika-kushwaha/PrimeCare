@@ -1,18 +1,15 @@
 ﻿import { NextResponse } from "next/navigation";
-import { getDb, initDb } from "@/lib/db";
+import { getDbPool, initDb } from "@/lib/db";
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   await initDb();
-  const sql = getDb();
-  if (sql) {
+  const pool = getDbPool();
+  if (pool) {
     try {
-      const rows = await sql`
-        SELECT id, doctor_id AS "doctorId", doctor_name AS "doctorName", 
-               specialisation, leave_date AS "leaveDate", reason 
-        FROM pc_leaves 
-        ORDER BY created_at DESC
-      `;
-      return NextResponse.json({ success: true, leaves: rows });
+      const res = await pool.query(`SELECT id, doctor_id AS "doctorId", doctor_name AS "doctorName", specialisation, leave_date AS "leaveDate", reason FROM pc_leaves ORDER BY created_at DESC`);
+      return NextResponse.json({ success: true, leaves: res.rows || [] });
     } catch (err: any) {
       console.error("GET leaves error:", err);
     }
@@ -22,20 +19,21 @@ export async function GET() {
 
 export async function POST(req: Request) {
   await initDb();
-  const sql = getDb();
+  const pool = getDbPool();
   try {
     const data = await req.json();
     const leaves = data.leaves || (data.leave ? [data.leave] : []);
 
-    if (sql && leaves.length > 0) {
+    if (pool && leaves.length > 0) {
       for (const l of leaves) {
-        await sql`
-          INSERT INTO pc_leaves (id, doctor_id, doctor_name, specialisation, leave_date, reason)
-          VALUES (${l.id}, ${l.doctorId}, ${l.doctorName}, ${l.specialisation}, ${l.leaveDate}, ${l.reason})
-          ON CONFLICT (id) DO UPDATE SET
-            leave_date = EXCLUDED.leave_date,
-            reason = EXCLUDED.reason
-        `;
+        await pool.query(
+          `INSERT INTO pc_leaves (id, doctor_id, doctor_name, specialisation, leave_date, reason)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           ON CONFLICT (id) DO UPDATE SET
+             leave_date = EXCLUDED.leave_date,
+             reason = EXCLUDED.reason`,
+          [l.id, l.doctorId, l.doctorName, l.specialisation, l.leaveDate, l.reason]
+        );
       }
     }
     return NextResponse.json({ success: true });

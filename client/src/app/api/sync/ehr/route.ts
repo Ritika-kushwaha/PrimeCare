@@ -1,17 +1,15 @@
 ﻿import { NextResponse } from "next/navigation";
-import { getDb, initDb } from "@/lib/db";
+import { getDbPool, initDb } from "@/lib/db";
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   await initDb();
-  const sql = getDb();
-  if (sql) {
+  const pool = getDbPool();
+  if (pool) {
     try {
-      const rows = await sql`
-        SELECT patient_key AS "patientKey", patient_email AS "patientEmail", 
-               patient_name AS "patientName", age, gender, visits 
-        FROM pc_ehr
-      `;
-      return NextResponse.json({ success: true, ehrRegistry: rows });
+      const res = await pool.query(`SELECT patient_key AS "patientKey", patient_email AS "patientEmail", patient_name AS "patientName", age, gender, visits FROM pc_ehr`);
+      return NextResponse.json({ success: true, ehrRegistry: res.rows || [] });
     } catch (err: any) {
       console.error("GET ehr error:", err);
     }
@@ -21,20 +19,21 @@ export async function GET() {
 
 export async function POST(req: Request) {
   await initDb();
-  const sql = getDb();
+  const pool = getDbPool();
   try {
     const data = await req.json();
     const ehrs = data.ehrRegistry || (data.ehrEntry ? [data.ehrEntry] : []);
 
-    if (sql && ehrs.length > 0) {
+    if (pool && ehrs.length > 0) {
       for (const e of ehrs) {
-        await sql`
-          INSERT INTO pc_ehr (patient_key, patient_email, patient_name, age, gender, visits)
-          VALUES (${e.patientKey}, ${e.patientEmail}, ${e.patientName}, ${String(e.age || '21')}, ${e.gender || 'Member'}, ${JSON.stringify(e.visits || [])})
-          ON CONFLICT (patient_key) DO UPDATE SET
-            visits = EXCLUDED.visits,
-            updated_at = CURRENT_TIMESTAMP
-        `;
+        await pool.query(
+          `INSERT INTO pc_ehr (patient_key, patient_email, patient_name, age, gender, visits)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           ON CONFLICT (patient_key) DO UPDATE SET
+             visits = EXCLUDED.visits,
+             updated_at = CURRENT_TIMESTAMP`,
+          [e.patientKey, e.patientEmail, e.patientName, String(e.age || '21'), e.gender || 'Member', JSON.stringify(e.visits || [])]
+        );
       }
     }
     return NextResponse.json({ success: true });

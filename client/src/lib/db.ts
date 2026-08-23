@@ -1,59 +1,37 @@
-﻿// Direct, zero-dependency HTTP SQL executor for Neon Postgres
-export async function queryNeon(sqlQuery: string, params: any[] = []): Promise<any[]> {
-  const dbUrl = process.env.DATABASE_URL;
-  if (!dbUrl) {
-    return [];
+﻿import { Pool } from "pg";
+
+let pool: Pool | null = null;
+
+export function getDbPool(): Pool | null {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    return null;
   }
-
-  try {
-    // Convert parameterized query $1, $2 to inline escaped values for HTTP endpoint
-    let formattedQuery = sqlQuery;
-    params.forEach((param, index) => {
-      const placeholder = new RegExp(`\\$${index + 1}\\b`, 'g');
-      if (param === null || param === undefined) {
-        formattedQuery = formattedQuery.replace(placeholder, 'NULL');
-      } else if (typeof param === 'number' || typeof param === 'boolean') {
-        formattedQuery = formattedQuery.replace(placeholder, String(param));
-      } else {
-        const escaped = String(param).replace(/'/g, "''");
-        formattedQuery = formattedQuery.replace(placeholder, `'${escaped}'`);
-      }
+  if (!pool) {
+    pool = new Pool({
+      connectionString,
+      ssl: { rejectUnauthorized: false },
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
     });
-
-    const parsed = new URL(dbUrl);
-    const host = parsed.host;
-    const endpoint = `https://${host}/sql`;
-
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${parsed.password}`,
-        'Neon-Connection-String': dbUrl,
-      },
-      body: JSON.stringify({ query: formattedQuery }),
-      cache: 'no-store'
-    });
-
-    if (!res.ok) {
-      console.error("Neon HTTP Error:", await res.text());
-      return [];
-    }
-
-    const data = await res.json();
-    return data.rows || [];
-  } catch (err) {
-    console.error("queryNeon execution error:", err);
-    return [];
   }
+  return pool;
+}
+
+export function getDb() {
+  return getDbPool();
 }
 
 let isInit = false;
 
 export async function initDb(): Promise<void> {
   if (isInit) return;
+  const p = getDbPool();
+  if (!p) return;
+
   try {
-    await queryNeon(`
+    await p.query(`
       CREATE TABLE IF NOT EXISTS pc_appointments (
         id VARCHAR(255) PRIMARY KEY,
         token_number VARCHAR(100),
@@ -75,9 +53,7 @@ export async function initDb(): Promise<void> {
         leave_reason TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-    `);
 
-    await queryNeon(`
       CREATE TABLE IF NOT EXISTS pc_doctors (
         id VARCHAR(255) PRIMARY KEY,
         email VARCHAR(255),
@@ -91,9 +67,19 @@ export async function initDb(): Promise<void> {
         bio TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-    `);
 
-    await queryNeon(`
+      CREATE TABLE IF NOT EXISTS pc_doctor_applications (
+        id VARCHAR(255) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255),
+        reg_number VARCHAR(255),
+        specialisation VARCHAR(255),
+        qualification VARCHAR(255),
+        experience VARCHAR(255),
+        status VARCHAR(50) DEFAULT 'PENDING',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS pc_leaves (
         id VARCHAR(255) PRIMARY KEY,
         doctor_id VARCHAR(255),
@@ -103,9 +89,7 @@ export async function initDb(): Promise<void> {
         reason TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-    `);
 
-    await queryNeon(`
       CREATE TABLE IF NOT EXISTS pc_ehr (
         patient_key VARCHAR(255) PRIMARY KEY,
         patient_email VARCHAR(255),
@@ -116,9 +100,8 @@ export async function initDb(): Promise<void> {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `);
-
     isInit = true;
   } catch (err) {
-    console.error("initDb error:", err);
+    console.error("Database schema init error:", err);
   }
 }
