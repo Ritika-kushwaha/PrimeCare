@@ -101,7 +101,7 @@ const TIME_SLOTS = [
 const getNormalizedPatientKey = (email?: string, name?: string) => {
   const cleanEmail = (email || 'patient@primecare.in').trim().toLowerCase();
   const cleanName = (name || 'Patient Member').trim().toLowerCase().replace(/\s+/g, ' ');
-  return `${cleanEmail}::${cleanName}`;
+  return cleanEmail + '::' + cleanName;
 };
 
 const deduplicateEHR = (records: PatientEHR[]): PatientEHR[] => {
@@ -184,11 +184,11 @@ export default function DoctorDashboardPage() {
   const [completedRecord, setCompletedRecord] = useState<any | null>(null);
   const [printDocType, setPrintDocType] = useState<'PRESCRIPTION' | 'AI_SUMMARY' | null>(null);
 
-    const loadData = async () => {
+  const loadData = async () => {
     try {
       const docRes = await fetch('/api/sync/doctors');
       const docData = await docRes.json();
-      let roster = DEFAULT_DOCTORS;
+      let roster: DoctorProfile[] = DEFAULT_DOCTORS;
       if (docData.success && Array.isArray(docData.doctors) && docData.doctors.length > 0) {
         roster = docData.doctors;
         localStorage.setItem('primecare_doctor_profiles', JSON.stringify(roster));
@@ -198,12 +198,14 @@ export default function DoctorDashboardPage() {
       }
 
       let myProfile = roster.find((d: any) => (d.email || '').toLowerCase().trim() === doctorEmail);
+
       if (!myProfile) {
-        const generatedName = user ? \Dr. \ \\.trim() : 'Dr. Ritika Kushwaha';
+        const genName = user ? 'Dr. ' + (user.firstName || '') + ' ' + (user.lastName || '') : 'Dr. Ritika Kushwaha';
+        const finalName = genName.trim().startsWith('Dr.') ? genName.trim() : 'Dr. ' + genName.trim();
         myProfile = {
-          id: \doc-\\,
+          id: 'doc-' + Date.now(),
           email: doctorEmail,
-          name: generatedName.startsWith('Dr.') ? generatedName : \Dr. \\,
+          name: finalName,
           specialisation: user?.specialisation || 'Cardiology',
           qualification: 'MD, DM (Cardiology - AIIMS Delhi)',
           experience: '14 Years Practice',
@@ -213,7 +215,11 @@ export default function DoctorDashboardPage() {
           bio: 'Senior Clinical Specialist specializing in cardiovascular disease and outpatient care.'
         };
         roster = [myProfile, ...roster];
-        await fetch('/api/sync/doctors', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ doctor: myProfile }) });
+        await fetch('/api/sync/doctors', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ doctor: myProfile })
+        });
       }
 
       setDocName(myProfile.name);
@@ -231,8 +237,14 @@ export default function DoctorDashboardPage() {
       if (apptData.success && Array.isArray(apptData.appointments)) {
         setAllAppointments(apptData.appointments);
         localStorage.setItem('primecare_appointments', JSON.stringify(apptData.appointments));
+      } else {
+        const stored = localStorage.getItem('primecare_appointments');
+        if (stored) setAllAppointments(JSON.parse(stored));
       }
-    } catch {}
+    } catch {
+      const stored = localStorage.getItem('primecare_appointments');
+      if (stored) setAllAppointments(JSON.parse(stored));
+    }
 
     try {
       const ehrRes = await fetch('/api/sync/ehr');
@@ -241,30 +253,36 @@ export default function DoctorDashboardPage() {
         const cleanEHR = deduplicateEHR(ehrData.ehrRegistry);
         setEhrRegistry(cleanEHR);
         localStorage.setItem('primecare_ehr_registry', JSON.stringify(cleanEHR));
+      } else {
+        const stored = localStorage.getItem('primecare_ehr_registry');
+        if (stored) {
+          const cleanEHR = deduplicateEHR(JSON.parse(stored));
+          setEhrRegistry(cleanEHR);
+        }
       }
     } catch {}
   };
 
   useEffect(() => {
     loadData();
-    window.addEventListener('storage', loadData);
-    return () => window.removeEventListener('storage', loadData);
+    const timer = setInterval(loadData, 8000);
+    return () => clearInterval(timer);
   }, [user]);
 
   // Save Doctor Details
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setProfileSuccessMsg('');
 
     try {
-      const formattedName = docName.trim().startsWith('Dr.') ? docName.trim() : `Dr. ${docName.trim()}`;
-      const formattedFee = docFee.trim().startsWith('₹') ? docFee.trim() : `₹${docFee.trim()}`;
+      const formattedName = docName.trim().startsWith('Dr.') ? docName.trim() : 'Dr. ' + docName.trim();
+      const formattedFee = docFee.trim().startsWith('₹') ? docFee.trim() : '₹' + docFee.trim();
 
       const storedRoster: DoctorProfile[] = JSON.parse(localStorage.getItem('primecare_doctor_profiles') || JSON.stringify(DEFAULT_DOCTORS));
       const myIndex = storedRoster.findIndex(d => (d.email || '').toLowerCase().trim() === doctorEmail);
 
       const updatedDoctorData: DoctorProfile = {
-        id: myIndex > -1 ? storedRoster[myIndex].id : `doc-${Date.now()}`,
+        id: myIndex > -1 ? storedRoster[myIndex].id : 'doc-' + Date.now(),
         email: doctorEmail,
         name: formattedName,
         specialisation: docSpecialty,
@@ -283,8 +301,12 @@ export default function DoctorDashboardPage() {
       } else {
         newRoster = [updatedDoctorData, ...storedRoster];
       }
-            localStorage.setItem('primecare_doctor_profiles', JSON.stringify(newRoster));
-      fetch('/api/sync/doctors', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ doctor: updatedDoctorData }) });
+      localStorage.setItem('primecare_doctor_profiles', JSON.stringify(newRoster));
+      fetch('/api/sync/doctors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ doctor: updatedDoctorData })
+      });
 
       const storedAppointments: AppointmentItem[] = JSON.parse(localStorage.getItem('primecare_appointments') || '[]');
       const oldNameClean = docName.toLowerCase().trim();
@@ -309,25 +331,30 @@ export default function DoctorDashboardPage() {
       });
 
       localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppointments));
+      fetch('/api/sync/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointments: updatedAppointments })
+      });
       setAllAppointments(updatedAppointments);
 
       setDocName(formattedName);
       setDocFee(formattedFee);
-      setProfileSuccessMsg('Doctor identity & clinical records updated everywhere! All appointments now reflect your updated practitioner details.');
+      setProfileSuccessMsg('Doctor identity & clinical records synced across database!');
       setTimeout(() => setProfileSuccessMsg(''), 5000);
     } catch {
       alert('Failed to update details. Please try again.');
     }
   };
 
-  // 1. ACTIVE QUEUE: Strictly excludes COMPLETED, CANCELLED, and LEAVE_CANCELLED
+  // 1. ACTIVE QUEUE: Excludes COMPLETED, CANCELLED, and LEAVE_CANCELLED
   const activeQueue = useMemo(() => {
     const query = searchQueue.toLowerCase().trim();
     const cleanDocName = docName.toLowerCase().replace('dr. ', '').trim();
 
     return allAppointments.filter((a) => {
       if (!a || a.status === 'COMPLETED' || a.status === 'CANCELLED' || a.status === 'LEAVE_CANCELLED') return false;
-      const matchSearch = `${a.patientName || ''} ${a.patientEmail || ''} ${a.doctorName || ''} ${a.department || ''}`.toLowerCase().includes(query);
+      const matchSearch = ((a.patientName || '') + ' ' + (a.patientEmail || '') + ' ' + (a.doctorName || '') + ' ' + (a.department || '')).toLowerCase().includes(query);
       if (!matchSearch) return false;
 
       if (filterMode === 'MY_PATIENTS') {
@@ -388,7 +415,7 @@ export default function DoctorDashboardPage() {
     }
   };
 
-  // RESCHEDULE ACTION: Move shifted appointment back to active queue
+  // RESCHEDULE ACTION
   const handleConfirmReschedule = (e: React.FormEvent) => {
     e.preventDefault();
     if (!reschedulingApt) return;
@@ -406,11 +433,15 @@ export default function DoctorDashboardPage() {
       return a;
     });
 
-          localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
-      fetch('/api/sync/appointments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ appointments: updatedAppts }) });
+    localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
+    fetch('/api/sync/appointments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appointments: updatedAppts })
+    });
     setAllAppointments(updatedAppts);
     setReschedulingApt(null);
-    setProfileSuccessMsg(`Appointment for ${reschedulingApt.patientName} successfully rescheduled to ${rescheduleDate} at ${rescheduleSlot} and moved back to Active Queue.`);
+    setProfileSuccessMsg('Appointment for ' + reschedulingApt.patientName + ' successfully rescheduled and restored to Active Queue.');
     setTimeout(() => setProfileSuccessMsg(''), 5000);
   };
 
@@ -426,8 +457,8 @@ export default function DoctorDashboardPage() {
     const completedPatientId = activePatient.id;
 
     let aiPostVisit = {
-      patientSummary: `Diagnosis: ${clinicalNotes}. Targeted outpatient clinical therapy initiated.`,
-      medicationSchedule: `Take ${medication} every ${frequencyHours} hours for ${durationDays} days.`,
+      patientSummary: 'Diagnosis: ' + clinicalNotes + '. Targeted outpatient clinical therapy initiated.',
+      medicationSchedule: 'Take ' + medication + ' every ' + frequencyHours + ' hours for ' + durationDays + ' days.',
       followUpSteps: 'Maintain hydration, complete the entire prescribed therapeutic course, and return if symptoms persist.',
     };
 
@@ -506,8 +537,12 @@ export default function DoctorDashboardPage() {
       }
 
       const cleanedEHR = deduplicateEHR(updatedEHR);
-            localStorage.setItem('primecare_ehr_registry', JSON.stringify(cleanedEHR));
-      fetch('/api/sync/ehr', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ehrRegistry: cleanedEHR }) });
+      localStorage.setItem('primecare_ehr_registry', JSON.stringify(cleanedEHR));
+      fetch('/api/sync/ehr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ehrRegistry: cleanedEHR })
+      });
       setEhrRegistry(cleanedEHR);
     } catch {}
 
@@ -519,8 +554,12 @@ export default function DoctorDashboardPage() {
         }
         return a;
       });
-            localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
-      fetch('/api/sync/appointments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ appointments: updatedAppts }) });
+      localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
+      fetch('/api/sync/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointments: updatedAppts })
+      });
       setAllAppointments(updatedAppts);
     } catch {}
 
@@ -965,7 +1004,7 @@ export default function DoctorDashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: DUE TO DR. ON LEAVE SECTION WITH RESCHEDULE BUTTON */}
+          {/* TAB 2: DUE TO DR. ON LEAVE SECTION */}
           {activeTab === 'LEAVE_AFFECTED' && (
             <div className="space-y-6">
               <div className="p-6 rounded-3xl bg-amber-950/20 border border-amber-500/30 space-y-2">
@@ -1200,7 +1239,7 @@ export default function DoctorDashboardPage() {
                   </div>
                   <h2 className="text-2xl font-extrabold text-white">Edit Practitioner Details</h2>
                   <p className="text-xs text-slate-400 mt-1">
-                    Updating your details here will automatically synchronize and update all your assigned patient appointments and public directory profiles.
+                    Updating your details here will automatically synchronize and update all your assigned patient appointments and public directory profiles in the cloud database.
                   </p>
                 </div>
 
@@ -1407,4 +1446,3 @@ export default function DoctorDashboardPage() {
     </ProtectedRoute>
   );
 }
-
