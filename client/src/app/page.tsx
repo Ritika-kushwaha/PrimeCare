@@ -100,24 +100,18 @@ export default function HomePage() {
               Schedule guaranteed consultation slots with specialist physicians, experience AI-driven pre-visit triage, automated Google Calendar synchronization, and longitudinal family health records.
             </motion.p>
 
+            {/* SINGLE CALL TO ACTION ROUTING DIRECTLY TO LOGIN */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex flex-wrap items-center justify-center gap-3.5 pt-2"
+              className="flex items-center justify-center pt-2"
             >
               <Link
-                href="/patient/book"
-                className="px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-xs sm:text-sm rounded-2xl shadow-xl shadow-emerald-500/20 transition-all flex items-center gap-2"
-              >
-                <Calendar className="w-4 h-4" /> Book Doctor Consultation <ArrowRight className="w-4 h-4" />
-              </Link>
-              
-              <Link
                 href="/login"
-                className="px-6 py-3.5 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-white font-bold text-xs sm:text-sm rounded-2xl transition flex items-center gap-2"
+                className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-sm sm:text-base rounded-2xl shadow-xl shadow-emerald-500/25 transition-all flex items-center gap-2.5 transform hover:-translate-y-0.5"
               >
-                Sign In to Portal
+                <Calendar className="w-5 h-5" /> Book Consultation <ArrowRight className="w-5 h-5" />
               </Link>
             </motion.div>
 
@@ -169,10 +163,10 @@ export default function HomePage() {
               </p>
             </div>
             <Link
-              href="/patient/book"
+              href="/login"
               className="py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition flex items-center justify-between"
             >
-              <span>Book Consultation</span>
+              <span>Sign In to Book</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -189,10 +183,10 @@ export default function HomePage() {
               </p>
             </div>
             <Link
-              href="/doctor/dashboard"
+              href="/login"
               className="py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition flex items-center justify-between shadow-lg shadow-blue-500/20"
             >
-              <span>Access Doctor Desk</span>
+              <span>Doctor Sign In</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -209,10 +203,10 @@ export default function HomePage() {
               </p>
             </div>
             <Link
-              href="/admin/leaves"
+              href="/login"
               className="py-3 px-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs transition flex items-center justify-between shadow-lg shadow-red-600/20"
             >
-              <span>Open Admin Panel</span>
+              <span>Admin Sign In</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
