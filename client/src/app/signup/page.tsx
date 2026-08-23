@@ -44,7 +44,6 @@ export default function SignupPage() {
       return;
     }
 
-    // 1. Check for Duplicate Email or Duplicate Medical Reg Number
     try {
       const storedUsers = JSON.parse(localStorage.getItem('primecare_registered_users') || '[]');
       const storedApps = JSON.parse(localStorage.getItem('primecare_doctor_applications') || '[]');
@@ -58,7 +57,6 @@ export default function SignupPage() {
           return;
         }
 
-        // Duplicate check on Medical Reg Number
         const regConflict = [...storedApps, ...storedRoster].some(
           (d: any) => (d.regNumber || '').toUpperCase() === regClean
         );
@@ -69,7 +67,6 @@ export default function SignupPage() {
         }
       }
 
-      // Check email collision across same role
       const emailConflict = role === 'DOCTOR' 
         ? storedApps.some((a: any) => a.email.toLowerCase() === cleanEmail)
         : storedUsers.some((u: any) => u.email.toLowerCase() === cleanEmail && u.role === 'PATIENT');
@@ -81,7 +78,6 @@ export default function SignupPage() {
       }
     } catch {}
 
-    // 2. Save Registration
     if (role === 'DOCTOR') {
       const newDocApp = {
         id: `doc-${Date.now()}`,
@@ -98,8 +94,6 @@ export default function SignupPage() {
       try {
         const storedApps = JSON.parse(localStorage.getItem('primecare_doctor_applications') || '[]');
         localStorage.setItem('primecare_doctor_applications', JSON.stringify([newDocApp, ...storedApps]));
-
-        // Set role-scoped password
         localStorage.setItem(`role_pwd_doctor_${cleanEmail}`, cleanPassword);
       } catch {}
 
@@ -118,8 +112,6 @@ export default function SignupPage() {
       try {
         const storedUsers = JSON.parse(localStorage.getItem('primecare_registered_users') || '[]');
         localStorage.setItem('primecare_registered_users', JSON.stringify([newPatient, ...storedUsers]));
-
-        // Set role-scoped password
         localStorage.setItem(`role_pwd_patient_${cleanEmail}`, cleanPassword);
       } catch {}
 
@@ -147,7 +139,6 @@ export default function SignupPage() {
           </p>
         </div>
 
-        {/* ROLE PICKER */}
         <div className="grid grid-cols-2 gap-2 w-full p-1 bg-slate-900 rounded-2xl border border-slate-800">
           <button
             type="button"
@@ -247,7 +238,6 @@ export default function SignupPage() {
             />
           </div>
 
-          {/* DOCTOR SPECIFIC FIELDS */}
           {role === 'DOCTOR' && (
             <div className="space-y-3 pt-2 border-t border-slate-800">
               <div>
