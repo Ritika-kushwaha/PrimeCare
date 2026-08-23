@@ -131,10 +131,12 @@ export default function BookAppointmentPage() {
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [existingAppointments, setExistingAppointments] = useState<AppointmentItem[]>([]);
   
+  // Selection States
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorProfile>(DEFAULT_DOCTORS[0]);
   const [selectedDate, setSelectedDate] = useState('2026-08-28');
   const [selectedSlot, setSelectedSlot] = useState('10:00 AM');
   
+  // Member & Account Info
   const [sharedEmail, setSharedEmail] = useState('ritikakushwaha62@gmail.com');
   const [patientFirstName, setPatientFirstName] = useState('Ritika');
   const [patientLastName, setPatientLastName] = useState('Kushwaha');
@@ -142,6 +144,7 @@ export default function BookAppointmentPage() {
   const [patientGender, setPatientGender] = useState('Female');
   const [symptoms, setSymptoms] = useState('Routine cardiovascular checkup');
   
+  // Filters & State Handlers
   const [searchDoc, setSearchDoc] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('ALL');
   const [inspectDoctor, setInspectDoctor] = useState<DoctorProfile | null>(null);
@@ -181,26 +184,25 @@ export default function BookAppointmentPage() {
     return `${(patientFirstName || '').trim()} ${(patientLastName || '').trim()}`.trim();
   }, [patientFirstName, patientLastName]);
 
-  // STRICT 1-PATIENT-PER-SLOT VALIDATION
+  // STRICT 1:1 SLOT CHECK
   const getSlotAvailability = (slot: string) => {
     const cleanMember = currentMemberName.toLowerCase();
 
-    // 1. Check if doctor already has an appointment booked for this slot (Strict 1 patient limit)
+    // 1. Is this doctor's slot already booked by ANYONE (even 1 person)?
     const existingDoctorBooking = existingAppointments.find(
       a => a.doctorId === selectedDoctor.id && a.date === selectedDate && a.timeSlot === slot
     );
 
     if (existingDoctorBooking) {
-      const isCurrentPatient = (existingDoctorBooking.patientName || '').toLowerCase() === cleanMember;
+      const isMe = (existingDoctorBooking.patientName || '').toLowerCase() === cleanMember;
       return {
         available: false,
-        reason: isCurrentPatient ? 'You have reserved this slot' : `Booked by ${existingDoctorBooking.patientName}`,
-        statusType: isCurrentPatient ? 'SELF_RESERVED' : 'SLOT_BOOKED',
-        booking: existingDoctorBooking
+        reason: isMe ? 'Booked by you' : 'Already Booked (Slot Closed)',
+        statusType: isMe ? 'SELF_RESERVED' : 'SLOT_TAKEN'
       };
     }
 
-    // 2. Check if current patient has an active appointment with another doctor at the same time
+    // 2. Is THIS member busy with another doctor at this same time?
     const memberBusyOtherDoctor = existingAppointments.find(
       a => (a.patientName || '').toLowerCase() === cleanMember &&
            a.date === selectedDate &&
@@ -211,17 +213,16 @@ export default function BookAppointmentPage() {
     if (memberBusyOtherDoctor) {
       return {
         available: false,
-        reason: `You are busy with ${memberBusyOtherDoctor.doctorName}`,
-        statusType: 'MEMBER_BUSY',
-        booking: memberBusyOtherDoctor
+        reason: `You have an appointment with ${memberBusyOtherDoctor.doctorName}`,
+        statusType: 'MEMBER_BUSY'
       };
     }
 
+    // Slot is completely free for 1 person
     return {
       available: true,
-      reason: 'Slot Open (1 Patient Limit)',
-      statusType: 'FREE',
-      booking: null
+      reason: 'Available (1 Person Only)',
+      statusType: 'FREE'
     };
   };
 
@@ -240,6 +241,7 @@ export default function BookAppointmentPage() {
     return ['ALL', ...Array.from(set)];
   }, [doctors]);
 
+  // Generate Google Calendar Link
   const buildGoogleCalendarUrl = (item: AppointmentItem) => {
     try {
       const [year, month, day] = (item.date || '2026-08-28').split('-').map(Number);
@@ -285,7 +287,7 @@ export default function BookAppointmentPage() {
 
     const slotState = getSlotAvailability(selectedSlot);
     if (!slotState.available) {
-      setSlotConflictError(`Slot ${selectedSlot} cannot be booked: ${slotState.reason}`);
+      setSlotConflictError(`Cannot book ${selectedSlot}: ${slotState.reason}`);
       return;
     }
 
@@ -314,11 +316,11 @@ export default function BookAppointmentPage() {
     setExistingAppointments(updated);
     localStorage.setItem('primecare_appointments', JSON.stringify(updated));
 
-    // 1. Google Calendar sync
+    // 1. Instant Google Calendar Redirect
     const gcalUrl = buildGoogleCalendarUrl(appointment);
     window.open(gcalUrl, '_blank');
 
-    // 2. ICS Calendar download
+    // 2. Direct .ics File Download
     try {
       const [year, month, day] = (appointment.date || '2026-08-28').split('-');
       const [timeStr, meridian] = (appointment.timeSlot || '10:00 AM').split(' ');
@@ -357,7 +359,7 @@ export default function BookAppointmentPage() {
               <div className="border-b-2 border-black pb-4 flex justify-between items-start">
                 <div>
                   <h1 className="text-2xl font-black">{bookingSuccess.hospital}</h1>
-                  <p className="text-xs text-gray-700">Official Outpatient Token Receipt (1:1 Reserved Slot)</p>
+                  <p className="text-xs text-gray-700">Official Outpatient Token Receipt</p>
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] uppercase font-bold text-gray-500">Token</span>
@@ -386,7 +388,7 @@ export default function BookAppointmentPage() {
               </div>
 
               <div className="flex justify-between items-center border-t-2 border-dashed border-gray-400 pt-4 text-xs">
-                <p className="text-[10px] text-gray-500">Exclusive 1:1 consultation slot reserved.</p>
+                <p className="text-[10px] text-gray-500">Strict Single-Occupancy Slot. Please arrive 15 minutes prior to appointment.</p>
                 <div>
                   <span className="text-[10px] text-gray-500 block text-right">Fee Paid</span>
                   <strong className="text-lg font-black">{bookingSuccess.fee}</strong>
@@ -408,10 +410,10 @@ export default function BookAppointmentPage() {
                 <Calendar className="w-3.5 h-3.5" /> Outpatient Booking Desk
               </div>
               <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                Doctor Discovery & Outpatient Scheduling
+                Doctor Discovery & Outpatient Booking
               </h1>
               <p className="text-xs text-slate-400 mt-1">
-                Strict single-patient slot reservation with instant Google Calendar sync.
+                Strict 1-patient per slot. Once booked, the slot is locked for all other members.
               </p>
             </div>
           </div>
@@ -428,7 +430,7 @@ export default function BookAppointmentPage() {
                     <CheckCircle2 className="w-6 h-6 text-emerald-400" /> Confirmed • Token {bookingSuccess.tokenNumber}
                   </div>
                   <p className="text-xs text-emerald-300">
-                    Slot exclusively reserved for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}.
+                    Slot confirmed exclusively for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}.
                   </p>
                 </div>
 
@@ -459,7 +461,7 @@ export default function BookAppointmentPage() {
                     }}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition"
                   >
-                    + Book Another Consultation
+                    + Book For Another Family Member
                   </button>
                 </div>
               </motion.div>
@@ -468,7 +470,7 @@ export default function BookAppointmentPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* DOCTOR DIRECTORY */}
+            {/* AREA 1: SEPARATE DOCTOR SEARCH & SELECTION */}
             <div className="lg:col-span-5 space-y-4">
               <div className="p-4 bg-slate-900/80 border border-slate-800 rounded-3xl space-y-3">
                 <h2 className="text-sm font-bold text-white flex items-center justify-between">
@@ -574,7 +576,7 @@ export default function BookAppointmentPage() {
               </div>
             </div>
 
-            {/* APPOINTMENT FORM */}
+            {/* AREA 2: SINGLE PATIENT SLOT BOOKING */}
             <div className="lg:col-span-7 space-y-6">
               <form onSubmit={handleBooking} className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-6">
                 
@@ -602,8 +604,9 @@ export default function BookAppointmentPage() {
                 <div className="space-y-3 p-4 bg-slate-950 rounded-2xl border border-slate-800">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5" /> Patient Identification
+                      <Users className="w-3.5 h-3.5" /> Patient / Family Member Identity
                     </span>
+                    <span className="text-[10px] text-slate-400">Strict 1 Patient per Slot</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -659,7 +662,7 @@ export default function BookAppointmentPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Account Email</label>
+                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Shared Account Email</label>
                       <input
                         type="email"
                         required
@@ -690,9 +693,9 @@ export default function BookAppointmentPage() {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">
-                        Select Consultation Slot (1 Patient per Slot)
+                        Available Consultation Slots (1 Patient Per Slot)
                       </label>
-                      <span className="text-[10px] text-slate-500">Strict 1:1 reservation</span>
+                      <span className="text-[10px] text-slate-500">Exclusively locked once booked</span>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
@@ -715,7 +718,7 @@ export default function BookAppointmentPage() {
                                   ? 'Booked for you'
                                   : slotInfo.statusType === 'MEMBER_BUSY'
                                   ? 'Busy (Other Dr)'
-                                  : 'Booked'}
+                                  : 'Reserved'}
                               </span>
                             </button>
                           );
@@ -763,7 +766,7 @@ export default function BookAppointmentPage() {
                   disabled={Boolean(isDoctorOnLeave)}
                   className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2 disabled:opacity-40"
                 >
-                  Confirm & Sync to Google Calendar <ArrowRight className="w-4 h-4" />
+                  Confirm & Lock Slot for {currentMemberName} <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
             </div>
