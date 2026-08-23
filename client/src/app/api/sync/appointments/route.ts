@@ -1,7 +1,8 @@
-﻿import { NextResponse } from "next/navigation";
+﻿import { NextResponse } from "next/server";
 import { getDbPool, initDb } from "@/lib/db";
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   await initDb();
@@ -22,7 +23,7 @@ export async function GET() {
           time_slot AS "timeSlot", 
           symptoms, 
           patient_name AS "patientName", 
-          patient_email AS "patientEmail", 
+           patient_email AS "patientEmail", 
           age, 
           gender, 
           status, 
@@ -31,7 +32,10 @@ export async function GET() {
         FROM pc_appointments 
         ORDER BY created_at DESC
       `);
-      return NextResponse.json({ success: true, appointments: res.rows || [] });
+      return NextResponse.json(
+        { success: true, appointments: res.rows || [] },
+        { headers: { 'Cache-Control': 'no-store, max-age=0' } }
+      );
     } catch (err: any) {
       console.error("GET appointments error:", err);
     }
@@ -65,7 +69,7 @@ export async function POST(req: Request) {
             finalized_at = EXCLUDED.finalized_at,
             leave_reason = EXCLUDED.leave_reason
         `, [
-          a.id,
+          a.id || ('apt-' + Date.now()),
           a.tokenNumber || a.token_number || `TK-${Math.floor(100 + Math.random() * 900)}`,
           a.doctorId || a.doctor_id || 'doc-01',
           a.doctorName || a.doctor_name || 'Dr. Specialist',
@@ -86,7 +90,7 @@ export async function POST(req: Request) {
         ]);
       }
     }
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
   } catch (err: any) {
     console.error("POST appointments error:", err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
