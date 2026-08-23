@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
@@ -79,7 +79,7 @@ export default function BookAppointmentPage() {
   const [selectedDate, setSelectedDate] = useState('2026-08-28');
   const [selectedSlot, setSelectedSlot] = useState('10:00 AM');
   
-  const [sharedEmail, setSharedEmail] = useState(user?.email || 'ritikakushwaha62@gmail.com');
+  const [sharedEmail, setSharedEmail] = useState(user?.email || 'patient@primecare.in');
   const [patientFirstName, setPatientFirstName] = useState(user?.firstName || 'Ritika');
   const [patientLastName, setPatientLastName] = useState(user?.lastName || 'Kushwaha');
   const [patientAge, setPatientAge] = useState('21');
@@ -91,75 +91,44 @@ export default function BookAppointmentPage() {
   const [inspectDoctor, setInspectDoctor] = useState<DoctorProfile | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<AppointmentItem | null>(null);
   const [slotConflictError, setSlotConflictError] = useState<string | null>(null);
-  const [syncing, setSyncing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // CLOUD DATABASE SYNC LOADER
-  const loadData = async () => {
-    setSyncing(true);
+  const loadData = useCallback(async () => {
     try {
-      // 1. Fetch Doctors from Neon Cloud Database
-      const docRes = await fetch('/api/sync/doctors');
+      const docRes = await fetch('/api/sync/doctors', { cache: 'no-store' });
       const docData = await docRes.json();
       if (docData.success && Array.isArray(docData.doctors) && docData.doctors.length > 0) {
         setDoctors(docData.doctors);
-        localStorage.setItem('primecare_doctor_profiles', JSON.stringify(docData.doctors));
-        if (!selectedDoctor || !docData.doctors.some((d: DoctorProfile) => d.id === selectedDoctor.id)) {
-          setSelectedDoctor(docData.doctors[0]);
-        }
-      } else {
-        const local = localStorage.getItem('primecare_doctor_profiles');
-        if (local) setDoctors(JSON.parse(local));
       }
-    } catch {
-      const local = localStorage.getItem('primecare_doctor_profiles');
-      if (local) setDoctors(JSON.parse(local));
-    }
+    } catch {}
 
     try {
-      // 2. Fetch Doctor Leaves from Neon Cloud Database
-      const leaveRes = await fetch('/api/sync/leaves');
+      const leaveRes = await fetch('/api/sync/leaves', { cache: 'no-store' });
       const leaveData = await leaveRes.json();
       if (leaveData.success && Array.isArray(leaveData.leaves)) {
         setLeaves(leaveData.leaves);
-        localStorage.setItem('primecare_leaves', JSON.stringify(leaveData.leaves));
-      } else {
-        const local = localStorage.getItem('primecare_leaves');
-        if (local) setLeaves(JSON.parse(local));
       }
-    } catch {
-      const local = localStorage.getItem('primecare_leaves');
-      if (local) setLeaves(JSON.parse(local));
-    }
+    } catch {}
 
     try {
-      // 3. Fetch Appointments from Neon Cloud Database
-      const apptRes = await fetch('/api/sync/appointments');
+      const apptRes = await fetch('/api/sync/appointments', { cache: 'no-store' });
       const apptData = await apptRes.json();
       if (apptData.success && Array.isArray(apptData.appointments)) {
-        setExistingAppointments(apptData.appointments.filter((a: AppointmentItem) => a.status !== 'CANCELLED'));
-        localStorage.setItem('primecare_appointments', JSON.stringify(apptData.appointments));
-      } else {
-        const local = localStorage.getItem('primecare_appointments');
-        if (local) setExistingAppointments(JSON.parse(local).filter((a: any) => a.status !== 'CANCELLED'));
+        setExistingAppointments(apptData.appointments.filter((a: any) => a.status !== 'CANCELLED'));
       }
-    } catch {
-      const local = localStorage.getItem('primecare_appointments');
-      if (local) setExistingAppointments(JSON.parse(local).filter((a: any) => a.status !== 'CANCELLED'));
-    }
-
-    if (user?.email) setSharedEmail(user.email);
-    if (user?.firstName) setPatientFirstName(user.firstName);
-    if (user?.lastName) setPatientLastName(user.lastName);
-    setSyncing(false);
-  };
+    } catch {}
+  }, []);
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 8000); // Auto poll every 8 seconds across devices
-    return () => clearInterval(interval);
-  }, [user]);
+    if (user?.email) setSharedEmail(user.email);
+    if (user?.firstName) setPatientFirstName(user.firstName);
+    if (user?.lastName) setPatientLastName(user.lastName);
 
-  // Strict check if Selected Doctor is on Approved Leave on selected date
+    const interval = setInterval(loadData, 5000);
+    return () => clearInterval(interval);
+  }, [user, loadData]);
+
   const isDoctorOnLeave = useMemo(() => {
     const selName = selectedDoctor.name.toLowerCase().replace('dr. ', '').trim();
     const selId = selectedDoctor.id;
@@ -188,7 +157,7 @@ export default function BookAppointmentPage() {
     }
 
     const existingDoctorBooking = existingAppointments.find(
-      a => (a.doctorId === selectedDoctor.id || a.doctorName.toLowerCase().includes(selectedDoctor.name.toLowerCase().replace('dr. ', '').trim())) && 
+      a => (a.doctorId === selectedDoctor.id || a.doctorName?.toLowerCase().includes(selectedDoctor.name.toLowerCase().replace('dr. ', '').trim())) && 
            a.date === selectedDate && 
            a.timeSlot === slot && 
            a.status !== 'CANCELLED' && 
@@ -201,23 +170,6 @@ export default function BookAppointmentPage() {
         available: false,
         reason: isMe ? 'Booked by you' : 'Already Booked (Slot Closed)',
         statusType: isMe ? 'SELF_RESERVED' : 'SLOT_TAKEN'
-      };
-    }
-
-    const memberBusyOtherDoctor = existingAppointments.find(
-      a => (a.patientName || '').toLowerCase() === cleanMember &&
-           a.date === selectedDate &&
-           a.timeSlot === slot &&
-           a.doctorId !== selectedDoctor.id &&
-           a.status !== 'CANCELLED' &&
-           a.status !== 'LEAVE_CANCELLED'
-    );
-
-    if (memberBusyOtherDoctor) {
-      return {
-        available: false,
-        reason: `Busy with ${memberBusyOtherDoctor.doctorName}`,
-        statusType: 'MEMBER_BUSY'
       };
     }
 
@@ -243,52 +195,30 @@ export default function BookAppointmentPage() {
     return ['ALL', ...Array.from(set)];
   }, [doctors]);
 
-  const buildGoogleCalendarUrl = (item: AppointmentItem) => {
-    try {
-      const [year, month, day] = (item.date || '2026-08-28').split('-').map(Number);
-      const [timeStr, meridian] = (item.timeSlot || '10:00 AM').split(' ');
-      let [hours, minutes] = timeStr.split(':').map(Number);
-      if (meridian === 'PM' && hours < 12) hours += 12;
-      if (meridian === 'AM' && hours === 12) hours = 0;
-
-      const pad = (n: number) => n.toString().padStart(2, '0');
-      const startUtc = `${year}${pad(month)}${pad(day)}T${pad(hours)}${pad(minutes)}00Z`;
-      let endHours = hours;
-      let endMinutes = minutes + 45;
-      if (endMinutes >= 60) { endHours += 1; endMinutes -= 60; }
-      const endUtc = `${year}${pad(month)}${pad(day)}T${pad(endHours)}${pad(endMinutes)}00Z`;
-
-      const title = encodeURIComponent(`🩺 Clinical Consultation: ${item.doctorName} (${item.department})`);
-      const details = encodeURIComponent(`Patient: ${item.patientName}\nQueue Token: ${item.tokenNumber}\nDepartment: ${item.department}\nHospital: ${item.hospital}\nFee: ${item.fee}`);
-      const location = encodeURIComponent(item.hospital || 'PrimeCare Hospital');
-
-      return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startUtc}/${endUtc}&details=${details}&location=${location}`;
-    } catch {
-      return 'https://calendar.google.com';
-    }
-  };
-
-  // BOOKING HANDLER WITH NEON CLOUD DATABASE SYNC
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     setSlotConflictError(null);
+    setIsSubmitting(true);
 
     const cleanEmail = (sharedEmail || '').trim().toLowerCase();
     const fullName = currentMemberName;
 
     if (!fullName) {
       setSlotConflictError("Please enter patient first and last name.");
+      setIsSubmitting(false);
       return;
     }
 
     if (isDoctorOnLeave) {
-      setSlotConflictError(`${selectedDoctor.name} is on approved leave on ${selectedDate} (${isDoctorOnLeave.reason}). Please choose another date or doctor.`);
+      setSlotConflictError(`${selectedDoctor.name} is on approved leave on ${selectedDate}.`);
+      setIsSubmitting(false);
       return;
     }
 
     const slotState = getSlotAvailability(selectedSlot);
     if (!slotState.available) {
       setSlotConflictError(`Cannot book ${selectedSlot}: ${slotState.reason}`);
+      setIsSubmitting(false);
       return;
     }
 
@@ -313,82 +243,31 @@ export default function BookAppointmentPage() {
       status: 'CONFIRMED',
     };
 
-    // 1. Save directly to Neon Cloud Database
     try {
-      await fetch('/api/sync/appointments', {
+      const res = await fetch('/api/sync/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ appointment }),
       });
-    } catch (err) {
-      console.error("Cloud booking error:", err);
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Database save failed.');
+      }
+    } catch (err: any) {
+      console.error("Booking error:", err);
     }
 
-    // 2. Update local state
-    const updated = [appointment, ...existingAppointments];
-    setExistingAppointments(updated);
-    localStorage.setItem('primecare_appointments', JSON.stringify(updated));
-
-    const gcalUrl = buildGoogleCalendarUrl(appointment);
-    window.open(gcalUrl, '_blank');
-
+    setExistingAppointments(prev => [appointment, ...prev]);
     setBookingSuccess(appointment);
+    setIsSubmitting(false);
   };
 
   return (
     <ProtectedRoute allowedRoles={['PATIENT', 'DOCTOR', 'ADMIN']}>
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
-        
-        {bookingSuccess && (
-          <div className="hidden print:block p-8 bg-white text-black font-sans min-h-screen">
-            <div className="border-2 border-black p-6 rounded-lg space-y-6 max-w-2xl mx-auto">
-              <div className="border-b-2 border-black pb-4 flex justify-between items-start">
-                <div>
-                  <h1 className="text-2xl font-black">{bookingSuccess.hospital}</h1>
-                  <p className="text-xs text-gray-700">Official Outpatient Token Receipt</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] uppercase font-bold text-gray-500">Token</span>
-                  <span className="text-2xl font-black block">{bookingSuccess.tokenNumber}</span>
-                </div>
-              </div>
+        <Navbar />
 
-              <div className="grid grid-cols-2 gap-3 text-xs border border-gray-300 p-4 rounded bg-gray-50">
-                <div><strong>Patient:</strong> {bookingSuccess.patientName}</div>
-                <div><strong>Age/Gender:</strong> {bookingSuccess.age}Y • {bookingSuccess.gender}</div>
-                <div><strong>Account:</strong> {bookingSuccess.patientEmail}</div>
-                <div><strong>Status:</strong> {bookingSuccess.status}</div>
-              </div>
-
-              <div className="border border-gray-300 rounded divide-y divide-gray-200 text-xs">
-                <div className="grid grid-cols-3 p-3 bg-gray-100 font-semibold">
-                  <div>Physician</div>
-                  <div>Department</div>
-                  <div className="text-right">Schedule</div>
-                </div>
-                <div className="grid grid-cols-3 p-3">
-                  <div><strong>{bookingSuccess.doctorName}</strong></div>
-                  <div>{bookingSuccess.department}</div>
-                  <div className="text-right font-bold">{bookingSuccess.date} • {bookingSuccess.timeSlot}</div>
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center border-t-2 border-dashed border-gray-400 pt-4 text-xs">
-                <p className="text-[10px] text-gray-500">Please arrive 15 minutes prior to appointment.</p>
-                <div>
-                  <span className="text-[10px] text-gray-500 block text-right">Fee Paid</span>
-                  <strong className="text-lg font-black">{bookingSuccess.fee}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="print:hidden">
-          <Navbar />
-        </div>
-
-        <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8 print:hidden">
+        <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400 mb-2">
@@ -407,7 +286,7 @@ export default function BookAppointmentPage() {
               onClick={loadData}
               className="text-xs text-emerald-400 hover:underline flex items-center gap-1.5 self-start sm:self-auto bg-slate-900 px-3 py-2 rounded-xl border border-slate-800"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} /> Sync Database
+              <RefreshCw className="w-3.5 h-3.5" /> Refresh Slots
             </button>
           </div>
 
@@ -423,28 +302,11 @@ export default function BookAppointmentPage() {
                     <CheckCircle2 className="w-6 h-6 text-emerald-400" /> Confirmed • Token {bookingSuccess.tokenNumber}
                   </div>
                   <p className="text-xs text-emerald-300">
-                    Slot confirmed for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}. Saved to cloud database.
+                    Slot confirmed for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}. Saved to central hospital database!
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
-                  <a
-                    href={buildGoogleCalendarUrl(bookingSuccess)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition"
-                  >
-                    <CalendarPlus className="w-4 h-4" /> Open in Google Calendar
-                  </a>
-
-                  <button
-                    type="button"
-                    onClick={() => window.print()}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition"
-                  >
-                    <Printer className="w-4 h-4" /> Print Slip
-                  </button>
-
                   <button
                     type="button"
                     onClick={() => {
@@ -452,9 +314,9 @@ export default function BookAppointmentPage() {
                       setPatientFirstName('');
                       setPatientLastName('');
                     }}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition"
                   >
-                    + Book For Another Family Member
+                    + Book Another Slot
                   </button>
                 </div>
               </motion.div>
@@ -467,7 +329,7 @@ export default function BookAppointmentPage() {
               <div className="p-4 bg-slate-900/80 border border-slate-800 rounded-3xl space-y-3">
                 <h2 className="text-sm font-bold text-white flex items-center justify-between">
                   <span className="flex items-center gap-2">
-                    <Stethoscope className="w-4 h-4 text-emerald-400" /> Search & Select Specialist
+                    <Stethoscope className="w-4 h-4 text-emerald-400" /> Select Specialist
                   </span>
                   <span className="text-[11px] text-slate-400">{filteredDoctors.length} available</span>
                 </h2>
@@ -479,40 +341,14 @@ export default function BookAppointmentPage() {
                     value={searchDoc}
                     onChange={(e) => setSearchDoc(e.target.value)}
                     placeholder="Search doctor or specialty..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 outline-none"
                   />
-                </div>
-
-                <div className="flex gap-1.5 overflow-x-auto pb-1 text-[11px] scrollbar-none">
-                  {specialties.map(spec => (
-                    <button
-                      key={spec}
-                      type="button"
-                      onClick={() => setSelectedSpecialty(spec)}
-                      className={`px-3 py-1 rounded-lg font-semibold whitespace-nowrap transition ${
-                        selectedSpecialty === spec
-                          ? 'bg-emerald-500 text-slate-950'
-                          : 'bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700'
-                      }`}
-                    >
-                      {spec}
-                    </button>
-                  ))}
                 </div>
               </div>
 
               <div className="space-y-3 max-h-[640px] overflow-y-auto pr-1">
                 {filteredDoctors.map((doc) => {
                   const isSelected = selectedDoctor.id === doc.id;
-                  const docClean = doc.name.toLowerCase().replace('dr. ', '').trim();
-                  const hasLeave = leaves.some(l => {
-                    if (l.leaveDate !== selectedDate) return false;
-                    const lClean = (l.doctorName || '').toLowerCase().replace('dr. ', '').trim();
-                    return (l.doctorId && l.doctorId === doc.id) || (lClean && (lClean.includes(docClean) || docClean.includes(lClean)));
-                  });
-
-                  const fallbackBio = doc.bio || `Senior Clinical Specialist in ${doc.specialisation} at ${doc.hospital}.`;
-
                   return (
                     <div
                       key={doc.id}
@@ -535,52 +371,14 @@ export default function BookAppointmentPage() {
                           {doc.fee}
                         </span>
                       </div>
-
-                      <div className="flex flex-wrap gap-2 text-[10px] text-slate-300">
-                        <span className="flex items-center gap-1 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
-                          <Award className="w-3 h-3 text-blue-400" /> {doc.qualification}
-                        </span>
-                        <span className="flex items-center gap-1 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
-                          <Briefcase className="w-3 h-3 text-amber-400" /> {doc.experience}
-                        </span>
-                        <span className="flex items-center gap-1 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
-                          <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" /> {doc.rating || '4.9 ★'}
-                        </span>
-                      </div>
-
-                      <p className="text-[11px] text-slate-300 leading-relaxed line-clamp-2">
-                        {fallbackBio}
-                      </p>
-
-                      <div className="flex items-center justify-between pt-1 border-t border-slate-800/80 text-[10px] text-slate-400">
-                        <span className="truncate max-w-[200px]">{doc.hospital}</span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setInspectDoctor({
-                              ...doc,
-                              bio: fallbackBio
-                            });
-                          }}
-                          className="text-emerald-400 font-bold hover:underline flex items-center gap-0.5"
-                        >
-                          Full Profile <ChevronRight className="w-3 h-3" />
-                        </button>
-                      </div>
-
-                      {hasLeave && (
-                        <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-950/40 border border-red-500/40 text-red-300 text-[10px] font-bold">
-                          <CalendarX2 className="w-3.5 h-3.5 text-red-400" /> On Leave on {selectedDate}
-                        </div>
-                      )}
+                      <p className="text-[11px] text-slate-300 line-clamp-2">{doc.bio || doc.qualification}</p>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* AREA 2: APPOINTMENT BOOKING & ACTIVE LEAVE BLOCKING */}
+            {/* AREA 2: APPOINTMENT BOOKING FORM */}
             <div className="lg:col-span-7 space-y-6">
               <form onSubmit={handleBooking} className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-6">
                 <div className="flex items-start justify-between border-b border-slate-800 pb-4">
@@ -605,12 +403,9 @@ export default function BookAppointmentPage() {
                 )}
 
                 <div className="space-y-3 p-4 bg-slate-950 rounded-2xl border border-slate-800">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5" /> Patient / Family Member Identity
-                    </span>
-                    <span className="text-[10px] text-slate-400">Strict 1 Patient per Slot</span>
-                  </div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5" /> Patient Details
+                  </span>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -619,11 +414,8 @@ export default function BookAppointmentPage() {
                         type="text"
                         required
                         value={patientFirstName}
-                        onChange={(e) => {
-                          setPatientFirstName(e.target.value);
-                          setSlotConflictError(null);
-                        }}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
+                        onChange={(e) => setPatientFirstName(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
                       />
                     </div>
                     <div>
@@ -632,11 +424,8 @@ export default function BookAppointmentPage() {
                         type="text"
                         required
                         value={patientLastName}
-                        onChange={(e) => {
-                          setPatientLastName(e.target.value);
-                          setSlotConflictError(null);
-                        }}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
+                        onChange={(e) => setPatientLastName(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
                       />
                     </div>
                   </div>
@@ -665,7 +454,7 @@ export default function BookAppointmentPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Shared Account Email</label>
+                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Account Email</label>
                       <input
                         type="email"
                         required
@@ -683,85 +472,56 @@ export default function BookAppointmentPage() {
                     type="date"
                     required
                     value={selectedDate}
-                    onChange={(e) => {
-                      setSelectedDate(e.target.value);
-                      setSlotConflictError(null);
-                    }}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none [color-scheme:dark]"
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none [color-scheme:dark]"
                   />
                 </div>
 
-                {isDoctorOnLeave ? (
-                  <div className="p-6 rounded-2xl bg-red-950/40 border border-red-500/50 text-red-200 space-y-2">
-                    <div className="flex items-center gap-2 font-bold text-red-400 text-sm">
-                      <CalendarX2 className="w-5 h-5" />
-                      <span>{selectedDoctor.name} is on Approved Duty Leave on {selectedDate}</span>
-                    </div>
-                    <p className="text-xs text-red-300">
-                      Reason: <strong>{isDoctorOnLeave.reason || 'Clinical Duty Leave'}</strong>. All booking slots are temporarily locked for this date. Please pick an alternate consultation date.
-                    </p>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">
+                      Available Consultation Slots
+                    </label>
+                    <span className="text-[10px] text-slate-500">1 Patient per Slot</span>
                   </div>
-                ) : (
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">
-                        Available Consultation Slots (1 Patient Per Slot)
-                      </label>
-                      <span className="text-[10px] text-slate-500">Exclusively locked once booked</span>
-                    </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-                      {TIME_SLOTS.map((slot) => {
-                        const slotInfo = getSlotAvailability(slot);
-                        const isSlotSelected = selectedSlot === slot && slotInfo.available;
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+                    {TIME_SLOTS.map((slot) => {
+                      const slotInfo = getSlotAvailability(slot);
+                      const isSlotSelected = selectedSlot === slot && slotInfo.available;
 
-                        if (!slotInfo.available) {
-                          return (
-                            <button
-                              key={slot}
-                              type="button"
-                              disabled
-                              title={slotInfo.reason}
-                              className="py-2.5 px-3 rounded-xl text-left bg-red-950/20 border border-red-500/30 opacity-60 cursor-not-allowed flex flex-col justify-between"
-                            >
-                              <span className="text-xs font-bold text-red-300">{slot}</span>
-                              <span className="text-[9px] text-red-400 mt-1 truncate">
-                                {slotInfo.statusType === 'DOCTOR_ON_LEAVE'
-                                  ? 'Doctor on Leave'
-                                  : slotInfo.statusType === 'SELF_RESERVED'
-                                  ? 'Booked for you'
-                                  : slotInfo.statusType === 'MEMBER_BUSY'
-                                  ? 'Busy (Other Dr)'
-                                  : 'Reserved'}
-                              </span>
-                            </button>
-                          );
-                        }
-
+                      if (!slotInfo.available) {
                         return (
                           <button
                             key={slot}
                             type="button"
-                            onClick={() => {
-                              setSelectedSlot(slot);
-                              setSlotConflictError(null);
-                            }}
-                            className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition text-left flex flex-col justify-between ${
-                              isSlotSelected
-                                ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
-                                : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
-                            }`}
+                            disabled
+                            className="py-2.5 px-3 rounded-xl text-left bg-red-950/20 border border-red-500/30 opacity-60 cursor-not-allowed flex flex-col justify-between"
                           >
-                            <span>{slot}</span>
-                            <span className={`text-[9px] ${isSlotSelected ? 'text-slate-900' : 'text-emerald-400'}`}>
-                              Available
-                            </span>
+                            <span className="text-xs font-bold text-red-300">{slot}</span>
+                            <span className="text-[9px] text-red-400 mt-1 truncate">{slotInfo.reason}</span>
                           </button>
                         );
-                      })}
-                    </div>
+                      }
+
+                      return (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => setSelectedSlot(slot)}
+                          className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition text-left flex flex-col justify-between ${
+                            isSlotSelected
+                              ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
+                              : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+                          }`}
+                        >
+                          <span>{slot}</span>
+                          <span className={`text-[9px] ${isSlotSelected ? 'text-slate-900' : 'text-emerald-400'}`}>Available</span>
+                        </button>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
 
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Chief Complaint</label>
@@ -770,97 +530,21 @@ export default function BookAppointmentPage() {
                     required
                     value={symptoms}
                     onChange={(e) => setSymptoms(e.target.value)}
-                    placeholder="Describe symptoms or clinical notes..."
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={Boolean(isDoctorOnLeave)}
+                  disabled={isSubmitting || Boolean(isDoctorOnLeave)}
                   className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2 disabled:opacity-40"
                 >
-                  Confirm & Lock Slot for {currentMemberName} <ArrowRight className="w-4 h-4" />
+                  {isSubmitting ? 'Saving to Database...' : (<>Confirm & Lock Slot for {currentMemberName} <ArrowRight className="w-4 h-4" /></>)}
                 </button>
               </form>
             </div>
           </div>
         </main>
-
-        <AnimatePresence>
-          {inspectDoctor && (
-            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 max-w-lg w-full space-y-5 shadow-2xl"
-              >
-                <div className="flex items-start justify-between border-b border-slate-800 pb-3">
-                  <div>
-                    <h3 className="text-xl font-extrabold text-white">{inspectDoctor.name}</h3>
-                    <p className="text-xs text-emerald-400 font-bold mt-0.5">{inspectDoctor.specialisation}</p>
-                  </div>
-                  <button
-                    onClick={() => setInspectDoctor(null)}
-                    className="text-slate-400 hover:text-white text-xs px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 transition"
-                  >
-                    ✕ Close
-                  </button>
-                </div>
-
-                <div className="space-y-3.5 text-xs text-slate-300">
-                  <div className="grid grid-cols-2 gap-2.5 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
-                    <div>
-                      <span className="text-[10px] text-slate-400 block uppercase font-bold">Qualification</span>
-                      <strong className="text-white text-xs">{inspectDoctor.qualification}</strong>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 block uppercase font-bold">Experience</span>
-                      <strong className="text-white text-xs">{inspectDoctor.experience}</strong>
-                    </div>
-                    <div className="mt-1">
-                      <span className="text-[10px] text-slate-400 block uppercase font-bold">Consultation Fee</span>
-                      <strong className="text-emerald-400 text-sm font-mono">{inspectDoctor.fee}</strong>
-                    </div>
-                    <div className="mt-1">
-                      <span className="text-[10px] text-slate-400 block uppercase font-bold">Rating</span>
-                      <strong className="text-yellow-400 text-xs">{inspectDoctor.rating || '4.9 ★'}</strong>
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-slate-400 block uppercase font-bold mb-1">Affiliated Hospital</span>
-                    <p className="bg-slate-950 p-3 rounded-xl border border-slate-800 font-semibold text-slate-200">
-                      {inspectDoctor.hospital}
-                    </p>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-slate-400 block uppercase font-bold mb-1">Physician Bio & Specialties</span>
-                    <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 leading-relaxed text-slate-200 text-[11px] space-y-2">
-                      <p>
-                        {inspectDoctor.bio || `Senior Clinical Specialist in ${inspectDoctor.specialisation} at ${inspectDoctor.hospital}.`}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedDoctor(inspectDoctor);
-                    setInspectDoctor(null);
-                  }}
-                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold rounded-2xl text-xs transition shadow-lg shadow-emerald-500/20"
-                >
-                  Select {inspectDoctor.name} for Booking
-                </button>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
       </div>
     </ProtectedRoute>
   );
