@@ -10,7 +10,7 @@ import {
   Pill, FileText, Send, Calendar, 
   Printer, Receipt, Lock, Search, History, FolderHeart, User, Users, X, 
   Edit3, Save, BadgeCheck, Sparkles, AlertTriangle, HelpCircle, Check, ArrowRight,
-  Filter, RefreshCw, Award, Briefcase, Building2, Star, ShieldAlert
+  Filter, RefreshCw, Award, Briefcase, Building2, Star, Mail
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -52,7 +52,7 @@ interface VisitRecord {
 }
 
 interface PatientEHR {
-  patientKey?: string;
+  patientKey: string;
   patientEmail: string;
   patientName: string;
   age: number | string;
@@ -73,6 +73,8 @@ interface AppointmentItem {
   symptoms?: string;
   patientName?: string;
   patientEmail?: string;
+  age?: string | number;
+  gender?: string;
   aiUrgency?: 'LOW' | 'MEDIUM' | 'HIGH';
   aiChiefComplaint?: string;
   aiQuestions?: string[];
@@ -108,11 +110,12 @@ export default function DoctorDashboardPage() {
   // EHR State
   const [ehrRegistry, setEhrRegistry] = useState<PatientEHR[]>([]);
   const [selectedEhrPatient, setSelectedEhrPatient] = useState<PatientEHR | null>(null);
+  const [searchEhr, setSearchEhr] = useState('');
 
   // Doctor Email Binding
   const doctorEmail = (user?.email || 'ritikakushwaha62@gmail.com').toLowerCase().trim();
 
-  // Profile Form Inputs (Strictly Scoped to Current Doctor's Email)
+  // Profile Form Inputs
   const [docName, setDocName] = useState('Dr. Ritika Kushwaha');
   const [docSpecialty, setDocSpecialty] = useState('Cardiology');
   const [docQualification, setDocQualification] = useState('MD, DM (Cardiology - AIIMS Delhi)');
@@ -136,7 +139,6 @@ export default function DoctorDashboardPage() {
       const storedRoster = localStorage.getItem('primecare_doctor_profiles');
       let roster: DoctorProfile[] = storedRoster ? JSON.parse(storedRoster) : DEFAULT_DOCTORS;
 
-      // Find or auto-create doctor profile for the current logged-in email
       let myProfile = roster.find(d => (d.email || '').toLowerCase().trim() === doctorEmail);
 
       if (!myProfile) {
@@ -196,7 +198,6 @@ export default function DoctorDashboardPage() {
       const formattedName = docName.trim().startsWith('Dr.') ? docName.trim() : `Dr. ${docName.trim()}`;
       const formattedFee = docFee.trim().startsWith('₹') ? docFee.trim() : `₹${docFee.trim()}`;
 
-      // 1. Update Roster for THIS doctor email
       const storedRoster: DoctorProfile[] = JSON.parse(localStorage.getItem('primecare_doctor_profiles') || JSON.stringify(DEFAULT_DOCTORS));
       const myIndex = storedRoster.findIndex(d => (d.email || '').toLowerCase().trim() === doctorEmail);
 
@@ -222,7 +223,7 @@ export default function DoctorDashboardPage() {
       }
       localStorage.setItem('primecare_doctor_profiles', JSON.stringify(newRoster));
 
-      // 2. Cascade Name & Info to ALL Appointments linked to this doctor's email / previous name
+      // Cascade Name & Info to ALL Appointments linked to this doctor's email / previous name
       const storedAppointments: AppointmentItem[] = JSON.parse(localStorage.getItem('primecare_appointments') || '[]');
       const oldNameClean = docName.toLowerCase().trim();
 
@@ -257,7 +258,7 @@ export default function DoctorDashboardPage() {
     }
   };
 
-  // Compute Queue (Strictly checks doctorEmail OR assigned doctorName)
+  // Queue Filter
   const displayedQueue = useMemo(() => {
     const query = searchQueue.toLowerCase().trim();
     const cleanDocName = docName.toLowerCase().replace('dr. ', '').trim();
@@ -311,20 +312,23 @@ export default function DoctorDashboardPage() {
     }
   };
 
+  // FINALIZE CONSULTATION: SENDS EMAIL & STORES EHR WITH STRICT (NAME + EMAIL) COMPOUND KEY
   const handleFinalizeConsultation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activePatient) return;
     setLoading(true);
 
-    const pName = activePatient.patientName || 'Patient Member';
-    const pEmail = (activePatient.patientEmail || 'patient@primecare.in').toLowerCase();
+    const pName = (activePatient.patientName || 'Patient Member').trim();
+    const pEmail = (activePatient.patientEmail || 'patient@primecare.in').toLowerCase().trim();
+    const invoiceNumber = 'INV-' + Math.floor(100000 + Math.random() * 900000);
 
     let aiPostVisit = {
-      patientSummary: `Diagnosis: ${clinicalNotes}. Targeted clinical therapy initiated.`,
+      patientSummary: `Diagnosis: ${clinicalNotes}. Targeted outpatient clinical therapy initiated.`,
       medicationSchedule: `Take ${medication} every ${frequencyHours} hours for ${durationDays} days.`,
-      followUpSteps: 'Maintain hydration, monitor symptom resolution, and return if condition does not improve.',
+      followUpSteps: 'Maintain hydration, complete entire antibiotic or prescribed course, and return if symptoms persist.',
     };
 
+    // 1. Dispatch AI Post-Visit Care Plan Email to Patient
     try {
       const aiRes = await fetch('/api/ai/post-visit', {
         method: 'POST',
@@ -334,6 +338,12 @@ export default function DoctorDashboardPage() {
           medication,
           frequencyHours,
           durationDays,
+          patientName: pName,
+          patientEmail: pEmail,
+          doctorName: docName,
+          department: docSpecialty,
+          invoiceNumber,
+          fee: docFee
         }),
       });
       const aiData = await aiRes.json();
@@ -356,26 +366,29 @@ export default function DoctorDashboardPage() {
       },
       aiPostVisitSummary: aiPostVisit,
       invoice: {
-        invoiceNumber: 'INV-' + Math.floor(100000 + Math.random() * 900000),
+        invoiceNumber,
         fee: docFee,
       },
     };
 
-    const patientKey = `${pEmail}_${pName.toLowerCase().replace(/\s+/g, '')}`;
+    // 2. Strict Compound Key (Email + Full Name) to ensure family members on same email have separate histories
+    const patientKey = `${pEmail}::${pName.toLowerCase().replace(/\s+/g, '_')}`;
 
     try {
       const storedEHR: PatientEHR[] = JSON.parse(localStorage.getItem('primecare_ehr_registry') || '[]');
       const patientIndex = storedEHR.findIndex((p) => p.patientKey === patientKey);
 
       if (patientIndex > -1) {
-        storedEHR[patientIndex].visits.unshift(visitEntry);
+        // Append new encounter to THIS specific patient's history
+        storedEHR[patientIndex].visits = [visitEntry, ...storedEHR[patientIndex].visits];
       } else {
+        // Create new isolated patient profile
         storedEHR.unshift({
           patientKey,
           patientEmail: pEmail,
           patientName: pName,
-          age: 21,
-          gender: 'Member',
+          age: activePatient.age || 21,
+          gender: activePatient.gender || 'Member',
           visits: [visitEntry],
         });
       }
@@ -401,6 +414,15 @@ export default function DoctorDashboardPage() {
       window.print();
     }, 150);
   };
+
+  // EHR Filter
+  const filteredEhr = useMemo(() => {
+    const q = searchEhr.toLowerCase().trim();
+    return ehrRegistry.filter(p => 
+      p.patientName.toLowerCase().includes(q) || 
+      p.patientEmail.toLowerCase().includes(q)
+    );
+  }, [ehrRegistry, searchEhr]);
 
   return (
     <ProtectedRoute allowedRoles={['DOCTOR', 'ADMIN']}>
@@ -522,6 +544,8 @@ export default function DoctorDashboardPage() {
           {/* TAB 1: CLINICAL QUEUE & AI TRIAGE */}
           {activeTab === 'CLINICAL' && (
             <div className="space-y-6">
+              
+              {/* COMPLETED BANNER */}
               <AnimatePresence>
                 {completedRecord && (
                   <motion.div
@@ -535,10 +559,13 @@ export default function DoctorDashboardPage() {
                           <Sparkles className="w-6 h-6 text-emerald-400" />
                         </div>
                         <div>
-                          <h3 className="font-bold text-base text-emerald-100">
-                            Prescription & AI Care Plan Ready for {completedRecord.patient.patientName}
+                          <h3 className="font-bold text-base text-emerald-100 flex items-center gap-2">
+                            <span>Care Plan & Prescription Finalized for {completedRecord.patient.patientName}</span>
+                            <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-mono border border-blue-500/30 flex items-center gap-1">
+                              <Mail className="w-3 h-3" /> Sent to {completedRecord.patient.patientEmail}
+                            </span>
                           </h3>
-                          <p className="text-xs text-emerald-400">Diagnosis converted to plain language instructions.</p>
+                          <p className="text-xs text-emerald-400">Prescription and plain-language recovery timeline have been emailed to the patient.</p>
                         </div>
                       </div>
 
@@ -548,7 +575,7 @@ export default function DoctorDashboardPage() {
                           onClick={() => triggerPrint('AI_SUMMARY')}
                           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition shadow-lg shadow-purple-600/25"
                         >
-                          <Sparkles className="w-4 h-4" /> Print AI Care Plan
+                          <Sparkles className="w-4 h-4" /> Print Care Plan
                         </button>
                         <button
                           type="button"
@@ -618,7 +645,7 @@ export default function DoctorDashboardPage() {
                       {displayedQueue.length === 0 ? (
                         <div className="p-8 text-center text-xs text-slate-500 space-y-2">
                           <Users className="w-8 h-8 mx-auto text-slate-600" />
-                          <p>No patients currently assigned to {docName}.</p>
+                          <p>No patients in this queue view.</p>
                           <button
                             onClick={() => setFilterMode('ALL')}
                             className="text-emerald-400 hover:underline block mx-auto"
@@ -778,7 +805,7 @@ export default function DoctorDashboardPage() {
                           disabled={loading}
                           className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2"
                         >
-                          {loading ? 'Generating AI Patient Care Plan...' : (<><Sparkles className="w-4 h-4" /> Finalize Consultation & Generate AI Patient Summary</>)}
+                          {loading ? 'Finalizing & Emailing Patient Care Plan...' : (<><Send className="w-4 h-4" /> Finalize Consultation & Dispatch Care Plan to Patient Email</>)}
                         </button>
                       </form>
                     </div>
@@ -792,29 +819,74 @@ export default function DoctorDashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: LONGITUDINAL EHR */}
+          {/* TAB 2: LONGITUDINAL EHR (NO DUPLICATES, UNIQUE PER NAME + EMAIL) */}
           {activeTab === 'EHR' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {ehrRegistry.map((patient, idx) => (
-                  <div key={idx} className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
-                    <div>
-                      <h3 className="font-bold text-base text-white">{patient.patientName}</h3>
-                      <p className="text-[11px] text-slate-400 font-mono">{patient.patientEmail}</p>
-                      <p className="text-xs text-emerald-400 mt-2 font-bold">{patient.visits.length} Encounters</p>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedEhrPatient(patient)}
-                      className="w-full py-2.5 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-bold rounded-xl text-xs transition"
-                    >
-                      View Encounters & AI Summaries
-                    </button>
-                  </div>
-                ))}
+              
+              {/* Search Bar for EHR */}
+              <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-base font-bold text-white flex items-center gap-2">
+                    <History className="w-4 h-4 text-emerald-400" /> Longitudinal Patient EHR Registry
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Each patient identity is uniquely isolated by Name & Email. Family members sharing an email have separate medical records.
+                  </p>
+                </div>
+                <div className="relative w-full sm:w-72">
+                  <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                  <input
+                    type="text"
+                    value={searchEhr}
+                    onChange={(e) => setSearchEhr(e.target.value)}
+                    placeholder="Search patient name or email..."
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
               </div>
 
+              {filteredEhr.length === 0 ? (
+                <div className="p-12 text-center text-slate-500 border border-slate-800 rounded-3xl bg-slate-900/40 space-y-2">
+                  <FolderHeart className="w-10 h-10 mx-auto text-slate-600" />
+                  <p className="text-sm font-semibold">No medical records found</p>
+                  <p className="text-xs text-slate-500">Finalize patient consultations from your queue to populate longitudinal health histories.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {filteredEhr.map((patient, idx) => (
+                    <div key={patient.patientKey || idx} className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-start justify-between">
+                          <h3 className="font-bold text-base text-white">{patient.patientName}</h3>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                            {patient.visits.length} {patient.visits.length === 1 ? 'Visit' : 'Visits'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 font-mono mt-0.5">{patient.patientEmail}</p>
+                        
+                        <div className="mt-3 pt-3 border-t border-slate-800/80 text-xs text-slate-300 space-y-1">
+                          <p className="text-[11px] text-slate-400">
+                            Last Visit: <strong className="text-slate-200">{patient.visits[0]?.date}</strong>
+                          </p>
+                          <p className="text-[11px] text-slate-400 truncate">
+                            Attending: <span className="text-emerald-400 font-medium">{patient.visits[0]?.doctorName}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedEhrPatient(patient)}
+                        className="w-full py-2.5 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5"
+                      >
+                        <History className="w-3.5 h-3.5" /> View Encounter History ({patient.visits.length})
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* MODAL FOR DETAILED PATIENT HISTORY ENCOUNTERS */}
               <AnimatePresence>
                 {selectedEhrPatient && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
@@ -826,31 +898,62 @@ export default function DoctorDashboardPage() {
                     >
                       <div className="flex justify-between items-start border-b border-slate-800 pb-3">
                         <div>
-                          <h3 className="text-xl font-bold text-white">{selectedEhrPatient.patientName}</h3>
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase mb-1">
+                            <User className="w-3 h-3" /> Unique Patient Record
+                          </div>
+                          <h3 className="text-xl font-extrabold text-white">{selectedEhrPatient.patientName}</h3>
                           <p className="text-xs text-slate-400">{selectedEhrPatient.patientEmail}</p>
                         </div>
-                        <button onClick={() => setSelectedEhrPatient(null)} className="text-slate-400 hover:text-white">
+                        <button onClick={() => setSelectedEhrPatient(null)} className="text-slate-400 hover:text-white px-2 py-1 rounded-lg bg-slate-800">
                           <X className="w-5 h-5" />
                         </button>
                       </div>
 
                       <div className="space-y-4">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                          Chronological Encounters ({selectedEhrPatient.visits.length})
+                        </h4>
+
                         {selectedEhrPatient.visits.map((v, i) => (
-                          <div key={i} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3 text-xs">
+                          <div key={v.visitId || i} className="p-5 bg-slate-950 rounded-2xl border border-slate-800 space-y-3 text-xs">
                             <div className="flex justify-between items-center text-slate-400 border-b border-slate-800 pb-2">
-                              <span><strong>Attending:</strong> {v.doctorName}</span>
-                              <span>{v.date}</span>
+                              <div>
+                                <span className="text-slate-200 font-bold text-sm block">{v.doctorName}</span>
+                                <span className="text-[11px] text-emerald-400">{v.department}</span>
+                              </div>
+                              <div className="text-right">
+                                <span className="font-bold text-white block">{v.date}</span>
+                                <span className="text-[10px] text-slate-500 font-mono">{v.visitId} • {v.invoice?.invoiceNumber}</span>
+                              </div>
                             </div>
-                            <p><strong>Clinical Notes:</strong> {v.clinicalNotes}</p>
-                            <p className="text-emerald-400 font-serif"><strong>Rx:</strong> ℞ {v.prescription.medication}</p>
+
+                            <div>
+                              <span className="text-slate-400 text-[10px] uppercase font-bold block mb-0.5">Chief Complaint:</span>
+                              <p className="text-slate-300 italic">&quot;{v.symptoms}&quot;</p>
+                            </div>
+
+                            <div>
+                              <span className="text-slate-400 text-[10px] uppercase font-bold block mb-0.5">Clinical Notes:</span>
+                              <p className="text-slate-200">{v.clinicalNotes}</p>
+                            </div>
+
+                            <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex justify-between items-center">
+                              <div>
+                                <span className="text-[10px] text-emerald-400 uppercase font-bold block">Prescription (℞):</span>
+                                <strong className="text-white text-xs">{v.prescription.medication}</strong>
+                              </div>
+                              <span className="text-[11px] text-slate-400 font-mono">
+                                Every {v.prescription.frequencyHours}h for {v.prescription.durationDays}d
+                              </span>
+                            </div>
 
                             {v.aiPostVisitSummary && (
-                              <div className="p-3 bg-purple-950/30 border border-purple-500/30 rounded-xl space-y-1.5">
-                                <span className="text-purple-300 font-bold block flex items-center gap-1.5">
-                                  <Sparkles className="w-3.5 h-3.5" /> AI Patient Care Plan:
+                              <div className="p-3.5 bg-purple-950/30 border border-purple-500/30 rounded-xl space-y-2">
+                                <span className="text-purple-300 font-bold block flex items-center gap-1.5 text-[11px]">
+                                  <Sparkles className="w-3.5 h-3.5 text-purple-400" /> AI Patient Care Plan Dispatched:
                                 </span>
-                                <p className="text-slate-300">{v.aiPostVisitSummary.patientSummary}</p>
-                                <p className="text-slate-400"><strong>Schedule:</strong> {v.aiPostVisitSummary.medicationSchedule}</p>
+                                <p className="text-slate-300 text-[11px]">{v.aiPostVisitSummary.patientSummary}</p>
+                                <p className="text-slate-400 text-[10px]"><strong>Follow-up:</strong> {v.aiPostVisitSummary.followUpSteps}</p>
                               </div>
                             )}
                           </div>
@@ -860,10 +963,11 @@ export default function DoctorDashboardPage() {
                   </div>
                 )}
               </AnimatePresence>
+
             </div>
           )}
 
-          {/* TAB 3: EDIT DR. DETAILS (EMAIL-BOUND) */}
+          {/* TAB 3: EDIT DR. DETAILS */}
           {activeTab === 'PROFILE' && (
             <div className="max-w-3xl mx-auto space-y-6">
               <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-2xl space-y-6">
