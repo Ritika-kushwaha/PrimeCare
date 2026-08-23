@@ -10,7 +10,7 @@ import {
   Pill, FileText, Send, Calendar, 
   Printer, Receipt, Lock, Search, History, FolderHeart, User, Users, X, 
   Edit3, Save, BadgeCheck, Sparkles, AlertTriangle, HelpCircle, Check, ArrowRight,
-  Filter, RefreshCw, Award, Briefcase, Building2, Star, Mail
+  Filter, RefreshCw, Award, Briefcase, Building2, Star, Mail, CheckCheck
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -171,7 +171,9 @@ export default function DoctorDashboardPage() {
     try {
       const stored = localStorage.getItem('primecare_appointments');
       if (stored) {
-        setAllAppointments(JSON.parse(stored));
+        const parsed: AppointmentItem[] = JSON.parse(stored);
+        // Exclude already completed/dismissed visits from active queue
+        setAllAppointments(parsed.filter(a => a && a.status !== 'COMPLETED'));
       }
     } catch {}
 
@@ -247,24 +249,24 @@ export default function DoctorDashboardPage() {
       });
 
       localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppointments));
-      setAllAppointments(updatedAppointments);
+      setAllAppointments(updatedAppointments.filter(a => a.status !== 'COMPLETED'));
 
       setDocName(formattedName);
       setDocFee(formattedFee);
-      setProfileSuccessMsg('Doctor identity & clinical records updated everywhere! All patients now reflect your updated practitioner details.');
+      setProfileSuccessMsg('Doctor identity & clinical records updated everywhere! All appointments now reflect your updated practitioner details.');
       setTimeout(() => setProfileSuccessMsg(''), 5000);
     } catch {
       alert('Failed to update details. Please try again.');
     }
   };
 
-  // Queue Filter
+  // Queue Filter (Strictly active and not completed)
   const displayedQueue = useMemo(() => {
     const query = searchQueue.toLowerCase().trim();
     const cleanDocName = docName.toLowerCase().replace('dr. ', '').trim();
 
     return allAppointments.filter((a) => {
-      if (!a) return false;
+      if (!a || a.status === 'COMPLETED') return false;
       const matchSearch = `${a.patientName || ''} ${a.patientEmail || ''} ${a.doctorName || ''} ${a.department || ''}`.toLowerCase().includes(query);
       if (!matchSearch) return false;
 
@@ -280,6 +282,8 @@ export default function DoctorDashboardPage() {
   useEffect(() => {
     if (displayedQueue.length > 0 && (!activePatient || !displayedQueue.some(p => p.id === activePatient.id))) {
       handleSelectPatient(displayedQueue[0]);
+    } else if (displayedQueue.length === 0) {
+      setActivePatient(null);
     }
   }, [displayedQueue]);
 
@@ -312,7 +316,7 @@ export default function DoctorDashboardPage() {
     }
   };
 
-  // FINALIZE CONSULTATION: SENDS EMAIL & STORES EHR WITH STRICT (NAME + EMAIL) COMPOUND KEY
+  // FINALIZE CONSULTATION: SENDS EMAIL, STORES UNIQUE EHR & REMOVES PATIENT FROM ACTIVE QUEUE
   const handleFinalizeConsultation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activePatient) return;
@@ -321,11 +325,12 @@ export default function DoctorDashboardPage() {
     const pName = (activePatient.patientName || 'Patient Member').trim();
     const pEmail = (activePatient.patientEmail || 'patient@primecare.in').toLowerCase().trim();
     const invoiceNumber = 'INV-' + Math.floor(100000 + Math.random() * 900000);
+    const completedPatientId = activePatient.id;
 
     let aiPostVisit = {
       patientSummary: `Diagnosis: ${clinicalNotes}. Targeted outpatient clinical therapy initiated.`,
       medicationSchedule: `Take ${medication} every ${frequencyHours} hours for ${durationDays} days.`,
-      followUpSteps: 'Maintain hydration, complete entire antibiotic or prescribed course, and return if symptoms persist.',
+      followUpSteps: 'Maintain hydration, complete the entire prescribed therapeutic course, and return if symptoms persist.',
     };
 
     // 1. Dispatch AI Post-Visit Care Plan Email to Patient
@@ -371,7 +376,7 @@ export default function DoctorDashboardPage() {
       },
     };
 
-    // 2. Strict Compound Key (Email + Full Name) to ensure family members on same email have separate histories
+    // 2. Strict Compound Key (Email + Name) to keep family members on the same email isolated
     const patientKey = `${pEmail}::${pName.toLowerCase().replace(/\s+/g, '_')}`;
 
     try {
@@ -379,10 +384,8 @@ export default function DoctorDashboardPage() {
       const patientIndex = storedEHR.findIndex((p) => p.patientKey === patientKey);
 
       if (patientIndex > -1) {
-        // Append new encounter to THIS specific patient's history
         storedEHR[patientIndex].visits = [visitEntry, ...storedEHR[patientIndex].visits];
       } else {
-        // Create new isolated patient profile
         storedEHR.unshift({
           patientKey,
           patientEmail: pEmail,
@@ -395,6 +398,22 @@ export default function DoctorDashboardPage() {
 
       localStorage.setItem('primecare_ehr_registry', JSON.stringify(storedEHR));
       setEhrRegistry(storedEHR);
+    } catch {}
+
+    // 3. REMOVE FROM ACTIVE QUEUE (Mark as COMPLETED in storage)
+    try {
+      const storedAppts: AppointmentItem[] = JSON.parse(localStorage.getItem('primecare_appointments') || '[]');
+      const updatedAppts = storedAppts.map(a => {
+        if (a.id === completedPatientId) {
+          return { ...a, status: 'COMPLETED' };
+        }
+        return a;
+      });
+      localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
+      
+      // Update local state queue
+      const remainingQueue = allAppointments.filter(a => a.id !== completedPatientId && a.status !== 'COMPLETED');
+      setAllAppointments(remainingQueue);
     } catch {}
 
     setCompletedRecord({
@@ -415,7 +434,6 @@ export default function DoctorDashboardPage() {
     }, 150);
   };
 
-  // EHR Filter
   const filteredEhr = useMemo(() => {
     const q = searchEhr.toLowerCase().trim();
     return ehrRegistry.filter(p => 
@@ -545,7 +563,7 @@ export default function DoctorDashboardPage() {
           {activeTab === 'CLINICAL' && (
             <div className="space-y-6">
               
-              {/* COMPLETED BANNER */}
+              {/* COMPLETED CONSULTATION BANNER */}
               <AnimatePresence>
                 {completedRecord && (
                   <motion.div
@@ -556,16 +574,18 @@ export default function DoctorDashboardPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
                         <div className="p-2.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30">
-                          <Sparkles className="w-6 h-6 text-emerald-400" />
+                          <CheckCheck className="w-6 h-6 text-emerald-400" />
                         </div>
                         <div>
                           <h3 className="font-bold text-base text-emerald-100 flex items-center gap-2">
-                            <span>Care Plan & Prescription Finalized for {completedRecord.patient.patientName}</span>
-                            <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-mono border border-blue-500/30 flex items-center gap-1">
-                              <Mail className="w-3 h-3" /> Sent to {completedRecord.patient.patientEmail}
+                            <span>Consultation Completed for {completedRecord.patient.patientName}</span>
+                            <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-mono border border-blue-500/30 flex items-center gap-1">
+                              <Mail className="w-3 h-3" /> Care Plan Dispatched to {completedRecord.patient.patientEmail}
                             </span>
                           </h3>
-                          <p className="text-xs text-emerald-400">Prescription and plain-language recovery timeline have been emailed to the patient.</p>
+                          <p className="text-xs text-emerald-400 mt-0.5">
+                            Patient removed from active queue and stored into permanent EHR records.
+                          </p>
                         </div>
                       </div>
 
@@ -645,10 +665,11 @@ export default function DoctorDashboardPage() {
                       {displayedQueue.length === 0 ? (
                         <div className="p-8 text-center text-xs text-slate-500 space-y-2">
                           <Users className="w-8 h-8 mx-auto text-slate-600" />
-                          <p>No patients in this queue view.</p>
+                          <p className="font-semibold text-slate-400">Queue is Clear</p>
+                          <p className="text-[11px]">No pending patients currently waiting in this queue.</p>
                           <button
                             onClick={() => setFilterMode('ALL')}
-                            className="text-emerald-400 hover:underline block mx-auto"
+                            className="text-emerald-400 hover:underline block mx-auto mt-2"
                           >
                             View All Clinic Patients
                           </button>
@@ -805,13 +826,15 @@ export default function DoctorDashboardPage() {
                           disabled={loading}
                           className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2"
                         >
-                          {loading ? 'Finalizing & Emailing Patient Care Plan...' : (<><Send className="w-4 h-4" /> Finalize Consultation & Dispatch Care Plan to Patient Email</>)}
+                          {loading ? 'Finalizing & Removing from Queue...' : (<><Send className="w-4 h-4" /> Finalize Consultation & Remove from Queue</>)}
                         </button>
                       </form>
                     </div>
                   ) : (
-                    <div className="p-12 text-center text-slate-500 border border-slate-800 rounded-3xl bg-slate-900/40">
-                      Select a patient from the queue to start consultation.
+                    <div className="p-16 text-center text-slate-500 border border-slate-800 rounded-3xl bg-slate-900/40 space-y-2">
+                      <Users className="w-10 h-10 mx-auto text-slate-600" />
+                      <p className="font-semibold text-slate-300 text-sm">No Active Patient Selected</p>
+                      <p className="text-xs text-slate-500">Pick a patient from your queue on the left to start consultation.</p>
                     </div>
                   )}
                 </div>
@@ -819,11 +842,9 @@ export default function DoctorDashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: LONGITUDINAL EHR (NO DUPLICATES, UNIQUE PER NAME + EMAIL) */}
+          {/* TAB 2: LONGITUDINAL EHR */}
           {activeTab === 'EHR' && (
             <div className="space-y-6">
-              
-              {/* Search Bar for EHR */}
               <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -886,7 +907,7 @@ export default function DoctorDashboardPage() {
                 </div>
               )}
 
-              {/* MODAL FOR DETAILED PATIENT HISTORY ENCOUNTERS */}
+              {/* MODAL FOR ENCOUNTERS */}
               <AnimatePresence>
                 {selectedEhrPatient && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
@@ -1119,4 +1140,3 @@ export default function DoctorDashboardPage() {
     </ProtectedRoute>
   );
 }
-
