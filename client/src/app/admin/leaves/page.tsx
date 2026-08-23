@@ -129,7 +129,6 @@ export default function AdminDashboardPage() {
     return () => window.removeEventListener('storage', loadData);
   }, [user]);
 
-  // Section 1: Active Consultations
   const activeConsultations = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return appointments.filter(a => {
@@ -138,7 +137,6 @@ export default function AdminDashboardPage() {
     });
   }, [appointments, searchQuery]);
 
-  // Section 2: Finalized / Done Consultations
   const doneConsultations = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return appointments.filter(a => {
@@ -147,7 +145,6 @@ export default function AdminDashboardPage() {
     });
   }, [appointments, searchQuery]);
 
-  // Section 3: Filtered Doctors
   const filteredDoctors = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return doctorProfiles.filter(d => 
@@ -155,7 +152,6 @@ export default function AdminDashboardPage() {
     );
   }, [doctorProfiles, searchQuery]);
 
-  // Admin Manual Action: Mark as Done
   const handleMarkAsDone = (aptId: string) => {
     try {
       const updated = appointments.map(a => {
@@ -178,7 +174,6 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // ADMIN ACTION: SAVE EDITED DOCTOR DETAILS
   const handleSaveDoctorEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingDoctor) return;
@@ -188,7 +183,6 @@ export default function AdminDashboardPage() {
       localStorage.setItem('primecare_doctor_profiles', JSON.stringify(updatedRoster));
       setDoctorProfiles(updatedRoster);
 
-      // Cascade updated name/fee to all active appointments for this doctor
       const updatedAppointments = appointments.map(a => {
         if (a.doctorId === editingDoctor.id || a.doctorEmail?.toLowerCase() === editingDoctor.email?.toLowerCase()) {
           return {
@@ -211,18 +205,15 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // ADMIN ACTION: PERMANENTLY REMOVE DOCTOR ACCOUNT
   const handlePermanentDoctorRemoval = (doctor: DoctorProfile) => {
     try {
       const docEmailClean = (doctor.email || '').toLowerCase().trim();
       const docId = doctor.id;
 
-      // 1. Remove from live doctor roster
       const updatedRoster = doctorProfiles.filter(d => d.id !== docId && (d.email || '').toLowerCase().trim() !== docEmailClean);
       localStorage.setItem('primecare_doctor_profiles', JSON.stringify(updatedRoster));
       setDoctorProfiles(updatedRoster);
 
-      // 2. Remove onboarding applications & registered user authentication entry
       const storedApps: DoctorApplication[] = JSON.parse(localStorage.getItem('primecare_doctor_applications') || '[]');
       const filteredApps = storedApps.filter(a => (a.email || '').toLowerCase().trim() !== docEmailClean);
       localStorage.setItem('primecare_doctor_applications', JSON.stringify(filteredApps));
@@ -232,11 +223,9 @@ export default function AdminDashboardPage() {
       const filteredUsers = storedUsers.filter((u: any) => (u.email || '').toLowerCase().trim() !== docEmailClean);
       localStorage.setItem('primecare_registered_users', JSON.stringify(filteredUsers));
 
-      // 3. Purge doctor authentication credentials
       localStorage.removeItem(`role_pwd_doctor_${docEmailClean}`);
       localStorage.removeItem(`role_pwd_ADMIN_${docEmailClean}`);
 
-      // 4. Clean up doctor leaves
       const updatedLeaves = leaves.filter(l => l.doctorId !== docId && l.doctorName.toLowerCase() !== doctor.name.toLowerCase());
       localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
       setLeaves(updatedLeaves);
@@ -249,7 +238,6 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Doctor Application Approval
   const handleApproveDoctor = (app: DoctorApplication) => {
     try {
       const updatedApps = doctorApplications.map(a => a.id === app.id ? { ...a, status: 'APPROVED' as const } : a);
@@ -272,7 +260,7 @@ export default function AdminDashboardPage() {
       localStorage.setItem('primecare_doctor_profiles', JSON.stringify(updatedRoster));
       setDoctorProfiles(updatedRoster);
 
-      setActionSuccessMsg(`Physician ${app.name} approved and granted directory access.`);
+      setActionSuccessMsg(`Physician ${app.name} approved and added to live roster.`);
       setTimeout(() => setActionSuccessMsg(''), 4000);
     } catch {}
   };
@@ -283,25 +271,25 @@ export default function AdminDashboardPage() {
     setDoctorApplications(updatedApps);
   };
 
-  // Leave Management
-    const handleAddLeave = async (e: React.FormEvent) => {
+  // Fixed leave handler with proper string interpolation
+  const handleAddLeave = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionSuccessMsg('Recording leave & notifying affected patients...');
 
     const docClean = leaveDoctorName.toLowerCase().replace('dr. ', '').trim();
 
-    // 1. Find doctor ID from roster
     const matchedDoc = doctorProfiles.find(d => 
       d.name.toLowerCase().replace('dr. ', '').trim() === docClean ||
       d.name.toLowerCase().includes(docClean)
     );
 
     const docId = matchedDoc ? matchedDoc.id : 'doc-auto';
+    const formattedDoctorName = leaveDoctorName.startsWith('Dr.') ? leaveDoctorName : 'Dr. ' + leaveDoctorName;
 
     const newLeave: LeaveRecord = {
       id: 'leave-' + Date.now(),
       doctorId: docId,
-      doctorName: leaveDoctorName.startsWith('Dr.') ? leaveDoctorName : \Dr. \\,
+      doctorName: formattedDoctorName,
       specialisation: leaveDoctorSpec,
       leaveDate,
       reason: leaveReason
@@ -311,14 +299,12 @@ export default function AdminDashboardPage() {
     localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
     setLeaves(updatedLeaves);
 
-    // 2. Identify affected patients booked on this date for this doctor
     const affected = appointments.filter(a => {
       if (a.date !== leaveDate || a.status === 'COMPLETED' || a.status === 'CANCELLED') return false;
       const aDoc = (a.doctorName || '').toLowerCase().replace('dr. ', '').trim();
       return (a.doctorId && a.doctorId === docId) || aDoc.includes(docClean);
     });
 
-    // 3. Mark affected appointments as CANCELLED / RESCHEDULE REQUIRED
     if (affected.length > 0) {
       const updatedAppts = appointments.map(a => {
         const isAffected = affected.some(aff => aff.id === a.id);
@@ -328,7 +314,6 @@ export default function AdminDashboardPage() {
       setAppointments(updatedAppts);
     }
 
-    // 4. Dispatch Email Reschedule Notices via API
     try {
       const res = await fetch('/api/admin/leave-reschedule', {
         method: 'POST',
@@ -342,9 +327,9 @@ export default function AdminDashboardPage() {
         })
       });
       const data = await res.json();
-      setActionSuccessMsg(data.message || \Leave recorded. Reschedule notices sent to \ patient(s).\);
+      setActionSuccessMsg(data.message || 'Leave recorded and reschedule notifications dispatched.');
     } catch {
-      setActionSuccessMsg(\Leave recorded. Affected \ appointment(s) flagged for reschedule.\);
+      setActionSuccessMsg('Leave recorded successfully.');
     }
 
     setTimeout(() => setActionSuccessMsg(''), 5000);
@@ -363,7 +348,6 @@ export default function AdminDashboardPage() {
 
         <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8">
           
-          {/* TOP HEADER */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-xs font-semibold text-red-400 mb-2">
@@ -377,7 +361,6 @@ export default function AdminDashboardPage() {
               </p>
             </div>
 
-            {/* TAB SELECTORS */}
             <div className="flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto text-xs font-bold">
               <button
                 type="button"
@@ -421,7 +404,6 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* ACTION NOTIFICATION */}
           <AnimatePresence>
             {actionSuccessMsg && (
               <motion.div
@@ -435,7 +417,6 @@ export default function AdminDashboardPage() {
             )}
           </AnimatePresence>
 
-          {/* SEARCH & FILTERS BAR */}
           <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="relative w-full sm:w-80">
               <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
@@ -606,8 +587,6 @@ export default function AdminDashboardPage() {
           {/* TAB 3: DOCTOR DIRECTORY & PERMANENT ACCOUNT DELETION */}
           {activeTab === 'DOCTORS' && (
             <div className="space-y-6">
-              
-              {/* SECTION A: PENDING ONBOARDING APPLICATIONS */}
               {doctorApplications.filter(a => a.status === 'PENDING').length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">
@@ -656,7 +635,6 @@ export default function AdminDashboardPage() {
                 </div>
               )}
 
-              {/* SECTION B: ACTIVE REGISTERED DOCTOR ROSTER */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
@@ -779,7 +757,7 @@ export default function AdminDashboardPage() {
                     type="submit"
                     className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition"
                   >
-                    Lock Doctor Availability on Date
+                    Lock Doctor Availability & Dispatch Reschedule Emails
                   </button>
                 </form>
               </div>
@@ -817,7 +795,7 @@ export default function AdminDashboardPage() {
 
         </main>
 
-        {/* MODAL 1: ADMIN EDIT DOCTOR DETAILS */}
+        {/* MODAL: ADMIN EDIT DOCTOR */}
         <AnimatePresence>
           {editingDoctor && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
@@ -916,7 +894,7 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Physician Bio & Clinical Specialties</label>
+                    <label className="block text-slate-400 font-semibold mb-1">Physician Bio</label>
                     <textarea
                       rows={3}
                       required
@@ -947,7 +925,7 @@ export default function AdminDashboardPage() {
           )}
         </AnimatePresence>
 
-        {/* MODAL 2: CONFIRM PERMANENT DOCTOR ACCOUNT REMOVAL */}
+        {/* MODAL: PERMANENT REMOVAL */}
         <AnimatePresence>
           {doctorToDelete && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
@@ -969,7 +947,7 @@ export default function AdminDashboardPage() {
 
                 <p className="text-xs text-slate-300 leading-relaxed bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
                   Are you sure you want to delete <strong className="text-white">{doctorToDelete.name}</strong> (<span className="text-slate-400">{doctorToDelete.email}</span>)?
-                  This will revoke their login access, remove their clinical profile, and remove them from all public appointment booking schedules.
+                  This will revoke their login credentials, remove their directory profile, and cancel their active schedule.
                 </p>
 
                 <div className="flex gap-3">
@@ -997,5 +975,3 @@ export default function AdminDashboardPage() {
     </ProtectedRoute>
   );
 }
-
-
