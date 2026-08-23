@@ -1,4 +1,5 @@
-﻿// Centralized Cloud / Server Database Bridge
+﻿import { Pool } from '@neondatabase/serverless';
+
 export interface DoctorRecord {
   id: string;
   email: string;
@@ -14,21 +15,21 @@ export interface DoctorRecord {
 
 export interface AppointmentRecord {
   id: string;
-  tokenNumber: string;
-  doctorId: string;
-  doctorName: string;
+  tokenNumber?: string;
+  doctorId?: string;
+  doctorName?: string;
   doctorEmail?: string;
-  department: string;
-  fee: string;
+  department?: string;
+  fee?: string;
   hospital?: string;
-  date: string;
-  timeSlot: string;
-  symptoms: string;
-  patientName: string;
-  patientEmail: string;
+  date?: string;
+  timeSlot?: string;
+  symptoms?: string;
+  patientName?: string;
+  patientEmail?: string;
   age?: string | number;
   gender?: string;
-  status: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'LEAVE_CANCELLED';
+  status?: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'LEAVE_CANCELLED';
   finalizedAt?: string;
   leaveReason?: string;
 }
@@ -51,56 +52,82 @@ export interface LeaveRecord {
   reason: string;
 }
 
-// Global In-Memory Shared Cache across Serverless instances
-declare global {
-  var __PC_DB_DOCTORS: DoctorRecord[] | undefined;
-  var __PC_DB_APPOINTMENTS: AppointmentRecord[] | undefined;
-  var __PC_DB_EHR: EHRRecord[] | undefined;
-  var __PC_DB_LEAVES: LeaveRecord[] | undefined;
+let pool: Pool | null = null;
+
+export function getDbPool(): Pool | null {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    return null;
+  }
+  if (!pool) {
+    pool = new Pool({ connectionString });
+  }
+  return pool;
 }
 
-const DEFAULT_DOCTORS: DoctorRecord[] = [
-  { id: 'doc-cardio-01', email: 'ritikakushwaha62@gmail.com', name: 'Dr. Ritika Kushwaha', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, diagnostic angiographies, coronary interventions, and comprehensive lipid management.' },
-  { id: 'doc-cardio-02', email: 'aarav.sharma@primecare.in', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS)', experience: '12 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease.' },
-  { id: 'doc-cardio-03', email: 'meera.kulkarni@primecare.in', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', rating: '4.8 ★', bio: 'Specialist in non-invasive coronary imaging, pediatric cardiology, and heart rhythm management.' },
-  { id: 'doc-neuro-01', email: 'priya.nair@primecare.in', name: 'Dr. Priya Nair', specialisation: 'Neurology', qualification: 'MD, DM (Neurology - NIMHANS)', experience: '12 Years Practice', hospital: 'PrimeCare Neuroscience Center', fee: '₹1,500', rating: '4.9 ★', bio: 'Consultant Neurologist focused on headache disorders, neuropathies, epilepsy, and acute stroke treatment.' },
-  { id: 'doc-ortho-01', email: 'vikram.patel@primecare.in', name: 'Dr. Vikram Patel', specialisation: 'Orthopedics', qualification: 'MS (Orthopedics), MCh', experience: '15 Years Practice', hospital: 'PrimeCare Ortho Wing', fee: '₹1,000', rating: '4.7 ★', bio: 'Joint replacement, arthroscopic ligament surgery, and complex sports injury rehabilitation specialist.' },
-  { id: 'doc-pedia-01', email: 'ananya.deshmukh@primecare.in', name: 'Dr. Ananya Deshmukh', specialisation: 'Pediatrics', qualification: 'MD (Pediatrics), DCH', experience: '9 Years Practice', hospital: 'PrimeCare Children Pavilion', fee: '₹900', rating: '5.0 ★', bio: 'Pediatrician handling newborn intensive care, routine growth assessments, and childhood immunizations.' },
-  { id: 'doc-derma-01', email: 'rohan.mehta@primecare.in', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', rating: '4.8 ★', bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' },
-];
+export async function initDb(): Promise<void> {
+  const db = getDbPool();
+  if (!db) return;
 
-export function getDbDoctors(): DoctorRecord[] {
-  if (!global.__PC_DB_DOCTORS) global.__PC_DB_DOCTORS = DEFAULT_DOCTORS;
-  return global.__PC_DB_DOCTORS;
-}
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS pc_doctors (
+        id VARCHAR(255) PRIMARY KEY,
+        email VARCHAR(255) UNIQUE,
+        name VARCHAR(255) NOT NULL,
+        specialisation VARCHAR(255),
+        qualification VARCHAR(255),
+        experience VARCHAR(255),
+        hospital VARCHAR(255),
+        fee VARCHAR(50),
+        rating VARCHAR(50),
+        bio TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
 
-export function saveDbDoctors(doctors: DoctorRecord[]): void {
-  global.__PC_DB_DOCTORS = doctors;
-}
+      CREATE TABLE IF NOT EXISTS pc_appointments (
+        id VARCHAR(255) PRIMARY KEY,
+        token_number VARCHAR(100),
+        doctor_id VARCHAR(255),
+        doctor_name VARCHAR(255),
+        doctor_email VARCHAR(255),
+        department VARCHAR(255),
+        fee VARCHAR(50),
+        hospital VARCHAR(255),
+        date VARCHAR(50),
+        time_slot VARCHAR(50),
+        symptoms TEXT,
+        patient_name VARCHAR(255),
+        patient_email VARCHAR(255),
+        age VARCHAR(50),
+        gender VARCHAR(50),
+        status VARCHAR(50) DEFAULT 'CONFIRMED',
+        finalized_at VARCHAR(100),
+        leave_reason TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
 
-export function getDbAppointments(): AppointmentRecord[] {
-  if (!global.__PC_DB_APPOINTMENTS) global.__PC_DB_APPOINTMENTS = [];
-  return global.__PC_DB_APPOINTMENTS;
-}
+      CREATE TABLE IF NOT EXISTS pc_ehr (
+        patient_key VARCHAR(255) PRIMARY KEY,
+        patient_email VARCHAR(255),
+        patient_name VARCHAR(255),
+        age VARCHAR(50),
+        gender VARCHAR(50),
+        visits JSONB DEFAULT '[]'::jsonb,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
 
-export function saveDbAppointments(appts: AppointmentRecord[]): void {
-  global.__PC_DB_APPOINTMENTS = appts;
-}
-
-export function getDbEHR(): EHRRecord[] {
-  if (!global.__PC_DB_EHR) global.__PC_DB_EHR = [];
-  return global.__PC_DB_EHR;
-}
-
-export function saveDbEHR(ehrs: EHRRecord[]): void {
-  global.__PC_DB_EHR = ehrs;
-}
-
-export function getDbLeaves(): LeaveRecord[] {
-  if (!global.__PC_DB_LEAVES) global.__PC_DB_LEAVES = [];
-  return global.__PC_DB_LEAVES;
-}
-
-export function saveDbLeaves(leaves: LeaveRecord[]): void {
-  global.__PC_DB_LEAVES = leaves;
+      CREATE TABLE IF NOT EXISTS pc_leaves (
+        id VARCHAR(255) PRIMARY KEY,
+        doctor_id VARCHAR(255),
+        doctor_name VARCHAR(255),
+        specialisation VARCHAR(255),
+        leave_date VARCHAR(50),
+        reason TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+  } catch (err) {
+    console.error("Neon DB Init Error:", err);
+  }
 }
