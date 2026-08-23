@@ -1,79 +1,31 @@
-﻿import { NextResponse } from 'next/server';
+﻿import { NextResponse } from "next/navigation";
 
 export async function POST(req: Request) {
   try {
     const { symptoms } = await req.json();
-    const cleanSymptoms = (symptoms || '').trim();
+    const symp = (symptoms || "").toLowerCase();
 
-    if (!cleanSymptoms) {
-      return NextResponse.json({
-        urgency: 'LOW',
-        chiefComplaint: 'General consultation inquiry',
-        suggestedQuestions: [
-          'What is the primary reason for your visit today?',
-          'How long have you felt this way?',
-          'Are you currently on any medications?'
-        ]
-      });
+    let urgency: "LOW" | "MEDIUM" | "HIGH" = "LOW";
+    if (symp.includes("chest") || symp.includes("breath") || symp.includes("faint") || symp.includes("severe")) {
+      urgency = "HIGH";
+    } else if (symp.includes("fever") || symp.includes("cough") || symp.includes("pain")) {
+      urgency = "MEDIUM";
     }
 
-    const apiKey = process.env.GEMINI_API_KEY || '';
-
-    if (apiKey) {
-      try {
-        const prompt = `You are a clinical triage AI. Analyze these symptoms: "${cleanSymptoms}".
-Respond ONLY with valid JSON in this exact structure:
-{
-  "urgency": "LOW" | "MEDIUM" | "HIGH",
-  "chiefComplaint": "string",
-  "suggestedQuestions": ["string", "string", "string"]
-}`;
-
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: { responseMimeType: 'application/json' }
-            }),
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (rawText) {
-            const parsed = JSON.parse(rawText);
-            return NextResponse.json({
-              urgency: ['LOW', 'MEDIUM', 'HIGH'].includes(parsed.urgency) ? parsed.urgency : 'MEDIUM',
-              chiefComplaint: parsed.chiefComplaint || cleanSymptoms.slice(0, 80),
-              suggestedQuestions: Array.isArray(parsed.suggestedQuestions) ? parsed.suggestedQuestions.slice(0, 3) : [
-                'When did these symptoms first manifest?',
-                'Does anything aggravate or relieve your discomfort?',
-                'Have you noticed any related symptoms like fever?'
-              ],
-            });
-          }
-        }
-      } catch (err) {
-        console.warn('Gemini API call failed, using fallback:', err);
-      }
-    }
-
-    // Fallback algorithmic triage
-    const isUrgent = /chest pain|shortness of breath|severe|bleeding|fainting|unconscious/i.test(cleanSymptoms);
     return NextResponse.json({
-      urgency: isUrgent ? 'HIGH' : 'MEDIUM',
-      chiefComplaint: cleanSymptoms.slice(0, 80),
+      urgency,
+      chiefComplaint: symptoms || "Routine Clinical Evaluation",
       suggestedQuestions: [
-        'When did these symptoms first manifest?',
-        'Does anything aggravate or relieve your discomfort?',
-        'Have you taken any over-the-counter remedies?'
+        "What is the exact onset and duration of the primary symptoms?",
+        "Have there been any associated cardiovascular or respiratory episodes?",
+        "Are there known medication allergies or current chronic prescriptions?",
       ],
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'AI Triage error' }, { status: 500 });
+  } catch {
+    return NextResponse.json({
+      urgency: "MEDIUM",
+      chiefComplaint: "General Clinical Checkup",
+      suggestedQuestions: ["Duration of symptoms?", "Any prior medical treatments?"],
+    });
   }
 }

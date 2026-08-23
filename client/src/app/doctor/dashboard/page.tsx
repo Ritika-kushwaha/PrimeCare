@@ -66,11 +66,11 @@ interface AppointmentItem {
 
 export default function DoctorDashboardPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'CLINICAL' | 'EHR'>('CLINICAL');
+  const [activeTab, setActiveTab] = useState<'CLINICAL' | 'EHR' | 'PROFILE'>('CLINICAL');
   const [allAppointments, setAllAppointments] = useState<AppointmentItem[]>([]);
   const [activePatient, setActivePatient] = useState<AppointmentItem | null>(null);
   
-  // AI Pre-Visit State
+  // AI Pre-Visit State for Current Active Patient
   const [aiTriageLoading, setAiTriageLoading] = useState(false);
   const [preVisitTriage, setPreVisitTriage] = useState<{
     urgency: 'LOW' | 'MEDIUM' | 'HIGH';
@@ -162,6 +162,7 @@ export default function DoctorDashboardPage() {
     }
   }, [doctorIsolatedQueue, activePatient]);
 
+  // WHEN DOCTOR SELECTS A PATIENT: FETCH PRE-VISIT AI SUMMARY
   const handleSelectPatient = async (patient: AppointmentItem) => {
     setActivePatient(patient);
     setCompletedRecord(null);
@@ -195,6 +196,7 @@ export default function DoctorDashboardPage() {
     }
   };
 
+  // FINALIZE CONSULTATION & GENERATE POST-VISIT AI SUMMARY
   const handleFinalizeConsultation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activePatient) return;
@@ -203,7 +205,6 @@ export default function DoctorDashboardPage() {
     const pName = activePatient.patientName || 'Patient Member';
     const pEmail = (activePatient.patientEmail || 'patient@primecare.in').toLowerCase();
 
-    // 1. Generate AI Patient-Friendly Summary
     let aiPostVisit = {
       patientSummary: `Diagnosis: ${clinicalNotes}`,
       medicationSchedule: `Take ${medication} every ${frequencyHours} hours for ${durationDays} days.`,
@@ -268,24 +269,6 @@ export default function DoctorDashboardPage() {
       setEhrRegistry(storedEHR);
     } catch {}
 
-    // 2. Dispatch Email with AI Summary to Patient
-    try {
-      await fetch('/api/consultations/finalize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          patientName: pName,
-          patientEmail: pEmail,
-          doctorName: currentDoctorName,
-          department: activePatient.department || currentSpecialty,
-          clinicalNotes,
-          prescription: visitEntry.prescription,
-          aiSummary: aiPostVisit,
-          fee: activePatient.fee || '₹1,200',
-        }),
-      });
-    } catch {}
-
     setCompletedRecord({
       patient: activePatient,
       clinicalNotes,
@@ -311,7 +294,7 @@ export default function DoctorDashboardPage() {
           <Navbar />
         </div>
 
-        {/* PRINTABLE VIEW */}
+        {/* PRINTABLE VIEWS */}
         {completedRecord && printDocType && (
           <div className="hidden print:block p-8 bg-white text-black font-sans min-h-screen">
             {printDocType === 'AI_SUMMARY' ? (
@@ -355,8 +338,13 @@ export default function DoctorDashboardPage() {
             ) : printDocType === 'PRESCRIPTION' ? (
               <div className="space-y-6">
                 <div className="border-b-2 border-black pb-4 flex justify-between items-start">
-                  <div><h1 className="text-2xl font-bold">PrimeCare Multispecialty Hospital</h1></div>
-                  <div className="text-right"><h2 className="text-xl font-bold text-gray-800">OFFICIAL MEDICAL PRESCRIPTION</h2></div>
+                  <div>
+                    <h1 className="text-2xl font-bold">PrimeCare Multispecialty Hospital</h1>
+                    <p className="text-sm font-semibold">{currentDoctorName}</p>
+                  </div>
+                  <div className="text-right">
+                    <h2 className="text-xl font-bold text-gray-800">OFFICIAL MEDICAL PRESCRIPTION</h2>
+                  </div>
                 </div>
                 <div className="p-4 border border-gray-300 text-xs">
                   <p><strong>Patient:</strong> {completedRecord.patient.patientName}</p>
@@ -404,7 +392,7 @@ export default function DoctorDashboardPage() {
             </div>
           </div>
 
-          {/* TAB 1: CLINICAL DESK */}
+          {/* TAB 1: CLINICAL CONSULTATION DESK */}
           {activeTab === 'CLINICAL' && (
             <div className="space-y-6">
               <AnimatePresence>
@@ -421,9 +409,9 @@ export default function DoctorDashboardPage() {
                         </div>
                         <div>
                           <h3 className="font-bold text-base text-emerald-100">
-                            AI Patient Summary Dispatched to {completedRecord.patient.patientName}
+                            AI Patient Summary & Prescription Ready for {completedRecord.patient.patientName}
                           </h3>
-                          <p className="text-xs text-emerald-400">Diagnosis and timetable delivered to {completedRecord.patient.patientEmail}.</p>
+                          <p className="text-xs text-emerald-400">Converted clinical notes into plain language with medication instructions.</p>
                         </div>
                       </div>
 
@@ -496,11 +484,10 @@ export default function DoctorDashboardPage() {
                   </div>
                 </div>
 
-                {/* CONSULTATION & PRE-VISIT AI SUMMARY */}
+                {/* CONSULTATION & PRE-VISIT AI TRIAGE */}
                 <div className="lg:col-span-7 space-y-6">
                   {activePatient ? (
                     <div className="p-6 sm:p-8 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-xl space-y-6">
-                      {/* PRE-VISIT AI SYMPTOM SUMMARY CARD */}
                       <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-950 to-blue-950/30 border border-blue-500/40 shadow-xl space-y-3">
                         <div className="flex items-center justify-between border-b border-blue-500/20 pb-2.5">
                           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-400">
@@ -522,7 +509,7 @@ export default function DoctorDashboardPage() {
 
                         {aiTriageLoading ? (
                           <div className="text-xs text-slate-400 italic py-2 flex items-center gap-2">
-                            <Sparkles className="w-3.5 h-3.5 animate-spin text-blue-400" /> Analyzing symptoms & formulating inquiries...
+                            <Sparkles className="w-3.5 h-3.5 animate-spin text-blue-400" /> Analyzing patient symptoms & formulating inquiries...
                           </div>
                         ) : preVisitTriage ? (
                           <div className="space-y-3 text-xs">
@@ -533,7 +520,7 @@ export default function DoctorDashboardPage() {
 
                             <div className="p-3 bg-slate-900/80 rounded-xl border border-slate-800 space-y-1.5">
                               <span className="text-blue-300 font-bold block text-[11px] flex items-center gap-1.5">
-                                <HelpCircle className="w-3.5 h-3.5 text-blue-400" /> Suggested Diagnostic Questions for Doctor:
+                                <HelpCircle className="w-3.5 h-3.5 text-blue-400" /> Suggested Clinical Inquiries for Doctor:
                               </span>
                               <ul className="space-y-1 text-[11px] text-slate-300 pl-4 list-disc">
                                 {preVisitTriage.suggestedQuestions.map((q, idx) => (
@@ -545,7 +532,7 @@ export default function DoctorDashboardPage() {
                         ) : null}
                       </div>
 
-                      {/* CLINICAL FORM */}
+                      {/* CLINICAL NOTES FORM */}
                       <form onSubmit={handleFinalizeConsultation} className="space-y-5">
                         <div>
                           <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-2">
@@ -594,7 +581,7 @@ export default function DoctorDashboardPage() {
                           disabled={loading}
                           className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2"
                         >
-                          {loading ? 'Generating AI Summary & Emailing...' : (<><Sparkles className="w-4 h-4" /> Finalize Consultation & Dispatch AI Care Plan</>)}
+                          {loading ? 'Generating AI Patient Care Plan...' : (<><Sparkles className="w-4 h-4" /> Finalize Consultation & Generate AI Patient Summary</>)}
                         </button>
                       </form>
                     </div>
@@ -604,7 +591,7 @@ export default function DoctorDashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: EHR */}
+          {/* TAB 2: LONGITUDINAL EHR WITH STORED AI SUMMARIES */}
           {activeTab === 'EHR' && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -613,7 +600,7 @@ export default function DoctorDashboardPage() {
                     <div>
                       <h3 className="font-bold text-base text-white">{patient.patientName}</h3>
                       <p className="text-[11px] text-slate-400 font-mono">{patient.patientEmail}</p>
-                      <p className="text-xs text-emerald-400 mt-2 font-bold">{patient.visits?.length || 0} Encounters</p>
+                      <p className="text-xs text-emerald-400 mt-2 font-bold">{patient.visits.length} Encounters</p>
                     </div>
 
                     <button
@@ -648,14 +635,14 @@ export default function DoctorDashboardPage() {
                       </div>
 
                       <div className="space-y-4">
-                        {selectedEhrPatient.visits?.map((v, i) => (
+                        {selectedEhrPatient.visits.map((v, i) => (
                           <div key={i} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3 text-xs">
                             <div className="flex justify-between items-center text-slate-400 border-b border-slate-800 pb-2">
                               <span><strong>Attending:</strong> {v.doctorName}</span>
                               <span>{v.date}</span>
                             </div>
                             <p><strong>Clinical Notes:</strong> {v.clinicalNotes}</p>
-                            <p className="text-emerald-400 font-serif"><strong>Rx:</strong> ℞ {v.prescription?.medication}</p>
+                            <p className="text-emerald-400 font-serif"><strong>Rx:</strong> ℞ {v.prescription.medication}</p>
 
                             {v.aiPostVisitSummary && (
                               <div className="p-3 bg-purple-950/30 border border-purple-500/30 rounded-xl space-y-1.5">
