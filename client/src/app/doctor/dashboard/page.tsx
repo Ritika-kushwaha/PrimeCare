@@ -165,8 +165,13 @@ export default function DoctorDashboardPage() {
   const doctorEmail = (user?.email || 'ritikakushwaha62@gmail.com').toLowerCase().trim();
 
   // Profile Form Inputs
-  const [docName, setDocName] = useState('Dr. Ritika Kushwaha');
-  const [docSpecialty, setDocSpecialty] = useState('Cardiology');
+    const [docName, setDocName] = useState(() => {
+    if (user?.firstName) {
+      return ('Dr. ' + user.firstName + (user.lastName ? ' ' + user.lastName : '')).trim();
+    }
+    return 'Dr. Practitioner';
+  });
+    const [docSpecialty, setDocSpecialty] = useState(user?.specialisation || 'General Medicine');
   const [docQualification, setDocQualification] = useState('MD, DM (Cardiology - AIIMS Delhi)');
   const [docExperience, setDocExperience] = useState('14 Years Practice');
   const [docHospital, setDocHospital] = useState('PrimeCare Apex Heart Institute');
@@ -944,4 +949,7 @@ export default function DoctorDashboardPage() {
     </ProtectedRoute>
   );
 }
+
+
+
 
