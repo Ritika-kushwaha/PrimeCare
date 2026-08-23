@@ -284,21 +284,70 @@ export default function AdminDashboardPage() {
   };
 
   // Leave Management
-  const handleAddLeave = (e: React.FormEvent) => {
+    const handleAddLeave = async (e: React.FormEvent) => {
     e.preventDefault();
+    setActionSuccessMsg('Recording leave & notifying affected patients...');
+
+    const docClean = leaveDoctorName.toLowerCase().replace('dr. ', '').trim();
+
+    // 1. Find doctor ID from roster
+    const matchedDoc = doctorProfiles.find(d => 
+      d.name.toLowerCase().replace('dr. ', '').trim() === docClean ||
+      d.name.toLowerCase().includes(docClean)
+    );
+
+    const docId = matchedDoc ? matchedDoc.id : 'doc-auto';
+
     const newLeave: LeaveRecord = {
       id: 'leave-' + Date.now(),
-      doctorId: 'doc-auto',
-      doctorName: leaveDoctorName,
+      doctorId: docId,
+      doctorName: leaveDoctorName.startsWith('Dr.') ? leaveDoctorName : \Dr. \\,
       specialisation: leaveDoctorSpec,
       leaveDate,
       reason: leaveReason
     };
-    const updated = [newLeave, ...leaves];
-    localStorage.setItem('primecare_leaves', JSON.stringify(updated));
-    setLeaves(updated);
-    setActionSuccessMsg(`Duty leave recorded for ${leaveDoctorName} on ${leaveDate}.`);
-    setTimeout(() => setActionSuccessMsg(''), 4000);
+
+    const updatedLeaves = [newLeave, ...leaves];
+    localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
+    setLeaves(updatedLeaves);
+
+    // 2. Identify affected patients booked on this date for this doctor
+    const affected = appointments.filter(a => {
+      if (a.date !== leaveDate || a.status === 'COMPLETED' || a.status === 'CANCELLED') return false;
+      const aDoc = (a.doctorName || '').toLowerCase().replace('dr. ', '').trim();
+      return (a.doctorId && a.doctorId === docId) || aDoc.includes(docClean);
+    });
+
+    // 3. Mark affected appointments as CANCELLED / RESCHEDULE REQUIRED
+    if (affected.length > 0) {
+      const updatedAppts = appointments.map(a => {
+        const isAffected = affected.some(aff => aff.id === a.id);
+        return isAffected ? { ...a, status: 'CANCELLED' as const } : a;
+      });
+      localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
+      setAppointments(updatedAppts);
+    }
+
+    // 4. Dispatch Email Reschedule Notices via API
+    try {
+      const res = await fetch('/api/admin/leave-reschedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          doctorName: newLeave.doctorName,
+          specialisation: leaveDoctorSpec,
+          leaveDate,
+          reason: leaveReason,
+          affectedAppointments: affected
+        })
+      });
+      const data = await res.json();
+      setActionSuccessMsg(data.message || \Leave recorded. Reschedule notices sent to \ patient(s).\);
+    } catch {
+      setActionSuccessMsg(\Leave recorded. Affected \ appointment(s) flagged for reschedule.\);
+    }
+
+    setTimeout(() => setActionSuccessMsg(''), 5000);
   };
 
   const handleDeleteLeave = (id: string) => {
@@ -948,3 +997,5 @@ export default function AdminDashboardPage() {
     </ProtectedRoute>
   );
 }
+
+
