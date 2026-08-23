@@ -9,7 +9,7 @@ import {
   Calendar, Clock, Stethoscope, User, 
   CheckCircle2, AlertCircle, ArrowRight, ShieldCheck, 
   Search, Building2, Award, CalendarX2, Ban, Users, 
-  Printer, CalendarPlus, Briefcase, Star, ChevronRight, RefreshCw
+  Printer, CalendarPlus, Briefcase, Star, ChevronRight, RefreshCw, X, Download, ExternalLink, Check, FileBadge
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -39,6 +39,7 @@ interface AppointmentItem {
   tokenNumber: string;
   doctorId: string;
   doctorName: string;
+  doctorEmail?: string;
   department: string;
   fee: string;
   hospital: string;
@@ -80,11 +81,11 @@ export default function BookAppointmentPage() {
   const [selectedSlot, setSelectedSlot] = useState('10:00 AM');
   
   const [sharedEmail, setSharedEmail] = useState(user?.email || 'patient@primecare.in');
-  const [patientFirstName, setPatientFirstName] = useState(user?.firstName || 'Ritika');
-  const [patientLastName, setPatientLastName] = useState(user?.lastName || 'Kushwaha');
+  const [patientFirstName, setPatientFirstName] = useState(user?.firstName || 'Member');
+  const [patientLastName, setPatientLastName] = useState(user?.lastName || '');
   const [patientAge, setPatientAge] = useState('21');
   const [patientGender, setPatientGender] = useState('Female');
-  const [symptoms, setSymptoms] = useState('Routine cardiovascular checkup');
+  const [symptoms, setSymptoms] = useState('Routine clinical consultation & health checkup');
   
   const [searchDoc, setSearchDoc] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('ALL');
@@ -125,44 +126,52 @@ export default function BookAppointmentPage() {
     if (user?.firstName) setPatientFirstName(user.firstName);
     if (user?.lastName) setPatientLastName(user.lastName);
 
-    const interval = setInterval(loadData, 5000);
+    const interval = setInterval(loadData, 6000);
     return () => clearInterval(interval);
   }, [user, loadData]);
 
-  const isDoctorOnLeave = useMemo(() => {
-    const selName = selectedDoctor.name.toLowerCase().replace('dr. ', '').trim();
+  // Clean Name Helper
+  const cleanDoctorName = (name?: string) => (name || '').toLowerCase().replace('dr. ', '').trim();
+
+  // Check if Selected Doctor is On Approved Leave
+  const doctorLeaveRecord = useMemo(() => {
+    const selClean = cleanDoctorName(selectedDoctor.name);
     const selId = selectedDoctor.id;
 
     return leaves.find(l => {
       if (l.leaveDate !== selectedDate) return false;
-      const lName = (l.doctorName || '').toLowerCase().replace('dr. ', '').trim();
-      const lId = l.doctorId;
-      return (lId && lId === selId) || (lName && (lName.includes(selName) || selName.includes(lName)));
+      const lClean = cleanDoctorName(l.doctorName);
+      return (l.doctorId && l.doctorId === selId) || (lClean && (lClean.includes(selClean) || selClean.includes(lClean)));
     });
   }, [leaves, selectedDoctor, selectedDate]);
 
   const currentMemberName = useMemo(() => {
-    return `${(patientFirstName || '').trim()} ${(patientLastName || '').trim()}`.trim();
+    return `${(patientFirstName || '').trim()} ${(patientLastName || '').trim()}`.trim() || 'Patient Member';
   }, [patientFirstName, patientLastName]);
 
+  // Strictly per-doctor isolated slot availability check
   const getSlotAvailability = (slot: string) => {
-    const cleanMember = currentMemberName.toLowerCase();
-
-    if (isDoctorOnLeave) {
+    if (doctorLeaveRecord) {
       return {
         available: false,
-        reason: `${selectedDoctor.name} is on Leave on ${selectedDate}`,
+        reason: `${selectedDoctor.name} is on Leave (${doctorLeaveRecord.reason || 'Leave'})`,
         statusType: 'DOCTOR_ON_LEAVE'
       };
     }
 
-    const existingDoctorBooking = existingAppointments.find(
-      a => (a.doctorId === selectedDoctor.id || a.doctorName?.toLowerCase().includes(selectedDoctor.name.toLowerCase().replace('dr. ', '').trim())) && 
-           a.date === selectedDate && 
-           a.timeSlot === slot && 
-           a.status !== 'CANCELLED' && 
-           a.status !== 'LEAVE_CANCELLED'
-    );
+    const selClean = cleanDoctorName(selectedDoctor.name);
+    const selId = selectedDoctor.id;
+    const cleanMember = currentMemberName.toLowerCase();
+
+    // Check if THIS specific doctor already has a patient at this time slot
+    const existingDoctorBooking = existingAppointments.find(a => {
+      if (a.date !== selectedDate || a.timeSlot !== slot) return false;
+      if (a.status === 'CANCELLED' || a.status === 'LEAVE_CANCELLED') return false;
+
+      const aDocClean = cleanDoctorName(a.doctorName);
+      const isThisDoctor = (a.doctorId && a.doctorId === selId) || (aDocClean && aDocClean.includes(selClean));
+      return isThisDoctor;
+    });
 
     if (existingDoctorBooking) {
       const isMe = (existingDoctorBooking.patientName || '').toLowerCase() === cleanMember;
@@ -175,7 +184,7 @@ export default function BookAppointmentPage() {
 
     return {
       available: true,
-      reason: 'Available (1 Person Only)',
+      reason: 'Available (1 Patient Slot)',
       statusType: 'FREE'
     };
   };
@@ -195,6 +204,63 @@ export default function BookAppointmentPage() {
     return ['ALL', ...Array.from(set)];
   }, [doctors]);
 
+  // Generate Google Calendar Link
+  const getGoogleCalendarUrl = (apt: AppointmentItem) => {
+    const title = encodeURIComponent(`PrimeCare Appointment with ${apt.doctorName}`);
+    const details = encodeURIComponent(`Outpatient Consultation with ${apt.doctorName} (${apt.department}) at ${apt.hospital}.\nToken: ${apt.tokenNumber}\nChief Complaint: ${apt.symptoms}`);
+    const location = encodeURIComponent(apt.hospital || 'PrimeCare Hospital');
+
+    // Parse date and time into YYYYMMDDTHHMMSSZ format
+    const [year, month, day] = apt.date.split('-');
+    const [time, period] = apt.timeSlot.split(' ');
+    let [hours, mins] = time.split(':').map(Number);
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+
+    const startStr = `${year}${month}${day}T${String(hours).padStart(2, '0')}${String(mins).padStart(2, '0')}00`;
+    const endHour = hours + 1;
+    const endStr = `${year}${month}${day}T${String(endHour).padStart(2, '0')}${String(mins).padStart(2, '0')}00`;
+
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+  };
+
+  // Download .ics file for Apple Calendar / Outlook
+  const downloadICS = (apt: AppointmentItem) => {
+    const [year, month, day] = apt.date.split('-');
+    const [time, period] = apt.timeSlot.split(' ');
+    let [hours, mins] = time.split(':').map(Number);
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+
+    const startStr = `${year}${month}${day}T${String(hours).padStart(2, '0')}${String(mins).padStart(2, '0')}00`;
+    const endStr = `${year}${month}${day}T${String(hours + 1).padStart(2, '0')}${String(mins).padStart(2, '0')}00`;
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//PrimeCare Healthcare//Outpatient System//EN',
+      'BEGIN:VEVENT',
+      `UID:${apt.id}@primecare.in`,
+      `DTSTAMP:${startStr}Z`,
+      `DTSTART:${startStr}`,
+      `DTEND:${endStr}`,
+      `SUMMARY:PrimeCare: ${apt.doctorName} - ${apt.department}`,
+      `DESCRIPTION:Appointment with ${apt.doctorName} at ${apt.hospital}. Token: ${apt.tokenNumber}. Symptoms: ${apt.symptoms}`,
+      `LOCATION:${apt.hospital}`,
+      'STATUS:CONFIRMED',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute('download', `PrimeCare_Appointment_${apt.tokenNumber}.ics`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     setSlotConflictError(null);
@@ -209,8 +275,8 @@ export default function BookAppointmentPage() {
       return;
     }
 
-    if (isDoctorOnLeave) {
-      setSlotConflictError(`${selectedDoctor.name} is on approved leave on ${selectedDate}.`);
+    if (doctorLeaveRecord) {
+      setSlotConflictError(`${selectedDoctor.name} is on approved leave on ${selectedDate} (${doctorLeaveRecord.reason || 'Leave'}). Please select another date or physician.`);
       setIsSubmitting(false);
       return;
     }
@@ -229,12 +295,13 @@ export default function BookAppointmentPage() {
       tokenNumber,
       doctorId: selectedDoctor.id,
       doctorName: selectedDoctor.name,
+      doctorEmail: selectedDoctor.email,
       department: selectedDoctor.specialisation,
       fee: selectedDoctor.fee,
       hospital: selectedDoctor.hospital,
       date: selectedDate,
       timeSlot: selectedSlot,
-      symptoms: symptoms || 'General Consultation',
+      symptoms: symptoms || 'Routine Consultation',
       patientName: fullName,
       patientEmail: cleanEmail || 'patient@primecare.in',
       age: patientAge,
@@ -251,10 +318,10 @@ export default function BookAppointmentPage() {
       });
       const data = await res.json();
       if (!data.success) {
-        throw new Error(data.error || 'Database save failed.');
+        console.warn("Database sync notice:", data.error);
       }
     } catch (err: any) {
-      console.error("Booking error:", err);
+      console.error("Booking sync error:", err);
     }
 
     setExistingAppointments(prev => [appointment, ...prev]);
@@ -265,9 +332,13 @@ export default function BookAppointmentPage() {
   return (
     <ProtectedRoute allowedRoles={['PATIENT', 'DOCTOR', 'ADMIN']}>
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
-        <Navbar />
+        
+        <div className="print:hidden">
+          <Navbar />
+        </div>
 
-        <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8">
+        <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8 print:hidden">
+          
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400 mb-2">
@@ -277,62 +348,116 @@ export default function BookAppointmentPage() {
                 Doctor Discovery & Outpatient Booking
               </h1>
               <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                Real-time physician duty status and calendar synchronized slot booking.
+                Real-time physician duty status, automated calendar sync, and printable token generation.
               </p>
             </div>
 
             <button
               type="button"
               onClick={loadData}
-              className="text-xs text-emerald-400 hover:underline flex items-center gap-1.5 self-start sm:self-auto bg-slate-900 px-3 py-2 rounded-xl border border-slate-800"
+              className="text-xs text-emerald-400 hover:underline flex items-center gap-1.5 self-start sm:self-auto bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-800 font-semibold"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Refresh Slots
+              <RefreshCw className="w-3.5 h-3.5" /> Refresh Cloud Roster
             </button>
           </div>
 
+          {/* CONFIRMATION BANNER & TICKET MODAL */}
           <AnimatePresence>
             {bookingSuccess && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="p-6 rounded-3xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="p-6 sm:p-8 rounded-3xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 shadow-2xl space-y-6"
               >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-base font-bold text-emerald-100">
-                    <CheckCircle2 className="w-6 h-6 text-emerald-400" /> Confirmed • Token {bookingSuccess.tokenNumber}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-emerald-500/20 pb-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-xl font-extrabold text-white">
+                      <CheckCircle2 className="w-6 h-6 text-emerald-400" /> Slot Confirmed • Token {bookingSuccess.tokenNumber}
+                    </div>
+                    <p className="text-xs text-emerald-300">
+                      Confirmed for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}.
+                    </p>
                   </div>
-                  <p className="text-xs text-emerald-300">
-                    Slot confirmed for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}. Saved to central hospital database!
-                  </p>
+
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {/* PRINT TICKET BUTTON */}
+                    <button
+                      type="button"
+                      onClick={() => window.print()}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 font-bold text-xs transition"
+                    >
+                      <Printer className="w-4 h-4" /> Print Appointment Slip
+                    </button>
+
+                    {/* ADD TO GOOGLE CALENDAR */}
+                    <a
+                      href={getGoogleCalendarUrl(bookingSuccess)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-md shadow-blue-600/20"
+                    >
+                      <ExternalLink className="w-4 h-4" /> Add to Google Calendar
+                    </a>
+
+                    {/* DOWNLOAD .ICS */}
+                    <button
+                      type="button"
+                      onClick={() => downloadICS(bookingSuccess)}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-md shadow-emerald-500/20"
+                    >
+                      <Download className="w-4 h-4" /> Download .ics
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBookingSuccess(null);
+                        setPatientFirstName('');
+                        setPatientLastName('');
+                      }}
+                      className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setBookingSuccess(null);
-                      setPatientFirstName('');
-                      setPatientLastName('');
-                    }}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition"
-                  >
-                    + Book Another Slot
-                  </button>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                  <div className="p-3.5 bg-slate-950/70 rounded-2xl border border-emerald-500/20">
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Consulting Physician</span>
+                    <strong className="text-white text-sm block mt-0.5">{bookingSuccess.doctorName}</strong>
+                    <span className="text-emerald-400 text-[11px]">{bookingSuccess.department}</span>
+                  </div>
+                  <div className="p-3.5 bg-slate-950/70 rounded-2xl border border-emerald-500/20">
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Date & Time Slot</span>
+                    <strong className="text-white text-sm block mt-0.5">{bookingSuccess.date}</strong>
+                    <span className="text-emerald-400 text-[11px] font-mono">{bookingSuccess.timeSlot}</span>
+                  </div>
+                  <div className="p-3.5 bg-slate-950/70 rounded-2xl border border-emerald-500/20">
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Patient Details</span>
+                    <strong className="text-white text-sm block mt-0.5">{bookingSuccess.patientName}</strong>
+                    <span className="text-slate-400 text-[11px]">{bookingSuccess.age} Yrs • {bookingSuccess.gender}</span>
+                  </div>
+                  <div className="p-3.5 bg-slate-950/70 rounded-2xl border border-emerald-500/20">
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Affiliated Center</span>
+                    <strong className="text-white text-sm block mt-0.5">{bookingSuccess.hospital}</strong>
+                    <span className="text-emerald-400 text-[11px] font-mono">Fee: {bookingSuccess.fee}</span>
+                  </div>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* AREA 1: DOCTOR SEARCH & SELECTION */}
+            
+            {/* COLUMN 1: DOCTOR SEARCH & SELECTION */}
             <div className="lg:col-span-5 space-y-4">
-              <div className="p-4 bg-slate-900/80 border border-slate-800 rounded-3xl space-y-3">
-                <h2 className="text-sm font-bold text-white flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <Stethoscope className="w-4 h-4 text-emerald-400" /> Select Specialist
-                  </span>
-                  <span className="text-[11px] text-slate-400">{filteredDoctors.length} available</span>
-                </h2>
+              <div className="p-5 bg-slate-900/80 border border-slate-800 rounded-3xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Stethoscope className="w-4 h-4 text-emerald-400" /> Select Specialist ({filteredDoctors.length})
+                  </h2>
+                </div>
 
                 <div className="relative">
                   <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
@@ -340,9 +465,27 @@ export default function BookAppointmentPage() {
                     type="text"
                     value={searchDoc}
                     onChange={(e) => setSearchDoc(e.target.value)}
-                    placeholder="Search doctor or specialty..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 outline-none"
+                    placeholder="Search doctor, hospital, qualification..."
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                   />
+                </div>
+
+                {/* SPECIALTY FILTER CHIPS */}
+                <div className="flex gap-1.5 overflow-x-auto pb-1 text-[11px] font-bold">
+                  {specialties.map(spec => (
+                    <button
+                      key={spec}
+                      type="button"
+                      onClick={() => setSelectedSpecialty(spec)}
+                      className={`px-3 py-1 rounded-lg transition whitespace-nowrap ${
+                        selectedSpecialty === spec
+                          ? 'bg-emerald-500 text-slate-950 font-bold'
+                          : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                      }`}
+                    >
+                      {spec}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -353,7 +496,7 @@ export default function BookAppointmentPage() {
                     <div
                       key={doc.id}
                       onClick={() => setSelectedDoctor(doc)}
-                      className={`p-4 rounded-2xl border cursor-pointer transition-all space-y-2.5 ${
+                      className={`p-5 rounded-2xl border cursor-pointer transition-all space-y-3 ${
                         isSelected
                           ? 'bg-emerald-950/40 border-emerald-500 shadow-xl ring-2 ring-emerald-500/30'
                           : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
@@ -361,39 +504,90 @@ export default function BookAppointmentPage() {
                     >
                       <div className="flex items-start justify-between">
                         <div>
-                          <h4 className="font-bold text-sm text-white flex items-center gap-1.5">
+                          <h4 className="font-bold text-base text-white flex items-center gap-1.5">
                             {doc.name}
                             {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
                           </h4>
                           <span className="text-xs text-emerald-400 font-semibold">{doc.specialisation}</span>
                         </div>
-                        <span className="text-xs font-mono font-bold text-emerald-300 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                        <span className="text-xs font-mono font-bold text-emerald-300 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                           {doc.fee}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-300 line-clamp-2">{doc.bio || doc.qualification}</p>
+
+                      <div className="flex flex-wrap gap-2 text-[10px] text-slate-300">
+                        <span className="px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 flex items-center gap-1">
+                          <Award className="w-3 h-3 text-blue-400" /> {doc.qualification}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 flex items-center gap-1">
+                          <Briefcase className="w-3 h-3 text-emerald-400" /> {doc.experience}
+                        </span>
+                        {doc.rating && (
+                          <span className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-amber-400" /> {doc.rating}
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-[11px] text-slate-400 line-clamp-2 italic">
+                        &quot;{doc.bio}&quot;
+                      </p>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-[11px]">
+                        <span className="text-slate-400 flex items-center gap-1">
+                          <Building2 className="w-3 h-3 text-slate-500" /> {doc.hospital}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setInspectDoctor(doc);
+                          }}
+                          className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-0.5"
+                        >
+                          Full Profile <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* AREA 2: APPOINTMENT BOOKING FORM */}
+            {/* COLUMN 2: BOOKING FORM */}
             <div className="lg:col-span-7 space-y-6">
               <form onSubmit={handleBooking} className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-6">
+                
                 <div className="flex items-start justify-between border-b border-slate-800 pb-4">
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Selected Physician</span>
-                    <h3 className="font-extrabold text-lg text-white">{selectedDoctor.name}</h3>
+                    <h3 className="font-extrabold text-xl text-white">{selectedDoctor.name}</h3>
                     <p className="text-xs text-emerald-400 font-medium">{selectedDoctor.specialisation} • {selectedDoctor.hospital}</p>
                   </div>
                   <div className="text-right">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">Consultation Fee</span>
-                    <span className="text-sm font-mono font-black text-emerald-300 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                    <span className="text-base font-mono font-black text-emerald-300 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                       {selectedDoctor.fee}
                     </span>
                   </div>
                 </div>
+
+                {/* DOCTOR ON LEAVE WARNING BANNER */}
+                {doctorLeaveRecord && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs rounded-2xl flex items-start gap-3"
+                  >
+                    <CalendarX2 className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <strong className="block text-sm font-bold text-amber-300">Doctor on Approved Leave</strong>
+                      <p className="leading-relaxed">
+                        {selectedDoctor.name} is on duty leave on <strong>{selectedDate}</strong> ({doctorLeaveRecord.reason || 'Medical Leave'}). All slots on this date are locked. Please choose a different date or consult another specialist.
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
 
                 {slotConflictError && (
                   <div className="p-4 bg-red-950/50 border border-red-500/40 text-red-200 text-xs rounded-2xl flex items-center gap-3">
@@ -402,6 +596,7 @@ export default function BookAppointmentPage() {
                   </div>
                 )}
 
+                {/* PATIENT DETAILS */}
                 <div className="space-y-3 p-4 bg-slate-950 rounded-2xl border border-slate-800">
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5" /> Patient Details
@@ -415,7 +610,7 @@ export default function BookAppointmentPage() {
                         required
                         value={patientFirstName}
                         onChange={(e) => setPatientFirstName(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
                     <div>
@@ -425,7 +620,7 @@ export default function BookAppointmentPage() {
                         required
                         value={patientLastName}
                         onChange={(e) => setPatientLastName(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
                   </div>
@@ -438,7 +633,7 @@ export default function BookAppointmentPage() {
                         required
                         value={patientAge}
                         onChange={(e) => setPatientAge(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
                     <div>
@@ -446,7 +641,7 @@ export default function BookAppointmentPage() {
                       <select
                         value={patientGender}
                         onChange={(e) => setPatientGender(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         <option value="Female">Female</option>
                         <option value="Male">Male</option>
@@ -454,18 +649,19 @@ export default function BookAppointmentPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Account Email</label>
+                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Shared Account Email</label>
                       <input
                         type="email"
                         required
                         value={sharedEmail}
                         onChange={(e) => setSharedEmail(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
                   </div>
                 </div>
 
+                {/* SELECT DATE */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Select Date</label>
                   <input
@@ -473,10 +669,11 @@ export default function BookAppointmentPage() {
                     required
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none [color-scheme:dark]"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 [color-scheme:dark]"
                   />
                 </div>
 
+                {/* SLOTS */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -516,13 +713,14 @@ export default function BookAppointmentPage() {
                           }`}
                         >
                           <span>{slot}</span>
-                          <span className={`text-[9px] ${isSlotSelected ? 'text-slate-900' : 'text-emerald-400'}`}>Available</span>
+                          <span className={`text-[9px] ${isSlotSelected ? 'text-slate-900 font-extrabold' : 'text-emerald-400'}`}>Available</span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
+                {/* CHIEF COMPLAINT */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Chief Complaint</label>
                   <textarea
@@ -530,21 +728,153 @@ export default function BookAppointmentPage() {
                     required
                     value={symptoms}
                     onChange={(e) => setSymptoms(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={isSubmitting || Boolean(isDoctorOnLeave)}
+                  disabled={isSubmitting || Boolean(doctorLeaveRecord)}
                   className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2 disabled:opacity-40"
                 >
-                  {isSubmitting ? 'Saving to Database...' : (<>Confirm & Lock Slot for {currentMemberName} <ArrowRight className="w-4 h-4" /></>)}
+                  {isSubmitting ? 'Confirming with Database...' : (<>Confirm & Lock Slot for {currentMemberName} <ArrowRight className="w-4 h-4" /></>)}
                 </button>
               </form>
             </div>
           </div>
         </main>
+
+        {/* FULL DOCTOR PROFILE MODAL */}
+        <AnimatePresence>
+          {inspectDoctor && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-xl p-6 sm:p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-6"
+              >
+                <div className="flex justify-between items-start border-b border-slate-800 pb-4">
+                  <div>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 mb-1 inline-block">
+                      Verified Clinical Faculty
+                    </span>
+                    <h3 className="text-2xl font-extrabold text-white">{inspectDoctor.name}</h3>
+                    <p className="text-xs text-emerald-400 font-semibold">{inspectDoctor.specialisation}</p>
+                  </div>
+                  <button onClick={() => setInspectDoctor(null)} className="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800">
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Qualification</span>
+                    <strong className="text-white mt-1 block">{inspectDoctor.qualification}</strong>
+                  </div>
+                  <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800">
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Clinical Experience</span>
+                    <strong className="text-white mt-1 block">{inspectDoctor.experience}</strong>
+                  </div>
+                  <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800">
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Affiliated Hospital</span>
+                    <strong className="text-white mt-1 block">{inspectDoctor.hospital}</strong>
+                  </div>
+                  <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800">
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Consultation Fee</span>
+                    <strong className="text-emerald-300 mt-1 block font-mono">{inspectDoctor.fee}</strong>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Biography & Clinical Focus</h4>
+                  <p className="text-xs text-slate-300 leading-relaxed bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    {inspectDoctor.bio}
+                  </p>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setInspectDoctor(null)}
+                    className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition"
+                  >
+                    Close
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedDoctor(inspectDoctor);
+                      setInspectDoctor(null);
+                    }}
+                    className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-lg shadow-emerald-500/20"
+                  >
+                    Select & Book Appointment
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* PRINTABLE APPOINTMENT SLIP (A4 / Thermal Print Ready) */}
+        {bookingSuccess && (
+          <div className="hidden print:block p-8 bg-white text-black font-sans min-h-screen">
+            <div className="max-w-2xl mx-auto border-2 border-black p-8 rounded-lg space-y-6">
+              <div className="text-center border-b-2 border-black pb-4">
+                <h1 className="text-2xl font-black tracking-wider uppercase">PrimeCare Hospital System</h1>
+                <p className="text-xs font-semibold text-gray-700">Official Outpatient Consultation Token & Slip</p>
+              </div>
+
+              <div className="flex justify-between items-center bg-gray-100 p-4 rounded-md border border-gray-300">
+                <div>
+                  <span className="text-xs font-bold text-gray-600 uppercase block">Token Number</span>
+                  <span className="text-2xl font-black font-mono">{bookingSuccess.tokenNumber}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-bold text-gray-600 uppercase block">Status</span>
+                  <span className="text-sm font-bold text-green-700 uppercase">Confirmed & Locked</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <strong>Patient Name:</strong> {bookingSuccess.patientName}
+                </div>
+                <div>
+                  <strong>Age / Gender:</strong> {bookingSuccess.age} Yrs / {bookingSuccess.gender}
+                </div>
+                <div>
+                  <strong>Doctor:</strong> {bookingSuccess.doctorName}
+                </div>
+                <div>
+                  <strong>Specialisation:</strong> {bookingSuccess.department}
+                </div>
+                <div>
+                  <strong>Date:</strong> {bookingSuccess.date}
+                </div>
+                <div>
+                  <strong>Time Slot:</strong> {bookingSuccess.timeSlot}
+                </div>
+                <div>
+                  <strong>Center:</strong> {bookingSuccess.hospital}
+                </div>
+                <div>
+                  <strong>Fee:</strong> {bookingSuccess.fee}
+                </div>
+              </div>
+
+              <div className="border-t border-gray-300 pt-3 text-xs">
+                <strong>Chief Complaint:</strong> {bookingSuccess.symptoms}
+              </div>
+
+              <div className="text-center text-[10px] text-gray-500 border-t border-gray-200 pt-4">
+                Please present this token at the reception desk 15 minutes before your scheduled consultation slot.
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </ProtectedRoute>
   );
