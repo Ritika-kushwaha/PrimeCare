@@ -1,79 +1,22 @@
-﻿import { Pool } from '@neondatabase/serverless';
+﻿import { neon } from '@neondatabase/serverless';
 
-export interface DoctorRecord {
-  id: string;
-  email: string;
-  name: string;
-  specialisation: string;
-  qualification: string;
-  experience: string;
-  hospital: string;
-  fee: string;
-  rating?: string;
-  bio: string;
-}
-
-export interface AppointmentRecord {
-  id: string;
-  tokenNumber?: string;
-  doctorId?: string;
-  doctorName?: string;
-  doctorEmail?: string;
-  department?: string;
-  fee?: string;
-  hospital?: string;
-  date?: string;
-  timeSlot?: string;
-  symptoms?: string;
-  patientName?: string;
-  patientEmail?: string;
-  age?: string | number;
-  gender?: string;
-  status?: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'LEAVE_CANCELLED';
-  finalizedAt?: string;
-  leaveReason?: string;
-}
-
-export interface EHRRecord {
-  patientKey: string;
-  patientEmail: string;
-  patientName: string;
-  age: number | string;
-  gender: string;
-  visits: any[];
-}
-
-export interface LeaveRecord {
-  id: string;
-  doctorId: string;
-  doctorName: string;
-  specialisation: string;
-  leaveDate: string;
-  reason: string;
-}
-
-let pool: Pool | null = null;
-
-export function getDbPool(): Pool | null {
+export function getDb() {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     return null;
   }
-  if (!pool) {
-    pool = new Pool({ connectionString });
-  }
-  return pool;
+  return neon(connectionString);
 }
 
 let isInitialized = false;
 
 export async function initDb(): Promise<void> {
   if (isInitialized) return;
-  const db = getDbPool();
-  if (!db) return;
+  const sql = getDb();
+  if (!sql) return;
 
   try {
-    await db.query(`
+    await sql`
       CREATE TABLE IF NOT EXISTS pc_doctors (
         id VARCHAR(255) PRIMARY KEY,
         email VARCHAR(255),
@@ -87,7 +30,9 @@ export async function initDb(): Promise<void> {
         bio TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+    `;
 
+    await sql`
       CREATE TABLE IF NOT EXISTS pc_appointments (
         id VARCHAR(255) PRIMARY KEY,
         token_number VARCHAR(100),
@@ -109,7 +54,9 @@ export async function initDb(): Promise<void> {
         leave_reason TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+    `;
 
+    await sql`
       CREATE TABLE IF NOT EXISTS pc_ehr (
         patient_key VARCHAR(255) PRIMARY KEY,
         patient_email VARCHAR(255),
@@ -119,7 +66,9 @@ export async function initDb(): Promise<void> {
         visits JSONB DEFAULT '[]'::jsonb,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+    `;
 
+    await sql`
       CREATE TABLE IF NOT EXISTS pc_leaves (
         id VARCHAR(255) PRIMARY KEY,
         doctor_id VARCHAR(255),
@@ -129,7 +78,8 @@ export async function initDb(): Promise<void> {
         reason TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-    `);
+    `;
+
     isInitialized = true;
   } catch (err) {
     console.error("Neon DB Init Error:", err);
