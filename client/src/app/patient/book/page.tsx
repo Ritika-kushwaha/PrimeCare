@@ -8,7 +8,7 @@ import {
   Calendar, Clock, Stethoscope, User, 
   CheckCircle2, AlertCircle, ArrowRight, ShieldCheck, 
   Search, Building2, Award, CalendarX2, Ban, Users, 
-  Printer, CalendarPlus, Briefcase, Star, Info, ChevronRight
+  Printer, CalendarPlus, Briefcase, Star, ChevronRight
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -131,12 +131,10 @@ export default function BookAppointmentPage() {
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [existingAppointments, setExistingAppointments] = useState<AppointmentItem[]>([]);
   
-  // Selection States
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorProfile>(DEFAULT_DOCTORS[0]);
   const [selectedDate, setSelectedDate] = useState('2026-08-28');
   const [selectedSlot, setSelectedSlot] = useState('10:00 AM');
   
-  // Member & Account Info
   const [sharedEmail, setSharedEmail] = useState('ritikakushwaha62@gmail.com');
   const [patientFirstName, setPatientFirstName] = useState('Ritika');
   const [patientLastName, setPatientLastName] = useState('Kushwaha');
@@ -144,7 +142,6 @@ export default function BookAppointmentPage() {
   const [patientGender, setPatientGender] = useState('Female');
   const [symptoms, setSymptoms] = useState('Routine cardiovascular checkup');
   
-  // Filters & State Handlers
   const [searchDoc, setSearchDoc] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('ALL');
   const [inspectDoctor, setInspectDoctor] = useState<DoctorProfile | null>(null);
@@ -184,17 +181,14 @@ export default function BookAppointmentPage() {
     return `${(patientFirstName || '').trim()} ${(patientLastName || '').trim()}`.trim();
   }, [patientFirstName, patientLastName]);
 
-  // Determine slot status per specific member vs global doctor capacity
   const getSlotAvailability = (slot: string) => {
     const cleanEmail = (sharedEmail || '').trim().toLowerCase();
     const cleanMember = currentMemberName.toLowerCase();
 
-    // 1. Appointments on this slot for this specific doctor
     const docSlotAppointments = existingAppointments.filter(
       a => a.doctorId === selectedDoctor.id && a.date === selectedDate && a.timeSlot === slot
     );
 
-    // 2. Check if THIS CURRENT MEMBER already booked this doctor at this slot
     const memberAlreadyBookedThisDoc = docSlotAppointments.find(
       a => (a.patientName || '').toLowerCase() === cleanMember
     );
@@ -207,7 +201,6 @@ export default function BookAppointmentPage() {
       };
     }
 
-    // 3. Check if THIS CURRENT MEMBER is booked with ANY OTHER DOCTOR at this exact time slot
     const memberBusyOtherDoctor = existingAppointments.find(
       a => (a.patientName || '').toLowerCase() === cleanMember &&
            a.date === selectedDate &&
@@ -223,7 +216,6 @@ export default function BookAppointmentPage() {
       };
     }
 
-    // 4. Check doctor capacity (Allowing up to 2 distinct members in the slot)
     if (docSlotAppointments.length >= 2) {
       return {
         available: false,
@@ -232,7 +224,6 @@ export default function BookAppointmentPage() {
       };
     }
 
-    // 5. If another family member from same email is in this slot, it's open for this member
     const familyMemberInSlot = docSlotAppointments.find(
       a => (a.patientEmail || '').toLowerCase() === cleanEmail && (a.patientName || '').toLowerCase() !== cleanMember
     );
@@ -258,6 +249,33 @@ export default function BookAppointmentPage() {
     const set = new Set(doctors.map(d => d.specialisation));
     return ['ALL', ...Array.from(set)];
   }, [doctors]);
+
+  // Generate Google Calendar Link
+  const buildGoogleCalendarUrl = (item: AppointmentItem) => {
+    try {
+      const [year, month, day] = (item.date || '2026-08-28').split('-').map(Number);
+      const [timeStr, meridian] = (item.timeSlot || '10:00 AM').split(' ');
+      let [hours, minutes] = timeStr.split(':').map(Number);
+      if (meridian === 'PM' && hours < 12) hours += 12;
+      if (meridian === 'AM' && hours === 12) hours = 0;
+
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      const startUtc = `${year}${pad(month)}${pad(day)}T${pad(hours)}${pad(minutes)}00Z`;
+
+      let endHours = hours;
+      let endMinutes = minutes + 45;
+      if (endMinutes >= 60) { endHours += 1; endMinutes -= 60; }
+      const endUtc = `${year}${pad(month)}${pad(day)}T${pad(endHours)}${pad(endMinutes)}00Z`;
+
+      const title = encodeURIComponent(`🩺 Clinical Consultation: ${item.doctorName} (${item.department})`);
+      const details = encodeURIComponent(`Patient Name: ${item.patientName}\nQueue Token: ${item.tokenNumber}\nDepartment: ${item.department}\nHospital: ${item.hospital}\nConsultation Fee: ${item.fee}`);
+      const location = encodeURIComponent(item.hospital || 'PrimeCare Multispecialty Hospital');
+
+      return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startUtc}/${endUtc}&details=${details}&location=${location}`;
+    } catch {
+      return 'https://calendar.google.com';
+    }
+  };
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -307,12 +325,33 @@ export default function BookAppointmentPage() {
     setExistingAppointments(updated);
     localStorage.setItem('primecare_appointments', JSON.stringify(updated));
 
+    // 1. Trigger Direct Google Calendar Window
+    const gcalUrl = buildGoogleCalendarUrl(appointment);
+    window.open(gcalUrl, '_blank');
+
+    // 2. Trigger .ics File Download
     try {
-      await fetch('/api/appointments/book', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(appointment),
-      });
+      const [year, month, day] = (appointment.date || '2026-08-28').split('-');
+      const [timeStr, meridian] = (appointment.timeSlot || '10:00 AM').split(' ');
+      let [hours, minutes] = timeStr.split(':').map(Number);
+      if (meridian === 'PM' && hours < 12) hours += 12;
+      if (meridian === 'AM' && hours === 12) hours = 0;
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      const startStr = `${year}${month}${day}T${pad(hours)}${pad(minutes)}00`;
+      let endHours = hours;
+      let endMinutes = minutes + 45;
+      if (endMinutes >= 60) { endHours += 1; endMinutes -= 60; }
+      const endStr = `${year}${month}${day}T${pad(endHours)}${pad(endMinutes)}00`;
+
+      const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//PrimeCare//EN\nMETHOD:REQUEST\nBEGIN:VEVENT\nUID:apt-${appointment.id}@primecare.health\nDTSTAMP:${year}${month}${day}T000000Z\nDTSTART:${startStr}\nDTEND:${endStr}\nSUMMARY:🩺 ${appointment.doctorName} (${appointment.department})\nDESCRIPTION:Patient: ${appointment.patientName}\\nToken: ${appointment.tokenNumber}\\nHospital: ${appointment.hospital}\nLOCATION:${appointment.hospital}\nSTATUS:CONFIRMED\nEND:VEVENT\nEND:VCALENDAR`;
+
+      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.setAttribute('download', `PrimeCare-${appointment.patientName.replace(/\s+/g, '_')}-${appointment.date}.ics`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch {}
 
     setBookingSuccess(appointment);
@@ -374,7 +413,6 @@ export default function BookAppointmentPage() {
 
         <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8 print:hidden">
           
-          {/* HEADER */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400 mb-2">
@@ -384,12 +422,11 @@ export default function BookAppointmentPage() {
                 Doctor Discovery & Family Appointment Desk
               </h1>
               <p className="text-xs text-slate-400 mt-1">
-                Book for different family members under a shared email with individual conflict detection.
+                Book for different family members under a shared email with individual conflict detection and instant calendar sync.
               </p>
             </div>
           </div>
 
-          {/* SUCCESS NOTIFICATION */}
           <AnimatePresence>
             {bookingSuccess && (
               <motion.div
@@ -402,18 +439,28 @@ export default function BookAppointmentPage() {
                     <CheckCircle2 className="w-6 h-6 text-emerald-400" /> Confirmed • Token {bookingSuccess.tokenNumber}
                   </div>
                   <p className="text-xs text-emerald-300">
-                    Booking confirmed for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}.
+                    Appointment booked for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}.
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
+                  <a
+                    href={buildGoogleCalendarUrl(bookingSuccess)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition"
+                  >
+                    <CalendarPlus className="w-4 h-4" /> Open in Google Calendar
+                  </a>
+
                   <button
                     type="button"
                     onClick={() => window.print()}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition"
                   >
-                    <Printer className="w-4 h-4" /> Print Booking Slip
+                    <Printer className="w-4 h-4" /> Print Slip
                   </button>
+
                   <button
                     type="button"
                     onClick={() => {
@@ -423,17 +470,16 @@ export default function BookAppointmentPage() {
                     }}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition"
                   >
-                    + Book Another Family Member
+                    + Book Another Member
                   </button>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* MAIN TWO-COLUMN LAYOUT */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* AREA 1: SEPARATE DOCTOR SEARCH & SELECTION (5 COLS) */}
+            {/* AREA 1: SEPARATE DOCTOR SEARCH & SELECTION */}
             <div className="lg:col-span-5 space-y-4">
               <div className="p-4 bg-slate-900/80 border border-slate-800 rounded-3xl space-y-3">
                 <h2 className="text-sm font-bold text-white flex items-center justify-between">
@@ -443,19 +489,17 @@ export default function BookAppointmentPage() {
                   <span className="text-[11px] text-slate-400">{filteredDoctors.length} available</span>
                 </h2>
 
-                {/* Search Bar */}
                 <div className="relative">
                   <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
                   <input
                     type="text"
                     value={searchDoc}
                     onChange={(e) => setSearchDoc(e.target.value)}
-                    placeholder="Search by doctor name or specialty..."
+                    placeholder="Search doctor or specialty..."
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
                   />
                 </div>
 
-                {/* Specialty Filter Pills */}
                 <div className="flex gap-1.5 overflow-x-auto pb-1 text-[11px] scrollbar-none">
                   {specialties.map(spec => (
                     <button
@@ -474,7 +518,6 @@ export default function BookAppointmentPage() {
                 </div>
               </div>
 
-              {/* Doctors Directory List */}
               <div className="space-y-3 max-h-[640px] overflow-y-auto pr-1">
                 {filteredDoctors.map((doc) => {
                   const isSelected = selectedDoctor.id === doc.id;
@@ -503,7 +546,6 @@ export default function BookAppointmentPage() {
                         </span>
                       </div>
 
-                      {/* Doctor Credential Badges */}
                       <div className="flex flex-wrap gap-2 text-[10px] text-slate-300">
                         <span className="flex items-center gap-1 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
                           <Award className="w-3 h-3 text-blue-400" /> {doc.qualification}
@@ -543,14 +585,13 @@ export default function BookAppointmentPage() {
               </div>
             </div>
 
-            {/* AREA 2: FAMILY MEMBER INFO & INTELLIGENT SLOT AVAILABILITY (7 COLS) */}
+            {/* AREA 2: FAMILY MEMBER & INTELLIGENT SLOT AVAILABILITY */}
             <div className="lg:col-span-7 space-y-6">
               <form onSubmit={handleBooking} className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-6">
                 
-                {/* Active Doctor Selected Header */}
                 <div className="flex items-start justify-between border-b border-slate-800 pb-4">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Booking With</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Selected Physician</span>
                     <h3 className="font-extrabold text-lg text-white">{selectedDoctor.name}</h3>
                     <p className="text-xs text-emerald-400 font-medium">{selectedDoctor.specialisation} • {selectedDoctor.hospital}</p>
                   </div>
@@ -562,7 +603,6 @@ export default function BookAppointmentPage() {
                   </div>
                 </div>
 
-                {/* Error Banner */}
                 {slotConflictError && (
                   <div className="p-4 bg-red-950/50 border border-red-500/40 text-red-200 text-xs rounded-2xl flex items-center gap-3">
                     <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
@@ -570,7 +610,6 @@ export default function BookAppointmentPage() {
                   </div>
                 )}
 
-                {/* Patient / Family Member Information */}
                 <div className="space-y-3 p-4 bg-slate-950 rounded-2xl border border-slate-800">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
@@ -644,7 +683,6 @@ export default function BookAppointmentPage() {
                   </div>
                 </div>
 
-                {/* Consultation Date */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Select Date</label>
                   <input
@@ -656,7 +694,6 @@ export default function BookAppointmentPage() {
                   />
                 </div>
 
-                {/* Dynamic Slot Selection Grid */}
                 {isDoctorOnLeave ? (
                   <div className="p-5 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs">
                     {selectedDoctor.name} is on approved leave on {selectedDate}.
@@ -667,7 +704,7 @@ export default function BookAppointmentPage() {
                       <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">
                         Available Consultation Slots for {currentMemberName || 'Current Member'}
                       </label>
-                      <span className="text-[10px] text-emerald-400">Same-slot multi-family member booking supported</span>
+                      <span className="text-[10px] text-emerald-400">Multi-member slot booking supported</span>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
@@ -727,7 +764,6 @@ export default function BookAppointmentPage() {
                   </div>
                 )}
 
-                {/* Chief Complaint */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Chief Complaint</label>
                   <textarea
@@ -745,14 +781,13 @@ export default function BookAppointmentPage() {
                   disabled={Boolean(isDoctorOnLeave)}
                   className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2 disabled:opacity-40"
                 >
-                  Confirm Appointment for {currentMemberName} <ArrowRight className="w-4 h-4" />
+                  Confirm & Sync to Google Calendar <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
             </div>
           </div>
         </main>
 
-        {/* DETAILED DOCTOR MODAL */}
         <AnimatePresence>
           {inspectDoctor && (
             <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
