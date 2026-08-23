@@ -1,21 +1,76 @@
 ﻿import { NextResponse } from "next/navigation";
-import { getDbAppointments, saveDbAppointments, AppointmentRecord } from "@/lib/db";
+import { getDbPool, initDb } from "@/lib/db";
 
 export async function GET() {
-  return NextResponse.json({ success: true, appointments: getDbAppointments() });
+  await initDb();
+  const pool = getDbPool();
+  if (pool) {
+    try {
+      const result = await pool.query(
+        `SELECT id, token_number AS "tokenNumber", doctor_id AS "doctorId", 
+                doctor_name AS "doctorName", doctor_email AS "doctorEmail", 
+                department, fee, hospital, date, time_slot AS "timeSlot", 
+                symptoms, patient_name AS "patientName", patient_email AS "patientEmail", 
+                age, gender, status, finalized_at AS "finalizedAt", leave_reason AS "leaveReason" 
+         FROM pc_appointments 
+         ORDER BY created_at DESC`
+      );
+      return NextResponse.json({ success: true, appointments: result.rows });
+    } catch (err: any) {
+      console.error("Neon GET appointments error:", err);
+    }
+  }
+  return NextResponse.json({ success: true, appointments: [] });
 }
 
 export async function POST(req: Request) {
+  await initDb();
+  const pool = getDbPool();
   try {
     const data = await req.json();
-    if (Array.isArray(data.appointments)) {
-      saveDbAppointments(data.appointments);
-    } else if (data.appointment) {
-      const current = getDbAppointments();
-      const updated = [data.appointment, ...current.filter((a: AppointmentRecord) => a.id !== data.appointment.id)];
-      saveDbAppointments(updated);
+    const appts = data.appointments || (data.appointment ? [data.appointment] : []);
+
+    if (pool && appts.length > 0) {
+      for (const a of appts) {
+        await pool.query(
+          `INSERT INTO pc_appointments (
+            id, token_number, doctor_id, doctor_name, doctor_email, department, 
+            fee, hospital, date, time_slot, symptoms, patient_name, patient_email, 
+            age, gender, status, finalized_at, leave_reason
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+          ON CONFLICT (id) DO UPDATE SET
+            status = EXCLUDED.status,
+            date = EXCLUDED.date,
+            time_slot = EXCLUDED.time_slot,
+            doctor_name = EXCLUDED.doctor_name,
+            department = EXCLUDED.department,
+            fee = EXCLUDED.fee,
+            finalized_at = EXCLUDED.finalized_at,
+            leave_reason = EXCLUDED.leave_reason`,
+          [
+            a.id,
+            a.tokenNumber || null,
+            a.doctorId || null,
+            a.doctorName || null,
+            a.doctorEmail || null,
+            a.department || null,
+            a.fee || null,
+            a.hospital || null,
+            a.date || null,
+            a.timeSlot || null,
+            a.symptoms || null,
+            a.patientName || null,
+            a.patientEmail || null,
+            a.age ? String(a.age) : null,
+            a.gender || null,
+            a.status || 'CONFIRMED',
+            a.finalizedAt || null,
+            a.leaveReason || null
+          ]
+        );
+      }
     }
-    return NextResponse.json({ success: true, appointments: getDbAppointments() });
+    return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
