@@ -9,8 +9,33 @@ import {
   ShieldCheck, Calendar, Clock, User, CheckCircle2, 
   AlertCircle, Search, Trash2, Check, X, 
   Stethoscope, Users, RefreshCw, Award, Filter, ArrowRight,
-  CheckCheck, Archive, FileText, BadgeCheck, CalendarX2
+  CheckCheck, Archive, FileText, BadgeCheck, CalendarX2,
+  Edit3, UserX, Building2, Briefcase, DollarSign, Save, AlertTriangle
 } from 'lucide-react';
+
+interface DoctorProfile {
+  id: string;
+  email: string;
+  name: string;
+  specialisation: string;
+  qualification: string;
+  experience: string;
+  hospital: string;
+  fee: string;
+  rating?: string;
+  bio: string;
+}
+
+interface DoctorApplication {
+  id: string;
+  name: string;
+  email: string;
+  regNumber: string;
+  specialisation: string;
+  qualification: string;
+  experience: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+}
 
 interface AppointmentItem {
   id: string;
@@ -25,21 +50,8 @@ interface AppointmentItem {
   symptoms?: string;
   patientName?: string;
   patientEmail?: string;
-  age?: string | number;
-  gender?: string;
   status?: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
   finalizedAt?: string;
-}
-
-interface DoctorApplication {
-  id: string;
-  name: string;
-  email: string;
-  regNumber: string;
-  specialisation: string;
-  qualification: string;
-  experience: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
 interface LeaveRecord {
@@ -51,15 +63,30 @@ interface LeaveRecord {
   reason: string;
 }
 
+const DEFAULT_DOCTORS: DoctorProfile[] = [
+  { id: 'doc-cardio-01', email: 'ritikakushwaha62@gmail.com', name: 'Dr. Ritika Kushwaha', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, diagnostic angiographies, coronary interventions, and comprehensive lipid management.' },
+  { id: 'doc-cardio-02', email: 'aarav.sharma@primecare.in', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS)', experience: '12 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease.' },
+  { id: 'doc-cardio-03', email: 'meera.kulkarni@primecare.in', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', rating: '4.8 ★', bio: 'Specialist in non-invasive coronary imaging, pediatric cardiology, and heart rhythm management.' },
+  { id: 'doc-neuro-01', email: 'priya.nair@primecare.in', name: 'Dr. Priya Nair', specialisation: 'Neurology', qualification: 'MD, DM (Neurology - NIMHANS)', experience: '12 Years Practice', hospital: 'PrimeCare Neuroscience Center', fee: '₹1,500', rating: '4.9 ★', bio: 'Consultant Neurologist focused on headache disorders, neuropathies, epilepsy, and acute stroke treatment.' },
+  { id: 'doc-ortho-01', email: 'vikram.patel@primecare.in', name: 'Dr. Vikram Patel', specialisation: 'Orthopedics', qualification: 'MS (Orthopedics), MCh', experience: '15 Years Practice', hospital: 'PrimeCare Ortho Wing', fee: '₹1,000', rating: '4.7 ★', bio: 'Joint replacement, arthroscopic ligament surgery, and complex sports injury rehabilitation specialist.' },
+  { id: 'doc-pedia-01', email: 'ananya.deshmukh@primecare.in', name: 'Dr. Ananya Deshmukh', specialisation: 'Pediatrics', qualification: 'MD (Pediatrics), DCH', experience: '9 Years Practice', hospital: 'PrimeCare Children Pavilion', fee: '₹900', rating: '5.0 ★', bio: 'Pediatrician handling newborn intensive care, routine growth assessments, and childhood immunizations.' },
+  { id: 'doc-derma-01', email: 'rohan.mehta@primecare.in', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', rating: '4.8 ★', bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' },
+];
+
 export default function AdminDashboardPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'CONSULTATIONS' | 'DONE' | 'DOCTORS' | 'LEAVES'>('CONSULTATIONS');
   
   const [appointments, setAppointments] = useState<AppointmentItem[]>([]);
+  const [doctorProfiles, setDoctorProfiles] = useState<DoctorProfile[]>(DEFAULT_DOCTORS);
   const [doctorApplications, setDoctorApplications] = useState<DoctorApplication[]>([]);
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [actionSuccessMsg, setActionSuccessMsg] = useState('');
+
+  // Admin Doctor Editor State
+  const [editingDoctor, setEditingDoctor] = useState<DoctorProfile | null>(null);
+  const [doctorToDelete, setDoctorToDelete] = useState<DoctorProfile | null>(null);
 
   // Leave Form State
   const [leaveDoctorName, setLeaveDoctorName] = useState('Dr. Ritika Kushwaha');
@@ -70,23 +97,29 @@ export default function AdminDashboardPage() {
   const loadData = () => {
     try {
       const storedAppts = localStorage.getItem('primecare_appointments');
-      if (storedAppts) {
-        setAppointments(JSON.parse(storedAppts));
-      }
+      if (storedAppts) setAppointments(JSON.parse(storedAppts));
     } catch {}
 
     try {
-      const storedApps = localStorage.getItem('primecare_doctor_applications');
-      if (storedApps) {
-        setDoctorApplications(JSON.parse(storedApps));
+      const storedRoster = localStorage.getItem('primecare_doctor_profiles');
+      if (storedRoster) {
+        setDoctorProfiles(JSON.parse(storedRoster));
+      } else {
+        localStorage.setItem('primecare_doctor_profiles', JSON.stringify(DEFAULT_DOCTORS));
+        setDoctorProfiles(DEFAULT_DOCTORS);
       }
+    } catch {
+      setDoctorProfiles(DEFAULT_DOCTORS);
+    }
+
+    try {
+      const storedApps = localStorage.getItem('primecare_doctor_applications');
+      if (storedApps) setDoctorApplications(JSON.parse(storedApps));
     } catch {}
 
     try {
       const storedLeaves = localStorage.getItem('primecare_leaves');
-      if (storedLeaves) {
-        setLeaves(JSON.parse(storedLeaves));
-      }
+      if (storedLeaves) setLeaves(JSON.parse(storedLeaves));
     } catch {}
   };
 
@@ -96,7 +129,7 @@ export default function AdminDashboardPage() {
     return () => window.removeEventListener('storage', loadData);
   }, [user]);
 
-  // Section 1: Active Consultations (Pending / Confirmed)
+  // Section 1: Active Consultations
   const activeConsultations = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return appointments.filter(a => {
@@ -114,7 +147,15 @@ export default function AdminDashboardPage() {
     });
   }, [appointments, searchQuery]);
 
-  // Admin Manual Action: Mark as Done / Finalize Consultation
+  // Section 3: Filtered Doctors
+  const filteredDoctors = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return doctorProfiles.filter(d => 
+      `${d.name || ''} ${d.specialisation || ''} ${d.email || ''} ${d.hospital || ''}`.toLowerCase().includes(q)
+    );
+  }, [doctorProfiles, searchQuery]);
+
+  // Admin Manual Action: Mark as Done
   const handleMarkAsDone = (aptId: string) => {
     try {
       const updated = appointments.map(a => {
@@ -130,22 +171,92 @@ export default function AdminDashboardPage() {
 
       localStorage.setItem('primecare_appointments', JSON.stringify(updated));
       setAppointments(updated);
-      setActionSuccessMsg('Consultation finalized and moved to "Done / Finalized Consultations" section.');
+      setActionSuccessMsg('Consultation marked as Done and moved to Finalized Archive.');
       setTimeout(() => setActionSuccessMsg(''), 4000);
     } catch {
       alert('Failed to update status.');
     }
   };
 
-  // Doctor Approval
+  // ADMIN ACTION: SAVE EDITED DOCTOR DETAILS
+  const handleSaveDoctorEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingDoctor) return;
+
+    try {
+      const updatedRoster = doctorProfiles.map(d => d.id === editingDoctor.id ? editingDoctor : d);
+      localStorage.setItem('primecare_doctor_profiles', JSON.stringify(updatedRoster));
+      setDoctorProfiles(updatedRoster);
+
+      // Cascade updated name/fee to all active appointments for this doctor
+      const updatedAppointments = appointments.map(a => {
+        if (a.doctorId === editingDoctor.id || a.doctorEmail?.toLowerCase() === editingDoctor.email?.toLowerCase()) {
+          return {
+            ...a,
+            doctorName: editingDoctor.name,
+            department: editingDoctor.specialisation,
+            fee: editingDoctor.fee
+          };
+        }
+        return a;
+      });
+      localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppointments));
+      setAppointments(updatedAppointments);
+
+      setEditingDoctor(null);
+      setActionSuccessMsg(`Doctor profile for ${editingDoctor.name} updated successfully.`);
+      setTimeout(() => setActionSuccessMsg(''), 4000);
+    } catch {
+      alert('Failed to update doctor details.');
+    }
+  };
+
+  // ADMIN ACTION: PERMANENTLY REMOVE DOCTOR ACCOUNT
+  const handlePermanentDoctorRemoval = (doctor: DoctorProfile) => {
+    try {
+      const docEmailClean = (doctor.email || '').toLowerCase().trim();
+      const docId = doctor.id;
+
+      // 1. Remove from live doctor roster
+      const updatedRoster = doctorProfiles.filter(d => d.id !== docId && (d.email || '').toLowerCase().trim() !== docEmailClean);
+      localStorage.setItem('primecare_doctor_profiles', JSON.stringify(updatedRoster));
+      setDoctorProfiles(updatedRoster);
+
+      // 2. Remove onboarding applications & registered user authentication entry
+      const storedApps: DoctorApplication[] = JSON.parse(localStorage.getItem('primecare_doctor_applications') || '[]');
+      const filteredApps = storedApps.filter(a => (a.email || '').toLowerCase().trim() !== docEmailClean);
+      localStorage.setItem('primecare_doctor_applications', JSON.stringify(filteredApps));
+      setDoctorApplications(filteredApps);
+
+      const storedUsers = JSON.parse(localStorage.getItem('primecare_registered_users') || '[]');
+      const filteredUsers = storedUsers.filter((u: any) => (u.email || '').toLowerCase().trim() !== docEmailClean);
+      localStorage.setItem('primecare_registered_users', JSON.stringify(filteredUsers));
+
+      // 3. Purge doctor authentication credentials
+      localStorage.removeItem(`role_pwd_doctor_${docEmailClean}`);
+      localStorage.removeItem(`role_pwd_ADMIN_${docEmailClean}`);
+
+      // 4. Clean up doctor leaves
+      const updatedLeaves = leaves.filter(l => l.doctorId !== docId && l.doctorName.toLowerCase() !== doctor.name.toLowerCase());
+      localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
+      setLeaves(updatedLeaves);
+
+      setDoctorToDelete(null);
+      setActionSuccessMsg(`Doctor account for ${doctor.name} (${doctor.email}) has been permanently deleted.`);
+      setTimeout(() => setActionSuccessMsg(''), 5000);
+    } catch {
+      alert('Failed to delete doctor account.');
+    }
+  };
+
+  // Doctor Application Approval
   const handleApproveDoctor = (app: DoctorApplication) => {
     try {
       const updatedApps = doctorApplications.map(a => a.id === app.id ? { ...a, status: 'APPROVED' as const } : a);
       localStorage.setItem('primecare_doctor_applications', JSON.stringify(updatedApps));
       setDoctorApplications(updatedApps);
 
-      const storedRoster = JSON.parse(localStorage.getItem('primecare_doctor_profiles') || '[]');
-      const newDocProfile = {
+      const newDocProfile: DoctorProfile = {
         id: app.id,
         email: app.email,
         name: app.name,
@@ -155,12 +266,21 @@ export default function AdminDashboardPage() {
         hospital: 'PrimeCare Multispecialty Hospital',
         fee: '₹1,200',
         rating: '5.0 ★',
-        bio: `Verified Specialist in ${app.specialisation}. NMC/MCI Reg: ${app.regNumber}`
+        bio: `Verified Clinical Specialist in ${app.specialisation}. NMC/MCI Reg: ${app.regNumber}`
       };
-      localStorage.setItem('primecare_doctor_profiles', JSON.stringify([newDocProfile, ...storedRoster]));
-      setActionSuccessMsg(`Physician ${app.name} approved and added to live roster.`);
+      const updatedRoster = [newDocProfile, ...doctorProfiles];
+      localStorage.setItem('primecare_doctor_profiles', JSON.stringify(updatedRoster));
+      setDoctorProfiles(updatedRoster);
+
+      setActionSuccessMsg(`Physician ${app.name} approved and granted directory access.`);
       setTimeout(() => setActionSuccessMsg(''), 4000);
     } catch {}
+  };
+
+  const handleRejectDoctor = (appId: string) => {
+    const updatedApps = doctorApplications.map(a => a.id === appId ? { ...a, status: 'REJECTED' as const } : a);
+    localStorage.setItem('primecare_doctor_applications', JSON.stringify(updatedApps));
+    setDoctorApplications(updatedApps);
   };
 
   // Leave Management
@@ -177,7 +297,7 @@ export default function AdminDashboardPage() {
     const updated = [newLeave, ...leaves];
     localStorage.setItem('primecare_leaves', JSON.stringify(updated));
     setLeaves(updated);
-    setActionSuccessMsg(`Leave recorded for ${leaveDoctorName} on ${leaveDate}.`);
+    setActionSuccessMsg(`Duty leave recorded for ${leaveDoctorName} on ${leaveDate}.`);
     setTimeout(() => setActionSuccessMsg(''), 4000);
   };
 
@@ -194,17 +314,17 @@ export default function AdminDashboardPage() {
 
         <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8">
           
-          {/* HEADER */}
+          {/* TOP HEADER */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-xs font-semibold text-red-400 mb-2">
                 <ShieldCheck className="w-3.5 h-3.5" /> Administrative Management Portal
               </div>
               <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                Clinic Operations & Overview
+                Clinic Operations & Doctor Governance
               </h1>
               <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                Real-time consultation tracking, doctor verification, and duty scheduling.
+                Full authority to track consultations, verify doctors, edit physician details, or permanently delete accounts.
               </p>
             </div>
 
@@ -227,7 +347,7 @@ export default function AdminDashboardPage() {
                   activeTab === 'DONE' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <CheckCheck className="w-3.5 h-3.5" /> Finalized Consultations ({doneConsultations.length})
+                <CheckCheck className="w-3.5 h-3.5" /> Finalized ({doneConsultations.length})
               </button>
 
               <button
@@ -237,7 +357,7 @@ export default function AdminDashboardPage() {
                   activeTab === 'DOCTORS' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <Stethoscope className="w-3.5 h-3.5" /> Doctor Verification ({doctorApplications.filter(a => a.status === 'PENDING').length})
+                <Stethoscope className="w-3.5 h-3.5" /> Doctor Directory ({doctorProfiles.length})
               </button>
 
               <button
@@ -252,7 +372,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* SUCCESS BANNER */}
+          {/* ACTION NOTIFICATION */}
           <AnimatePresence>
             {actionSuccessMsg && (
               <motion.div
@@ -274,7 +394,7 @@ export default function AdminDashboardPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by patient, doctor, token, or email..."
+                placeholder="Search patient, doctor, specialty, or email..."
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
@@ -283,25 +403,25 @@ export default function AdminDashboardPage() {
               onClick={loadData}
               className="text-xs text-emerald-400 hover:underline flex items-center gap-1 font-semibold self-end sm:self-center"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Refresh Dashboard Data
+              <RefreshCw className="w-3.5 h-3.5" /> Refresh Live Data
             </button>
           </div>
 
-          {/* TAB 1: ACTIVE CONSULTATIONS (AWAITING DOCTOR) */}
+          {/* TAB 1: ACTIVE CONSULTATIONS */}
           {activeTab === 'CONSULTATIONS' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-bold text-white flex items-center gap-2">
                   <Clock className="w-4 h-4 text-amber-400" /> Active Outpatient Queue ({activeConsultations.length})
                 </h2>
-                <span className="text-xs text-slate-400">Mark as Done manually or via Doctor Consultation finalization</span>
+                <span className="text-xs text-slate-400">Mark as Done manually or wait for Doctor finalization</span>
               </div>
 
               {activeConsultations.length === 0 ? (
                 <div className="p-12 text-center text-slate-500 border border-slate-800 rounded-3xl bg-slate-900/40 space-y-2">
                   <CheckCircle2 className="w-10 h-10 mx-auto text-slate-600" />
-                  <p className="text-sm font-semibold">Active Queue is Empty</p>
-                  <p className="text-xs text-slate-500">All appointments have either been finalized or no patients are currently queued.</p>
+                  <p className="text-sm font-semibold">Active Queue is Clear</p>
+                  <p className="text-xs text-slate-500">All appointments have been completed or moved to the Done archive.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -356,7 +476,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: FINALIZED CONSULTATIONS (DONE SECTION) */}
+          {/* TAB 2: FINALIZED CONSULTATIONS (DONE) */}
           {activeTab === 'DONE' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -368,9 +488,6 @@ export default function AdminDashboardPage() {
                     Consultations completed by physicians or marked as done by administrators.
                   </p>
                 </div>
-                <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-bold">
-                  Archive Status: Stored
-                </span>
               </div>
 
               {doneConsultations.length === 0 ? (
@@ -437,55 +554,117 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 3: DOCTOR APPLICATIONS & ONBOARDING */}
+          {/* TAB 3: DOCTOR DIRECTORY & PERMANENT ACCOUNT DELETION */}
           {activeTab === 'DOCTORS' && (
-            <div className="space-y-4">
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <Stethoscope className="w-4 h-4 text-blue-400" /> Physician Verification Applications ({doctorApplications.length})
-              </h2>
+            <div className="space-y-6">
+              
+              {/* SECTION A: PENDING ONBOARDING APPLICATIONS */}
+              {doctorApplications.filter(a => a.status === 'PENDING').length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4" /> Pending Doctor Verification Applications ({doctorApplications.filter(a => a.status === 'PENDING').length})
+                  </h3>
 
-              {doctorApplications.length === 0 ? (
-                <div className="p-12 text-center text-slate-500 border border-slate-800 rounded-3xl bg-slate-900/40">
-                  No doctor onboarding applications currently pending verification.
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {doctorApplications.filter(a => a.status === 'PENDING').map(app => (
+                      <div key={app.id} className="p-5 rounded-2xl bg-amber-950/20 border border-amber-500/30 space-y-3 text-xs">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-bold text-sm text-white">{app.name}</h4>
+                            <p className="text-slate-400 font-mono">{app.email}</p>
+                          </div>
+                          <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold uppercase text-[10px]">
+                            Pending
+                          </span>
+                        </div>
+
+                        <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
+                          <p><strong>NMC/MCI ID:</strong> <span className="text-blue-400 uppercase font-mono">{app.regNumber}</span></p>
+                          <p><strong>Specialisation:</strong> {app.specialisation}</p>
+                          <p><strong>Qualification:</strong> {app.qualification}</p>
+                          <p><strong>Experience:</strong> {app.experience}</p>
+                        </div>
+
+                        <div className="flex gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => handleApproveDoctor(app)}
+                            className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRejectDoctor(app.id)}
+                            className="px-3 py-2 bg-red-950/40 hover:bg-red-900/60 border border-red-500/40 text-red-300 font-bold rounded-xl text-xs transition"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ) : (
+              )}
+
+              {/* SECTION B: ACTIVE REGISTERED DOCTOR ROSTER */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <Stethoscope className="w-4 h-4 text-emerald-400" /> Active Doctor Roster ({filteredDoctors.length})
+                  </h3>
+                  <span className="text-xs text-slate-400">Admins can edit credentials or permanently remove accounts</span>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {doctorApplications.map((app) => (
-                    <div key={app.id} className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
-                      <div className="space-y-2.5">
+                  {filteredDoctors.map((doc) => (
+                    <div key={doc.id} className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
+                      <div className="space-y-3">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="font-bold text-base text-white">{app.name}</h3>
-                            <p className="text-xs text-slate-400 font-mono">{app.email}</p>
+                            <h4 className="font-bold text-base text-white">{doc.name}</h4>
+                            <span className="text-xs font-semibold text-emerald-400">{doc.specialisation}</span>
+                            <p className="text-[11px] text-slate-400 font-mono mt-0.5">{doc.email}</p>
                           </div>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                            app.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                          }`}>
-                            {app.status}
+                          <span className="text-xs font-mono font-bold text-emerald-300 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                            {doc.fee}
                           </span>
                         </div>
 
                         <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1">
-                          <p><strong>NMC/MCI ID:</strong> <span className="text-blue-400 uppercase font-mono">{app.regNumber}</span></p>
-                          <p><strong>Specialisation:</strong> {app.specialisation}</p>
-                          <p><strong>Qualifications:</strong> {app.qualification}</p>
-                          <p><strong>Experience:</strong> {app.experience}</p>
+                          <p><strong>Qualification:</strong> {doc.qualification}</p>
+                          <p><strong>Experience:</strong> {doc.experience}</p>
+                          <p><strong>Hospital:</strong> {doc.hospital}</p>
                         </div>
+
+                        <p className="text-[11px] text-slate-300 leading-relaxed line-clamp-2 italic">
+                          &quot;{doc.bio}&quot;
+                        </p>
                       </div>
 
-                      {app.status === 'PENDING' && (
+                      <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
                         <button
                           type="button"
-                          onClick={() => handleApproveDoctor(app)}
-                          className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5"
+                          onClick={() => setEditingDoctor(doc)}
+                          className="flex-1 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5"
                         >
-                          <Check className="w-4 h-4" /> Approve & Add to Directory
+                          <Edit3 className="w-3.5 h-3.5" /> Edit Details
                         </button>
-                      )}
+                        
+                        <button
+                          type="button"
+                          onClick={() => setDoctorToDelete(doc)}
+                          className="py-2 px-3 bg-red-950/30 hover:bg-red-900/50 border border-red-500/40 text-red-400 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1"
+                          title="Permanently remove doctor account"
+                        >
+                          <UserX className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
-              )}
+              </div>
+
             </div>
           )}
 
@@ -588,6 +767,183 @@ export default function AdminDashboardPage() {
           )}
 
         </main>
+
+        {/* MODAL 1: ADMIN EDIT DOCTOR DETAILS */}
+        <AnimatePresence>
+          {editingDoctor && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-6"
+              >
+                <div className="flex justify-between items-start border-b border-slate-800 pb-3">
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Admin: Edit Doctor Profile</h3>
+                    <p className="text-xs text-slate-400">Modifying credentials for {editingDoctor.email}</p>
+                  </div>
+                  <button onClick={() => setEditingDoctor(null)} className="text-slate-400 hover:text-white">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveDoctorEdit} className="space-y-4 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-400 font-semibold mb-1">Doctor Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingDoctor.name}
+                        onChange={(e) => setEditingDoctor({ ...editingDoctor, name: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-400 font-semibold mb-1">Specialisation</label>
+                      <select
+                        value={editingDoctor.specialisation}
+                        onChange={(e) => setEditingDoctor({ ...editingDoctor, specialisation: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none"
+                      >
+                        <option value="Cardiology">Cardiology</option>
+                        <option value="Neurology">Neurology</option>
+                        <option value="Orthopedics">Orthopedics</option>
+                        <option value="Pediatrics">Pediatrics</option>
+                        <option value="Dermatology">Dermatology</option>
+                        <option value="General Medicine">General Medicine</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-400 font-semibold mb-1">Qualifications</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingDoctor.qualification}
+                        onChange={(e) => setEditingDoctor({ ...editingDoctor, qualification: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-400 font-semibold mb-1">Experience</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingDoctor.experience}
+                        onChange={(e) => setEditingDoctor({ ...editingDoctor, experience: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-400 font-semibold mb-1">Affiliated Hospital</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingDoctor.hospital}
+                        onChange={(e) => setEditingDoctor({ ...editingDoctor, hospital: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-400 font-semibold mb-1">Consultation Fee</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingDoctor.fee}
+                        onChange={(e) => setEditingDoctor({ ...editingDoctor, fee: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Physician Bio & Clinical Specialties</label>
+                    <textarea
+                      rows={3}
+                      required
+                      value={editingDoctor.bio}
+                      onChange={(e) => setEditingDoctor({ ...editingDoctor, bio: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none"
+                    />
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditingDoctor(null)}
+                      className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-lg shadow-emerald-500/20"
+                    >
+                      Save Doctor Details
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* MODAL 2: CONFIRM PERMANENT DOCTOR ACCOUNT REMOVAL */}
+        <AnimatePresence>
+          {doctorToDelete && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-md p-6 sm:p-8 rounded-3xl bg-slate-900 border border-red-500/40 shadow-2xl space-y-5"
+              >
+                <div className="flex items-center gap-3 text-red-400">
+                  <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/20">
+                    <UserX className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white">Permanently Remove Doctor?</h3>
+                    <p className="text-xs text-red-400">This action cannot be undone.</p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-300 leading-relaxed bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+                  Are you sure you want to delete <strong className="text-white">{doctorToDelete.name}</strong> (<span className="text-slate-400">{doctorToDelete.email}</span>)?
+                  This will revoke their login access, remove their clinical profile, and remove them from all public appointment booking schedules.
+                </p>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDoctorToDelete(null)}
+                    className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handlePermanentDoctorRemoval(doctorToDelete)}
+                    className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-red-600/30"
+                  >
+                    Delete Permanently
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
       </div>
     </ProtectedRoute>
   );
