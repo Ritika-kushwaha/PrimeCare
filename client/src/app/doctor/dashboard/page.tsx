@@ -91,6 +91,47 @@ const DEFAULT_DOCTORS: DoctorProfile[] = [
   { id: 'doc-derma-01', email: 'rohan.mehta@primecare.in', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', rating: '4.8 ★', bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' },
 ];
 
+// Helper to normalize and canonicalize Patient Keys
+const getNormalizedPatientKey = (email?: string, name?: string) => {
+  const cleanEmail = (email || 'patient@primecare.in').trim().toLowerCase();
+  const cleanName = (name || 'Patient Member').trim().toLowerCase().replace(/\s+/g, ' ');
+  return `${cleanEmail}::${cleanName}`;
+};
+
+// Deduplication function to merge any legacy fragmented EHR records
+const deduplicateEHR = (records: PatientEHR[]): PatientEHR[] => {
+  const map = new Map<string, PatientEHR>();
+
+  records.forEach((record) => {
+    if (!record) return;
+    const key = getNormalizedPatientKey(record.patientEmail, record.patientName);
+    
+    if (map.has(key)) {
+      const existing = map.get(key)!;
+      // Merge unique visits
+      const visitMap = new Map<string, VisitRecord>();
+      [...existing.visits, ...record.visits].forEach(v => {
+        if (v && v.visitId) visitMap.set(v.visitId, v);
+      });
+      existing.visits = Array.from(visitMap.values()).sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+    } else {
+      map.set(key, {
+        ...record,
+        patientKey: key,
+        patientName: record.patientName.trim(),
+        patientEmail: record.patientEmail.trim().toLowerCase(),
+        visits: [...record.visits].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        )
+      });
+    }
+  });
+
+  return Array.from(map.values());
+};
+
 export default function DoctorDashboardPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'CLINICAL' | 'EHR' | 'PROFILE'>('CLINICAL');
@@ -172,7 +213,6 @@ export default function DoctorDashboardPage() {
       const stored = localStorage.getItem('primecare_appointments');
       if (stored) {
         const parsed: AppointmentItem[] = JSON.parse(stored);
-        // Exclude already completed/dismissed visits from active queue
         setAllAppointments(parsed.filter(a => a && a.status !== 'COMPLETED'));
       }
     } catch {}
@@ -180,7 +220,10 @@ export default function DoctorDashboardPage() {
     try {
       const storedEHR = localStorage.getItem('primecare_ehr_registry');
       if (storedEHR) {
-        setEhrRegistry(JSON.parse(storedEHR));
+        const rawEHR: PatientEHR[] = JSON.parse(storedEHR);
+        const cleanEHR = deduplicateEHR(rawEHR);
+        setEhrRegistry(cleanEHR);
+        localStorage.setItem('primecare_ehr_registry', JSON.stringify(cleanEHR));
       }
     } catch {}
   };
@@ -225,7 +268,6 @@ export default function DoctorDashboardPage() {
       }
       localStorage.setItem('primecare_doctor_profiles', JSON.stringify(newRoster));
 
-      // Cascade Name & Info to ALL Appointments linked to this doctor's email / previous name
       const storedAppointments: AppointmentItem[] = JSON.parse(localStorage.getItem('primecare_appointments') || '[]');
       const oldNameClean = docName.toLowerCase().trim();
 
@@ -260,7 +302,7 @@ export default function DoctorDashboardPage() {
     }
   };
 
-  // Queue Filter (Strictly active and not completed)
+  // Queue Filter
   const displayedQueue = useMemo(() => {
     const query = searchQueue.toLowerCase().trim();
     const cleanDocName = docName.toLowerCase().replace('dr. ', '').trim();
@@ -316,14 +358,16 @@ export default function DoctorDashboardPage() {
     }
   };
 
-  // FINALIZE CONSULTATION: SENDS EMAIL, STORES UNIQUE EHR & REMOVES PATIENT FROM ACTIVE QUEUE
+  // FINALIZE CONSULTATION: STRICTLY APPENDS TO UNIQUE (NAME + EMAIL) PROFILE WITHOUT DUPLICATION
   const handleFinalizeConsultation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activePatient) return;
     setLoading(true);
 
-    const pName = (activePatient.patientName || 'Patient Member').trim();
-    const pEmail = (activePatient.patientEmail || 'patient@primecare.in').toLowerCase().trim();
+    const rawName = activePatient.patientName || 'Patient Member';
+    const rawEmail = activePatient.patientEmail || 'patient@primecare.in';
+    const pName = rawName.trim().replace(/\s+/g, ' ');
+    const pEmail = rawEmail.trim().toLowerCase();
     const invoiceNumber = 'INV-' + Math.floor(100000 + Math.random() * 900000);
     const completedPatientId = activePatient.id;
 
@@ -333,7 +377,7 @@ export default function DoctorDashboardPage() {
       followUpSteps: 'Maintain hydration, complete the entire prescribed therapeutic course, and return if symptoms persist.',
     };
 
-    // 1. Dispatch AI Post-Visit Care Plan Email to Patient
+    // 1. Dispatch Email
     try {
       const aiRes = await fetch('/api/ai/post-visit', {
         method: 'POST',
@@ -376,31 +420,51 @@ export default function DoctorDashboardPage() {
       },
     };
 
-    // 2. Strict Compound Key (Email + Name) to keep family members on the same email isolated
-    const patientKey = `${pEmail}::${pName.toLowerCase().replace(/\s+/g, '_')}`;
+    // 2. Strict Compound Key Check (Email + Name normalized)
+    const canonicalKey = getNormalizedPatientKey(pEmail, pName);
 
     try {
       const storedEHR: PatientEHR[] = JSON.parse(localStorage.getItem('primecare_ehr_registry') || '[]');
-      const patientIndex = storedEHR.findIndex((p) => p.patientKey === patientKey);
+      
+      // Match by strict normalized key OR by exact name and email match
+      const patientIndex = storedEHR.findIndex((p) => {
+        const key = getNormalizedPatientKey(p.patientEmail, p.patientName);
+        return key === canonicalKey;
+      });
+
+      let updatedEHR: PatientEHR[];
 
       if (patientIndex > -1) {
-        storedEHR[patientIndex].visits = [visitEntry, ...storedEHR[patientIndex].visits];
-      } else {
-        storedEHR.unshift({
-          patientKey,
+        // APPEND VISIT TO EXISTING PATIENT (NO DUPLICATE CARD)
+        updatedEHR = [...storedEHR];
+        updatedEHR[patientIndex] = {
+          ...updatedEHR[patientIndex],
+          patientName: pName, // Standardize casing
           patientEmail: pEmail,
-          patientName: pName,
-          age: activePatient.age || 21,
-          gender: activePatient.gender || 'Member',
-          visits: [visitEntry],
-        });
+          visits: [visitEntry, ...updatedEHR[patientIndex].visits]
+        };
+      } else {
+        // CREATE NEW ISOLATED CARD (e.g. for different family member name)
+        updatedEHR = [
+          {
+            patientKey: canonicalKey,
+            patientEmail: pEmail,
+            patientName: pName,
+            age: activePatient.age || 21,
+            gender: activePatient.gender || 'Member',
+            visits: [visitEntry],
+          },
+          ...storedEHR
+        ];
       }
 
-      localStorage.setItem('primecare_ehr_registry', JSON.stringify(storedEHR));
-      setEhrRegistry(storedEHR);
+      // Deduplicate to guarantee clean array
+      const cleanedEHR = deduplicateEHR(updatedEHR);
+      localStorage.setItem('primecare_ehr_registry', JSON.stringify(cleanedEHR));
+      setEhrRegistry(cleanedEHR);
     } catch {}
 
-    // 3. REMOVE FROM ACTIVE QUEUE (Mark as COMPLETED in storage)
+    // 3. REMOVE FROM ACTIVE QUEUE
     try {
       const storedAppts: AppointmentItem[] = JSON.parse(localStorage.getItem('primecare_appointments') || '[]');
       const updatedAppts = storedAppts.map(a => {
@@ -411,7 +475,6 @@ export default function DoctorDashboardPage() {
       });
       localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
       
-      // Update local state queue
       const remainingQueue = allAppointments.filter(a => a.id !== completedPatientId && a.status !== 'COMPLETED');
       setAllAppointments(remainingQueue);
     } catch {}
@@ -434,6 +497,7 @@ export default function DoctorDashboardPage() {
     }, 150);
   };
 
+  // EHR Filter with deduplication guarantee
   const filteredEhr = useMemo(() => {
     const q = searchEhr.toLowerCase().trim();
     return ehrRegistry.filter(p => 
@@ -580,11 +644,11 @@ export default function DoctorDashboardPage() {
                           <h3 className="font-bold text-base text-emerald-100 flex items-center gap-2">
                             <span>Consultation Completed for {completedRecord.patient.patientName}</span>
                             <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-mono border border-blue-500/30 flex items-center gap-1">
-                              <Mail className="w-3 h-3" /> Care Plan Dispatched to {completedRecord.patient.patientEmail}
+                              <Mail className="w-3 h-3" /> Dispatched to {completedRecord.patient.patientEmail}
                             </span>
                           </h3>
                           <p className="text-xs text-emerald-400 mt-0.5">
-                            Patient removed from active queue and stored into permanent EHR records.
+                            Patient removed from active queue and appended to their single dedicated EHR record.
                           </p>
                         </div>
                       </div>
@@ -666,7 +730,7 @@ export default function DoctorDashboardPage() {
                         <div className="p-8 text-center text-xs text-slate-500 space-y-2">
                           <Users className="w-8 h-8 mx-auto text-slate-600" />
                           <p className="font-semibold text-slate-400">Queue is Clear</p>
-                          <p className="text-[11px]">No pending patients currently waiting in this queue.</p>
+                          <p className="text-[11px]">No pending patients waiting in this view.</p>
                           <button
                             onClick={() => setFilterMode('ALL')}
                             className="text-emerald-400 hover:underline block mx-auto mt-2"
@@ -826,7 +890,7 @@ export default function DoctorDashboardPage() {
                           disabled={loading}
                           className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2"
                         >
-                          {loading ? 'Finalizing & Removing from Queue...' : (<><Send className="w-4 h-4" /> Finalize Consultation & Remove from Queue</>)}
+                          {loading ? 'Finalizing & Updating EHR...' : (<><Send className="w-4 h-4" /> Finalize Consultation & Remove from Queue</>)}
                         </button>
                       </form>
                     </div>
@@ -842,7 +906,7 @@ export default function DoctorDashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: LONGITUDINAL EHR */}
+          {/* TAB 2: LONGITUDINAL EHR (1 UNIQUE CARD PER NAME + EMAIL) */}
           {activeTab === 'EHR' && (
             <div className="space-y-6">
               <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -851,7 +915,7 @@ export default function DoctorDashboardPage() {
                     <History className="w-4 h-4 text-emerald-400" /> Longitudinal Patient EHR Registry
                   </h2>
                   <p className="text-xs text-slate-400">
-                    Each patient identity is uniquely isolated by Name & Email. Family members sharing an email have separate medical records.
+                    Strict deduplication: Every unique patient (Name + Email) has a single unified record with full chronological visit history.
                   </p>
                 </div>
                 <div className="relative w-full sm:w-72">
@@ -874,8 +938,8 @@ export default function DoctorDashboardPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {filteredEhr.map((patient, idx) => (
-                    <div key={patient.patientKey || idx} className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
+                  {filteredEhr.map((patient) => (
+                    <div key={patient.patientKey} className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
                       <div>
                         <div className="flex items-start justify-between">
                           <h3 className="font-bold text-base text-white">{patient.patientName}</h3>
@@ -887,10 +951,10 @@ export default function DoctorDashboardPage() {
                         
                         <div className="mt-3 pt-3 border-t border-slate-800/80 text-xs text-slate-300 space-y-1">
                           <p className="text-[11px] text-slate-400">
-                            Last Visit: <strong className="text-slate-200">{patient.visits[0]?.date}</strong>
+                            Last Encounter: <strong className="text-slate-200">{patient.visits[0]?.date}</strong>
                           </p>
                           <p className="text-[11px] text-slate-400 truncate">
-                            Attending: <span className="text-emerald-400 font-medium">{patient.visits[0]?.doctorName}</span>
+                            Attending Dr: <span className="text-emerald-400 font-medium">{patient.visits[0]?.doctorName}</span>
                           </p>
                         </div>
                       </div>
