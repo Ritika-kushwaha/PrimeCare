@@ -10,7 +10,7 @@ import {
   AlertCircle, Search, Trash2, Check, X, 
   Stethoscope, Users, RefreshCw, Award, Filter, ArrowRight,
   CheckCheck, Archive, FileText, BadgeCheck, CalendarX2,
-  Edit3, UserX, Building2, Briefcase, DollarSign, Save, AlertTriangle
+  Edit3, UserX, Building2, Briefcase, DollarSign, Save, AlertTriangle, Mail
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -50,8 +50,9 @@ interface AppointmentItem {
   symptoms?: string;
   patientName?: string;
   patientEmail?: string;
-  status?: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  status?: string;
   finalizedAt?: string;
+  leaveReason?: string;
 }
 
 interface LeaveRecord {
@@ -75,7 +76,7 @@ const DEFAULT_DOCTORS: DoctorProfile[] = [
 
 export default function AdminDashboardPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'CONSULTATIONS' | 'DONE' | 'DOCTORS' | 'LEAVES'>('CONSULTATIONS');
+  const [activeTab, setActiveTab] = useState<'CONSULTATIONS' | 'LEAVE_AFFECTED' | 'DONE' | 'DOCTORS' | 'LEAVES'>('CONSULTATIONS');
   
   const [appointments, setAppointments] = useState<AppointmentItem[]>([]);
   const [doctorProfiles, setDoctorProfiles] = useState<DoctorProfile[]>(DEFAULT_DOCTORS);
@@ -129,14 +130,25 @@ export default function AdminDashboardPage() {
     return () => window.removeEventListener('storage', loadData);
   }, [user]);
 
+  // Section 1: Active Consultations (Excludes COMPLETED, CANCELLED, and LEAVE_CANCELLED)
   const activeConsultations = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return appointments.filter(a => {
-      if (!a || a.status === 'COMPLETED') return false;
+      if (!a || a.status === 'COMPLETED' || a.status === 'CANCELLED' || a.status === 'LEAVE_CANCELLED') return false;
       return `${a.patientName || ''} ${a.patientEmail || ''} ${a.doctorName || ''} ${a.department || ''} ${a.tokenNumber || ''}`.toLowerCase().includes(q);
     });
   }, [appointments, searchQuery]);
 
+  // Section 2: Due to Doctor on Leave (Global Clinic Shifted Appointments)
+  const leaveAffectedConsultations = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return appointments.filter(a => {
+      if (!a || a.status !== 'LEAVE_CANCELLED') return false;
+      return `${a.patientName || ''} ${a.patientEmail || ''} ${a.doctorName || ''} ${a.department || ''} ${a.tokenNumber || ''}`.toLowerCase().includes(q);
+    });
+  }, [appointments, searchQuery]);
+
+  // Section 3: Finalized / Done Consultations
   const doneConsultations = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return appointments.filter(a => {
@@ -145,6 +157,7 @@ export default function AdminDashboardPage() {
     });
   }, [appointments, searchQuery]);
 
+  // Section 4: Filtered Doctors
   const filteredDoctors = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return doctorProfiles.filter(d => 
@@ -152,6 +165,7 @@ export default function AdminDashboardPage() {
     );
   }, [doctorProfiles, searchQuery]);
 
+  // Admin Manual Action: Mark as Done
   const handleMarkAsDone = (aptId: string) => {
     try {
       const updated = appointments.map(a => {
@@ -174,6 +188,7 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Save Doctor Edit
   const handleSaveDoctorEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingDoctor) return;
@@ -205,6 +220,7 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Permanent Doctor Removal
   const handlePermanentDoctorRemoval = (doctor: DoctorProfile) => {
     try {
       const docEmailClean = (doctor.email || '').toLowerCase().trim();
@@ -271,7 +287,7 @@ export default function AdminDashboardPage() {
     setDoctorApplications(updatedApps);
   };
 
-  // Fixed leave handler with proper string interpolation
+  // RECORD LEAVE: AUTOMATICALLY SHIFTS APPOINTMENTS TO 'LEAVE_CANCELLED' AND SENDS NOTICES
   const handleAddLeave = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionSuccessMsg('Recording leave & notifying affected patients...');
@@ -299,21 +315,24 @@ export default function AdminDashboardPage() {
     localStorage.setItem('primecare_leaves', JSON.stringify(updatedLeaves));
     setLeaves(updatedLeaves);
 
+    // 1. Identify affected patients booked on this date for this doctor
     const affected = appointments.filter(a => {
-      if (a.date !== leaveDate || a.status === 'COMPLETED' || a.status === 'CANCELLED') return false;
+      if (a.date !== leaveDate || a.status === 'COMPLETED' || a.status === 'LEAVE_CANCELLED') return false;
       const aDoc = (a.doctorName || '').toLowerCase().replace('dr. ', '').trim();
       return (a.doctorId && a.doctorId === docId) || aDoc.includes(docClean);
     });
 
+    // 2. Mark affected appointments as LEAVE_CANCELLED (removes from active queue)
     if (affected.length > 0) {
       const updatedAppts = appointments.map(a => {
         const isAffected = affected.some(aff => aff.id === a.id);
-        return isAffected ? { ...a, status: 'CANCELLED' as const } : a;
+        return isAffected ? { ...a, status: 'LEAVE_CANCELLED', leaveReason } : a;
       });
       localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
       setAppointments(updatedAppts);
     }
 
+    // 3. Dispatch Email Reschedule Notices
     try {
       const res = await fetch('/api/admin/leave-reschedule', {
         method: 'POST',
@@ -327,9 +346,9 @@ export default function AdminDashboardPage() {
         })
       });
       const data = await res.json();
-      setActionSuccessMsg(data.message || 'Leave recorded and reschedule notifications dispatched.');
+      setActionSuccessMsg(data.message || `Leave recorded. ${affected.length} patient(s) moved to "Due to Dr. on Leave" section.`);
     } catch {
-      setActionSuccessMsg('Leave recorded successfully.');
+      setActionSuccessMsg(`Leave recorded. Shifted ${affected.length} appointment(s) to "Due to Dr. on Leave".`);
     }
 
     setTimeout(() => setActionSuccessMsg(''), 5000);
@@ -357,10 +376,11 @@ export default function AdminDashboardPage() {
                 Clinic Operations & Doctor Governance
               </h1>
               <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                Full authority to track consultations, verify doctors, edit physician details, or permanently delete accounts.
+                Full authority to track consultations, handle doctor leaves, verify doctors, or permanently delete accounts.
               </p>
             </div>
 
+            {/* TAB SELECTORS INCLUDING 'DUE TO DR. ON LEAVE' */}
             <div className="flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto text-xs font-bold">
               <button
                 type="button"
@@ -370,6 +390,16 @@ export default function AdminDashboardPage() {
                 }`}
               >
                 <Clock className="w-3.5 h-3.5" /> Active Queue ({activeConsultations.length})
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('LEAVE_AFFECTED')}
+                className={`px-4 py-2 rounded-xl transition whitespace-nowrap flex items-center gap-1.5 ${
+                  activeTab === 'LEAVE_AFFECTED' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <CalendarX2 className="w-3.5 h-3.5" /> Due to Dr. on Leave ({leaveAffectedConsultations.length})
               </button>
               
               <button
@@ -399,7 +429,7 @@ export default function AdminDashboardPage() {
                   activeTab === 'LEAVES' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <CalendarX2 className="w-3.5 h-3.5" /> Doctor Leaves ({leaves.length})
+                <Calendar className="w-3.5 h-3.5" /> Record Leaves ({leaves.length})
               </button>
             </div>
           </div>
@@ -451,7 +481,7 @@ export default function AdminDashboardPage() {
                 <div className="p-12 text-center text-slate-500 border border-slate-800 rounded-3xl bg-slate-900/40 space-y-2">
                   <CheckCircle2 className="w-10 h-10 mx-auto text-slate-600" />
                   <p className="text-sm font-semibold">Active Queue is Clear</p>
-                  <p className="text-xs text-slate-500">All appointments have been completed or moved to the Done archive.</p>
+                  <p className="text-xs text-slate-500">All appointments have been completed or moved to the Done / Leave sections.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -506,7 +536,82 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: FINALIZED CONSULTATIONS (DONE) */}
+          {/* TAB 2: DUE TO DOCTOR ON LEAVE (ADMIN PORTAL) */}
+          {activeTab === 'LEAVE_AFFECTED' && (
+            <div className="space-y-4">
+              <div className="p-6 rounded-3xl bg-amber-950/20 border border-amber-500/30 space-y-2">
+                <div className="flex items-center gap-2 text-amber-400 font-bold text-base">
+                  <CalendarX2 className="w-5 h-5" />
+                  <span>Considered Appointments Shifted Due to Doctor on Leave ({leaveAffectedConsultations.length})</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  These patient appointments were automatically removed from the active queue because a doctor leave was recorded. Automatic reschedule notices with Google Calendar cancellations were emailed to each patient.
+                </p>
+              </div>
+
+              {leaveAffectedConsultations.length === 0 ? (
+                <div className="p-12 text-center text-slate-500 border border-slate-800 rounded-3xl bg-slate-900/40 space-y-2">
+                  <CheckCircle2 className="w-10 h-10 mx-auto text-slate-600" />
+                  <p className="text-sm font-semibold text-slate-300">No Shifted Appointments</p>
+                  <p className="text-xs text-slate-500">No patient bookings across any department have been displaced by doctor leaves.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {leaveAffectedConsultations.map((a) => (
+                    <div key={a.id} className="p-6 rounded-3xl bg-slate-900/80 border border-amber-500/30 shadow-xl space-y-4 flex flex-col justify-between">
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mb-1 inline-block">
+                              Shifted • Token {a.tokenNumber}
+                            </span>
+                            <h3 className="text-lg font-bold text-white">{a.patientName}</h3>
+                            <p className="text-[11px] text-slate-400 font-mono">{a.patientEmail}</p>
+                          </div>
+                          <span className="text-xs font-mono font-bold text-slate-400 px-2.5 py-1 rounded-xl bg-slate-800 border border-slate-700">
+                            {a.fee || '₹1,200'}
+                          </span>
+                        </div>
+
+                        <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 text-xs space-y-1.5">
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Assigned Doctor:</span>
+                            <strong className="text-slate-200">{a.doctorName}</strong>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Original Date & Slot:</span>
+                            <strong className="text-amber-300">{a.date} ({a.timeSlot})</strong>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Department:</span>
+                            <span className="text-slate-300">{a.department}</span>
+                          </div>
+                          <div className="flex justify-between pt-1 border-t border-slate-800 text-slate-400">
+                            <span>Duty Leave Reason:</span>
+                            <span className="text-amber-400 font-medium">{a.leaveReason || 'Doctor on Approved Leave'}</span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Patient Chief Complaint:</span>
+                          <p className="text-xs text-slate-300 italic">&quot;{a.symptoms}&quot;</p>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px]">
+                        <span className="text-amber-400 flex items-center gap-1 font-semibold">
+                          <Mail className="w-3.5 h-3.5" /> Reschedule Notice Sent
+                        </span>
+                        <span className="font-mono text-slate-500">{a.id}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: FINALIZED CONSULTATIONS (DONE) */}
           {activeTab === 'DONE' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -584,7 +689,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 3: DOCTOR DIRECTORY & PERMANENT ACCOUNT DELETION */}
+          {/* TAB 4: DOCTOR DIRECTORY */}
           {activeTab === 'DOCTORS' && (
             <div className="space-y-6">
               {doctorApplications.filter(a => a.status === 'PENDING').length > 0 && (
@@ -695,7 +800,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 4: DOCTOR LEAVES */}
+          {/* TAB 5: RECORD DOCTOR LEAVES */}
           {activeTab === 'LEAVES' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               <div className="lg:col-span-5">
@@ -757,7 +862,7 @@ export default function AdminDashboardPage() {
                     type="submit"
                     className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition"
                   >
-                    Lock Doctor Availability & Dispatch Reschedule Emails
+                    Lock Doctor Availability & Shift Patient Appointments
                   </button>
                 </form>
               </div>

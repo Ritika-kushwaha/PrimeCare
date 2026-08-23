@@ -10,7 +10,7 @@ import {
   Pill, FileText, Send, Calendar, 
   Printer, Receipt, Lock, Search, History, FolderHeart, User, Users, X, 
   Edit3, Save, BadgeCheck, Sparkles, AlertTriangle, HelpCircle, Check, ArrowRight,
-  Filter, RefreshCw, Award, Briefcase, Building2, Star, Mail, CheckCheck
+  Filter, RefreshCw, Award, Briefcase, Building2, Star, Mail, CheckCheck, CalendarX2, AlertCircle
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -79,6 +79,7 @@ interface AppointmentItem {
   aiChiefComplaint?: string;
   aiQuestions?: string[];
   status?: string;
+  leaveReason?: string;
 }
 
 const DEFAULT_DOCTORS: DoctorProfile[] = [
@@ -91,14 +92,12 @@ const DEFAULT_DOCTORS: DoctorProfile[] = [
   { id: 'doc-derma-01', email: 'rohan.mehta@primecare.in', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', rating: '4.8 ★', bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' },
 ];
 
-// Helper to normalize and canonicalize Patient Keys
 const getNormalizedPatientKey = (email?: string, name?: string) => {
   const cleanEmail = (email || 'patient@primecare.in').trim().toLowerCase();
   const cleanName = (name || 'Patient Member').trim().toLowerCase().replace(/\s+/g, ' ');
   return `${cleanEmail}::${cleanName}`;
 };
 
-// Deduplication function to merge any legacy fragmented EHR records
 const deduplicateEHR = (records: PatientEHR[]): PatientEHR[] => {
   const map = new Map<string, PatientEHR>();
 
@@ -108,7 +107,6 @@ const deduplicateEHR = (records: PatientEHR[]): PatientEHR[] => {
     
     if (map.has(key)) {
       const existing = map.get(key)!;
-      // Merge unique visits
       const visitMap = new Map<string, VisitRecord>();
       [...existing.visits, ...record.visits].forEach(v => {
         if (v && v.visitId) visitMap.set(v.visitId, v);
@@ -134,7 +132,7 @@ const deduplicateEHR = (records: PatientEHR[]): PatientEHR[] => {
 
 export default function DoctorDashboardPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'CLINICAL' | 'EHR' | 'PROFILE'>('CLINICAL');
+  const [activeTab, setActiveTab] = useState<'CLINICAL' | 'LEAVE_AFFECTED' | 'EHR' | 'PROFILE'>('CLINICAL');
   const [allAppointments, setAllAppointments] = useState<AppointmentItem[]>([]);
   const [activePatient, setActivePatient] = useState<AppointmentItem | null>(null);
   const [filterMode, setFilterMode] = useState<'MY_PATIENTS' | 'ALL'>('MY_PATIENTS');
@@ -212,8 +210,7 @@ export default function DoctorDashboardPage() {
     try {
       const stored = localStorage.getItem('primecare_appointments');
       if (stored) {
-        const parsed: AppointmentItem[] = JSON.parse(stored);
-        setAllAppointments(parsed.filter(a => a && a.status !== 'COMPLETED'));
+        setAllAppointments(JSON.parse(stored));
       }
     } catch {}
 
@@ -234,7 +231,7 @@ export default function DoctorDashboardPage() {
     return () => window.removeEventListener('storage', loadData);
   }, [user]);
 
-  // SAVE DOCTOR DETAILS & CASCADE NAME UPDATES GLOBALLY
+  // Save Doctor Details
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     setProfileSuccessMsg('');
@@ -291,7 +288,7 @@ export default function DoctorDashboardPage() {
       });
 
       localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppointments));
-      setAllAppointments(updatedAppointments.filter(a => a.status !== 'COMPLETED'));
+      setAllAppointments(updatedAppointments);
 
       setDocName(formattedName);
       setDocFee(formattedFee);
@@ -302,13 +299,13 @@ export default function DoctorDashboardPage() {
     }
   };
 
-  // Queue Filter
-  const displayedQueue = useMemo(() => {
+  // 1. ACTIVE QUEUE: Strictly excludes COMPLETED, CANCELLED, and LEAVE_CANCELLED
+  const activeQueue = useMemo(() => {
     const query = searchQueue.toLowerCase().trim();
     const cleanDocName = docName.toLowerCase().replace('dr. ', '').trim();
 
     return allAppointments.filter((a) => {
-      if (!a || a.status === 'COMPLETED') return false;
+      if (!a || a.status === 'COMPLETED' || a.status === 'CANCELLED' || a.status === 'LEAVE_CANCELLED') return false;
       const matchSearch = `${a.patientName || ''} ${a.patientEmail || ''} ${a.doctorName || ''} ${a.department || ''}`.toLowerCase().includes(query);
       if (!matchSearch) return false;
 
@@ -321,13 +318,25 @@ export default function DoctorDashboardPage() {
     });
   }, [allAppointments, filterMode, docName, doctorEmail, searchQueue]);
 
+  // 2. LEAVE AFFECTED SECTION: Displays appointments shifted due to Doctor on Leave
+  const leaveAffectedAppointments = useMemo(() => {
+    const cleanDocName = docName.toLowerCase().replace('dr. ', '').trim();
+
+    return allAppointments.filter((a) => {
+      if (!a || a.status !== 'LEAVE_CANCELLED') return false;
+      const isMyDocEmail = (a.doctorEmail || '').toLowerCase().trim() === doctorEmail;
+      const isMyDocName = (a.doctorName || '').toLowerCase().includes(cleanDocName);
+      return isMyDocEmail || isMyDocName;
+    });
+  }, [allAppointments, docName, doctorEmail]);
+
   useEffect(() => {
-    if (displayedQueue.length > 0 && (!activePatient || !displayedQueue.some(p => p.id === activePatient.id))) {
-      handleSelectPatient(displayedQueue[0]);
-    } else if (displayedQueue.length === 0) {
+    if (activeQueue.length > 0 && (!activePatient || !activeQueue.some(p => p.id === activePatient.id))) {
+      handleSelectPatient(activeQueue[0]);
+    } else if (activeQueue.length === 0) {
       setActivePatient(null);
     }
-  }, [displayedQueue]);
+  }, [activeQueue]);
 
   const handleSelectPatient = async (patient: AppointmentItem) => {
     setActivePatient(patient);
@@ -358,16 +367,14 @@ export default function DoctorDashboardPage() {
     }
   };
 
-  // FINALIZE CONSULTATION: STRICTLY APPENDS TO UNIQUE (NAME + EMAIL) PROFILE WITHOUT DUPLICATION
+  // Finalize consultation: emails patient, appends EHR, and removes from queue
   const handleFinalizeConsultation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activePatient) return;
     setLoading(true);
 
-    const rawName = activePatient.patientName || 'Patient Member';
-    const rawEmail = activePatient.patientEmail || 'patient@primecare.in';
-    const pName = rawName.trim().replace(/\s+/g, ' ');
-    const pEmail = rawEmail.trim().toLowerCase();
+    const pName = (activePatient.patientName || 'Patient Member').trim().replace(/\s+/g, ' ');
+    const pEmail = (activePatient.patientEmail || 'patient@primecare.in').toLowerCase().trim();
     const invoiceNumber = 'INV-' + Math.floor(100000 + Math.random() * 900000);
     const completedPatientId = activePatient.id;
 
@@ -377,7 +384,6 @@ export default function DoctorDashboardPage() {
       followUpSteps: 'Maintain hydration, complete the entire prescribed therapeutic course, and return if symptoms persist.',
     };
 
-    // 1. Dispatch Email
     try {
       const aiRes = await fetch('/api/ai/post-visit', {
         method: 'POST',
@@ -420,31 +426,25 @@ export default function DoctorDashboardPage() {
       },
     };
 
-    // 2. Strict Compound Key Check (Email + Name normalized)
     const canonicalKey = getNormalizedPatientKey(pEmail, pName);
 
     try {
       const storedEHR: PatientEHR[] = JSON.parse(localStorage.getItem('primecare_ehr_registry') || '[]');
-      
-      // Match by strict normalized key OR by exact name and email match
       const patientIndex = storedEHR.findIndex((p) => {
         const key = getNormalizedPatientKey(p.patientEmail, p.patientName);
         return key === canonicalKey;
       });
 
       let updatedEHR: PatientEHR[];
-
       if (patientIndex > -1) {
-        // APPEND VISIT TO EXISTING PATIENT (NO DUPLICATE CARD)
         updatedEHR = [...storedEHR];
         updatedEHR[patientIndex] = {
           ...updatedEHR[patientIndex],
-          patientName: pName, // Standardize casing
+          patientName: pName,
           patientEmail: pEmail,
           visits: [visitEntry, ...updatedEHR[patientIndex].visits]
         };
       } else {
-        // CREATE NEW ISOLATED CARD (e.g. for different family member name)
         updatedEHR = [
           {
             patientKey: canonicalKey,
@@ -458,13 +458,11 @@ export default function DoctorDashboardPage() {
         ];
       }
 
-      // Deduplicate to guarantee clean array
       const cleanedEHR = deduplicateEHR(updatedEHR);
       localStorage.setItem('primecare_ehr_registry', JSON.stringify(cleanedEHR));
       setEhrRegistry(cleanedEHR);
     } catch {}
 
-    // 3. REMOVE FROM ACTIVE QUEUE
     try {
       const storedAppts: AppointmentItem[] = JSON.parse(localStorage.getItem('primecare_appointments') || '[]');
       const updatedAppts = storedAppts.map(a => {
@@ -474,9 +472,7 @@ export default function DoctorDashboardPage() {
         return a;
       });
       localStorage.setItem('primecare_appointments', JSON.stringify(updatedAppts));
-      
-      const remainingQueue = allAppointments.filter(a => a.id !== completedPatientId && a.status !== 'COMPLETED');
-      setAllAppointments(remainingQueue);
+      setAllAppointments(updatedAppts);
     } catch {}
 
     setCompletedRecord({
@@ -497,7 +493,6 @@ export default function DoctorDashboardPage() {
     }, 150);
   };
 
-  // EHR Filter with deduplication guarantee
   const filteredEhr = useMemo(() => {
     const q = searchEhr.toLowerCase().trim();
     return ehrRegistry.filter(p => 
@@ -510,7 +505,6 @@ export default function DoctorDashboardPage() {
     <ProtectedRoute allowedRoles={['DOCTOR', 'ADMIN']}>
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
         
-        {/* PRINTABLE SLIP */}
         {completedRecord && printDocType && (
           <div className="hidden print:block p-8 bg-white text-black font-sans min-h-screen">
             {printDocType === 'AI_SUMMARY' ? (
@@ -591,7 +585,7 @@ export default function DoctorDashboardPage() {
               </p>
             </div>
 
-            {/* TAB SELECTORS */}
+            {/* TAB SELECTORS INCLUDING 'DUE TO DR. ON LEAVE' */}
             <div className="flex items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto">
               <button
                 type="button"
@@ -600,8 +594,19 @@ export default function DoctorDashboardPage() {
                   activeTab === 'CLINICAL' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Patient Queue ({displayedQueue.length})
+                Active Queue ({activeQueue.length})
               </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('LEAVE_AFFECTED')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap ${
+                  activeTab === 'LEAVE_AFFECTED' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <CalendarX2 className="w-3.5 h-3.5" /> Due to Dr. on Leave ({leaveAffectedAppointments.length})
+              </button>
+
               <button
                 type="button"
                 onClick={() => { setActiveTab('EHR'); loadData(); }}
@@ -611,6 +616,7 @@ export default function DoctorDashboardPage() {
               >
                 <History className="w-3.5 h-3.5" /> Patient EHR ({ehrRegistry.length})
               </button>
+              
               <button
                 type="button"
                 onClick={() => setActiveTab('PROFILE')}
@@ -623,11 +629,10 @@ export default function DoctorDashboardPage() {
             </div>
           </div>
 
-          {/* TAB 1: CLINICAL QUEUE & AI TRIAGE */}
+          {/* TAB 1: ACTIVE CLINICAL QUEUE & AI TRIAGE */}
           {activeTab === 'CLINICAL' && (
             <div className="space-y-6">
               
-              {/* COMPLETED CONSULTATION BANNER */}
               <AnimatePresence>
                 {completedRecord && (
                   <motion.div
@@ -682,7 +687,7 @@ export default function DoctorDashboardPage() {
                     
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                        <Clock className="w-4 h-4 text-emerald-400" /> Active Queue ({displayedQueue.length})
+                        <Clock className="w-4 h-4 text-emerald-400" /> Active Queue ({activeQueue.length})
                       </span>
                       <button
                         type="button"
@@ -726,20 +731,14 @@ export default function DoctorDashboardPage() {
                     </div>
 
                     <div className="space-y-2.5 max-h-[480px] overflow-y-auto pr-1">
-                      {displayedQueue.length === 0 ? (
+                      {activeQueue.length === 0 ? (
                         <div className="p-8 text-center text-xs text-slate-500 space-y-2">
                           <Users className="w-8 h-8 mx-auto text-slate-600" />
                           <p className="font-semibold text-slate-400">Queue is Clear</p>
-                          <p className="text-[11px]">No pending patients waiting in this view.</p>
-                          <button
-                            onClick={() => setFilterMode('ALL')}
-                            className="text-emerald-400 hover:underline block mx-auto mt-2"
-                          >
-                            View All Clinic Patients
-                          </button>
+                          <p className="text-[11px]">No active patients currently waiting in this queue.</p>
                         </div>
                       ) : (
-                        displayedQueue.map((p) => {
+                        activeQueue.map((p) => {
                           const isSelected = activePatient?.id === p.id;
 
                           return (
@@ -898,7 +897,7 @@ export default function DoctorDashboardPage() {
                     <div className="p-16 text-center text-slate-500 border border-slate-800 rounded-3xl bg-slate-900/40 space-y-2">
                       <Users className="w-10 h-10 mx-auto text-slate-600" />
                       <p className="font-semibold text-slate-300 text-sm">No Active Patient Selected</p>
-                      <p className="text-xs text-slate-500">Pick a patient from your queue on the left to start consultation.</p>
+                      <p className="text-xs text-slate-500">Pick an active patient from your queue on the left to start consultation.</p>
                     </div>
                   )}
                 </div>
@@ -906,7 +905,78 @@ export default function DoctorDashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: LONGITUDINAL EHR (1 UNIQUE CARD PER NAME + EMAIL) */}
+          {/* TAB 2: DUE TO DR. ON LEAVE SECTION (DOCTOR WORKSPACE) */}
+          {activeTab === 'LEAVE_AFFECTED' && (
+            <div className="space-y-6">
+              <div className="p-6 rounded-3xl bg-amber-950/20 border border-amber-500/30 space-y-2">
+                <div className="flex items-center gap-2 text-amber-400 font-bold text-base">
+                  <CalendarX2 className="w-5 h-5" />
+                  <span>Considered Appointments Shifted Due to Doctor on Leave</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  These patient appointments were automatically removed from the active queue because an approved duty leave was scheduled. Patients have been sent automated reschedule notifications.
+                </p>
+              </div>
+
+              {leaveAffectedAppointments.length === 0 ? (
+                <div className="p-12 text-center text-slate-500 border border-slate-800 rounded-3xl bg-slate-900/40 space-y-2">
+                  <CheckCircle2 className="w-10 h-10 mx-auto text-slate-600" />
+                  <p className="text-sm font-semibold text-slate-300">No Shifted Appointments</p>
+                  <p className="text-xs text-slate-500">None of your scheduled patients are currently affected by an active leave date.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {leaveAffectedAppointments.map((a) => (
+                    <div key={a.id} className="p-6 rounded-3xl bg-slate-900/80 border border-amber-500/30 shadow-xl space-y-4 flex flex-col justify-between">
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mb-1 inline-block">
+                              Shifted • Token {a.tokenNumber}
+                            </span>
+                            <h3 className="text-lg font-bold text-white">{a.patientName}</h3>
+                            <p className="text-[11px] text-slate-400 font-mono">{a.patientEmail}</p>
+                          </div>
+                          <span className="text-xs font-mono font-bold text-slate-400 px-2.5 py-1 rounded-xl bg-slate-800 border border-slate-700">
+                            {a.fee || '₹1,200'}
+                          </span>
+                        </div>
+
+                        <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 text-xs space-y-1.5">
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Scheduled Date:</span>
+                            <strong className="text-amber-300">{a.date} ({a.timeSlot})</strong>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Department:</span>
+                            <span className="text-slate-300">{a.department}</span>
+                          </div>
+                          <div className="flex justify-between pt-1 border-t border-slate-800 text-slate-400">
+                            <span>Leave Reason:</span>
+                            <span className="text-amber-400 font-medium">{a.leaveReason || 'Doctor Duty Leave'}</span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Patient Chief Complaint:</span>
+                          <p className="text-xs text-slate-300 italic">&quot;{a.symptoms}&quot;</p>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px]">
+                        <span className="text-amber-400 flex items-center gap-1 font-semibold">
+                          <Mail className="w-3.5 h-3.5" /> Reschedule Notice Emailed
+                        </span>
+                        <span className="font-mono text-slate-500">{a.id}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: LONGITUDINAL EHR */}
           {activeTab === 'EHR' && (
             <div className="space-y-6">
               <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1052,7 +1122,7 @@ export default function DoctorDashboardPage() {
             </div>
           )}
 
-          {/* TAB 3: EDIT DR. DETAILS */}
+          {/* TAB 4: EDIT DR. DETAILS */}
           {activeTab === 'PROFILE' && (
             <div className="max-w-3xl mx-auto space-y-6">
               <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-2xl space-y-6">
