@@ -16,7 +16,7 @@ async function getAdminEmails(): Promise<string[]> {
       console.error("Failed to query admin emails from DB:", e);
     }
   }
-  return [process.env.ADMIN_EMAIL || process.env.EMAIL_USER || 'ritikakushwaha62@gmail.com'];
+  return [process.env.ADMIN_EMAIL || process.env.EMAIL_USER || 'admin@primecare.in'];
 }
 
 async function sendMailHelper(to: string | string[], subject: string, html: string) {
@@ -26,7 +26,7 @@ async function sendMailHelper(to: string | string[], subject: string, html: stri
   const recipients = Array.isArray(to) ? to.filter(Boolean) : [to].filter(Boolean);
 
   if (recipients.length === 0) {
-    return { success: false, error: 'No recipient provided' };
+    return { success: false, error: 'No recipient email specified' };
   }
 
   // 1. Gmail SMTP Transport
@@ -44,20 +44,20 @@ async function sendMailHelper(to: string | string[], subject: string, html: stri
       });
 
       const info = await transporter.sendMail({
-        from: `"PrimeCare Medical Desk" <${emailUser}>`,
+        from: `"PrimeCare Hospital Desk" <${emailUser}>`,
         to: recipients.join(', '),
         subject,
         html,
       });
 
-      console.log(`[SMTP SUCCESS] Dispatched to: ${recipients.join(', ')} | ID: ${info.messageId}`);
+      console.log(`[SMTP SUCCESS] Sent to: ${recipients.join(', ')} | ID: ${info.messageId}`);
       return { success: true, provider: 'GMAIL_SMTP', messageId: info.messageId };
     } catch (smtpErr: any) {
       console.error("[SMTP ERROR]:", smtpErr);
     }
   }
 
-  // 2. Resend API Transport Fallback
+  // 2. Resend API Transport
   if (resendKey) {
     try {
       const res = await fetch('https://api.resend.com/emails', {
@@ -110,7 +110,7 @@ export async function POST(req: Request) {
 
     const cleanRecipient = (recipientEmail || patientEmail || doctorEmail || '').trim().toLowerCase();
 
-    // 1. APPOINTMENT BOOKING CONFIRMATION (To Patient & Attending Doctor)
+    // 1. APPOINTMENT BOOKING CONFIRMATION
     if (type === 'APPOINTMENT_CONFIRMATION') {
       const targets = [patientEmail, doctorEmail].filter(Boolean).map(e => e.trim().toLowerCase());
       const subject = `🏥 PrimeCare Appointment Confirmed - Token #${tokenNumber || '101'}`;
@@ -135,7 +135,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, details: result });
     }
 
-    // 2. DOCTOR SIGNUP REQUEST (To Hospital Admin)
+    // 2. DOCTOR SIGNUP REQUEST (To Admin)
     if (type === 'NEW_DOCTOR_APPLICATION_ADMIN_ALERT') {
       const adminEmails = adminEmail ? [adminEmail.trim().toLowerCase()] : await getAdminEmails();
       const subject = `⚠️ New Doctor Approval Request: ${doctorName} (${specialisation || 'General Medicine'})`;
