@@ -1,4 +1,4 @@
-﻿import { Pool } from "pg";
+import { Pool } from "pg";
 
 let pool: Pool | null = null;
 
@@ -65,8 +65,14 @@ export async function initDb(): Promise<void> {
         fee VARCHAR(50),
         rating VARCHAR(50),
         bio TEXT,
+        working_hours_start VARCHAR(50) DEFAULT '09:00',
+        working_hours_end VARCHAR(50) DEFAULT '17:00',
+        slot_duration_min INT DEFAULT 30,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+      ALTER TABLE pc_doctors ADD COLUMN IF NOT EXISTS working_hours_start VARCHAR(50) DEFAULT '09:00';
+      ALTER TABLE pc_doctors ADD COLUMN IF NOT EXISTS working_hours_end VARCHAR(50) DEFAULT '17:00';
+      ALTER TABLE pc_doctors ADD COLUMN IF NOT EXISTS slot_duration_min INT DEFAULT 30;
 
       CREATE TABLE IF NOT EXISTS pc_doctor_applications (
         id VARCHAR(255) PRIMARY KEY,

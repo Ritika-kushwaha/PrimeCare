@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import Navbar from '@/components/Navbar';
@@ -467,7 +467,7 @@ export default function AdminDashboardPage() {
         throw new Error('Failed to save leave.');
       }
 
-      // Dispatch automated leave notification email to physician
+      // 1. Dispatch automated leave notification email to physician
       try {
         await fetch('/api/notifications/email', {
           method: 'POST',
@@ -485,8 +485,38 @@ export default function AdminDashboardPage() {
         console.warn('Leave email dispatch notice:', leaveEmailErr);
       }
 
+      // 2. Find and dispatch rescheduling emails to ALL affected patients who booked slots for this doctor on leaveDate
+      try {
+        const cleanDocNameStr = (selectedLeaveDoctor.name || '').toLowerCase().replace(/^dr\.\s*/i, '').trim();
+        const normalizeDateStr = (d?: string) => String(d || '').split('T')[0].trim().toLowerCase();
+        const targetLeaveDateClean = normalizeDateStr(leaveDate);
+
+        const affectedApts = appointments.filter(a => {
+          if (normalizeDateStr(a.date) !== targetLeaveDateClean) return false;
+          if (a.status === 'CANCELLED' || a.status === 'LEAVE_CANCELLED') return false;
+          const aDocClean = (a.doctorName || '').toLowerCase().replace(/^dr\.\s*/i, '').trim();
+          const aDocId = (a.doctorId || '').toLowerCase().trim();
+          const docId = (selectedLeaveDoctor.id || '').toLowerCase().trim();
+          return (aDocId && aDocId === docId) || (aDocClean && (aDocClean.includes(cleanDocNameStr) || cleanDocNameStr.includes(aDocClean)));
+        });
+
+        await fetch('/api/admin/leave-reschedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            doctorName: selectedLeaveDoctor.name,
+            specialisation: selectedLeaveDoctor.specialisation,
+            leaveDate,
+            reason: leaveReason,
+            affectedAppointments: affectedApts
+          })
+        });
+      } catch (reschedErr) {
+        console.warn('Patient reschedule email dispatch notice:', reschedErr);
+      }
+
       await loadData();
-      setActionSuccessMsg('Approved leave recorded for ' + selectedLeaveDoctor.name + ' on ' + leaveDate + '! Email notification dispatched to physician and matching patients shifted.');
+      setActionSuccessMsg('Approved leave recorded for ' + selectedLeaveDoctor.name + ' on ' + leaveDate + '! Email notifications sent to doctor & all affected patients for rescheduling.');
       setTimeout(() => setActionSuccessMsg(''), 6000);
     } catch (err: any) {
       alert(`Failed to record leave: ${err.message}`);

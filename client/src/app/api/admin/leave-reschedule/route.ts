@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/navigation";
+import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
 export async function POST(req: Request) {
@@ -12,8 +12,8 @@ export async function POST(req: Request) {
       affectedAppointments 
     } = data;
 
-    const smtpUser = process.env.SMTP_USER || "ritikakushwaha62@gmail.com";
-    const smtpPass = process.env.SMTP_PASS;
+    const smtpUser = (process.env.EMAIL_USER || process.env.SMTP_USER || "ritikakushwaha62@gmail.com").trim();
+    const smtpPass = (process.env.EMAIL_PASS || process.env.SMTP_PASS || "hwwgoqrbaiwpldzv").replace(/\s+/g, "");
 
     if (!affectedAppointments || affectedAppointments.length === 0) {
       return NextResponse.json({ 
@@ -26,15 +26,27 @@ export async function POST(req: Request) {
     let notifiedCount = 0;
 
     if (smtpPass) {
-      const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: {
-          user: smtpUser,
-          pass: smtpPass.replace(/\s+/g, ""),
-        },
-      });
+      let transporter: nodemailer.Transporter;
+      try {
+        transporter = nodemailer.createTransport({
+          service: "gmail",
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+          auth: { user: smtpUser, pass: smtpPass },
+          tls: { rejectUnauthorized: false },
+          connectionTimeout: 12000,
+        });
+      } catch {
+        transporter = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 587,
+          secure: false,
+          auth: { user: smtpUser, pass: smtpPass },
+          tls: { rejectUnauthorized: false },
+          connectionTimeout: 12000,
+        });
+      }
 
       for (const apt of affectedAppointments) {
         if (!apt.patientEmail || apt.patientEmail.includes("example.com")) continue;

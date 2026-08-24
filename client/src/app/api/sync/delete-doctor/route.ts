@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getDbPool, initDb } from "@/lib/db";
 
 export const dynamic = 'force-dynamic';
@@ -33,11 +33,15 @@ export async function POST(req: Request) {
     // 2. Delete login credentials from pc_users
     if (cleanEmail) {
       await pool.query(`DELETE FROM pc_users WHERE LOWER(email) = $1 AND role = 'DOCTOR'`, [cleanEmail]);
+    } else if (cleanId) {
+      await pool.query(`DELETE FROM pc_users WHERE id = $1 AND role = 'DOCTOR'`, [cleanId]);
     }
 
     // 3. Delete from pc_doctor_applications
     if (cleanEmail) {
       await pool.query(`DELETE FROM pc_doctor_applications WHERE LOWER(email) = $1`, [cleanEmail]);
+    } else if (cleanId) {
+      await pool.query(`DELETE FROM pc_doctor_applications WHERE id = $1`, [cleanId]);
     }
 
     // 4. Delete associated duty leaves

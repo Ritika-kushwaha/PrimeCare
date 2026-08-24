@@ -11,13 +11,17 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Navbar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/Navbar.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ProtectedRoute$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ProtectedRoute.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$context$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/context/AuthContext.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/framer-motion/dist/es/render/components/motion/proxy.mjs [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$stethoscope$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Stethoscope$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/stethoscope.mjs [app-client] (ecmascript) <export default as Stethoscope>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/circle-check.mjs [app-client] (ecmascript) <export default as CheckCircle2>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$alert$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertCircle$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/circle-alert.mjs [app-client] (ecmascript) <export default as AlertCircle>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$mail$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Mail$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/mail.mjs [app-client] (ecmascript) <export default as Mail>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$printer$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Printer$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/printer.mjs [app-client] (ecmascript) <export default as Printer>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$calendar$2d$plus$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CalendarPlus$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/calendar-plus.mjs [app-client] (ecmascript) <export default as CalendarPlus>");
 ;
 var _s = __turbopack_context__.k.signature();
 'use client';
+;
 ;
 ;
 ;
@@ -128,6 +132,7 @@ function BookAppointmentPage() {
     const { user } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$context$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
     const [doctors, setDoctors] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(DEFAULT_DOCTORS);
     const [appointments, setAppointments] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [leaves, setLeaves] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
     const [selectedDept, setSelectedDept] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('ALL');
     const [selectedDoctor, setSelectedDoctor] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(DEFAULT_DOCTORS[0]);
     const todayStr = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
@@ -150,6 +155,7 @@ function BookAppointmentPage() {
     const [bookingLoading, setBookingLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [bookedAppointment, setBookedAppointment] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [emailSending, setEmailSending] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [calendarUrl, setCalendarUrl] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "BookAppointmentPage.useEffect": ()=>{
             const fetchData = {
@@ -171,6 +177,15 @@ function BookAppointmentPage() {
                         const apptData = await apptRes.json();
                         if (apptData.success && Array.isArray(apptData.appointments)) {
                             setAppointments(apptData.appointments);
+                        }
+                    } catch  {}
+                    try {
+                        const leavesRes = await fetch('/api/sync/leaves?includePast=true', {
+                            cache: 'no-store'
+                        });
+                        const leavesData = await leavesRes.json();
+                        if (leavesData.success && Array.isArray(leavesData.leaves)) {
+                            setLeaves(leavesData.leaves);
                         }
                     } catch  {}
                 }
@@ -205,6 +220,75 @@ function BookAppointmentPage() {
         doctors,
         selectedDept
     ]);
+    const cleanDocName = (name)=>(name || '').toLowerCase().replace(/^dr\.\s*/i, '').trim();
+    const normalizeDate = (d)=>{
+        if (!d) return '';
+        return String(d).split('T')[0].trim().toLowerCase();
+    };
+    const isDoctorOnLeave = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "BookAppointmentPage.useMemo[isDoctorOnLeave]": ()=>{
+            if (!selectedDoctor || !selectedDate) return null;
+            const docClean = cleanDocName(selectedDoctor.name);
+            const docId = (selectedDoctor.id || '').toLowerCase().trim();
+            const docEmail = (selectedDoctor.email || '').toLowerCase().trim();
+            const selDateClean = normalizeDate(selectedDate);
+            return leaves.find({
+                "BookAppointmentPage.useMemo[isDoctorOnLeave]": (l)=>{
+                    const leaveDateClean = normalizeDate(l.leaveDate);
+                    if (leaveDateClean !== selDateClean) return false;
+                    const lDocClean = cleanDocName(l.doctorName);
+                    const lDocId = (l.doctorId || '').toLowerCase().trim();
+                    const idMatch = Boolean(lDocId && docId && lDocId === docId);
+                    const emailMatch = Boolean(docEmail && (l.doctorName || '').toLowerCase().includes(docEmail));
+                    const nameMatch = Boolean(lDocClean && docClean && (lDocClean.includes(docClean) || docClean.includes(lDocClean)));
+                    return idMatch || emailMatch || nameMatch;
+                }
+            }["BookAppointmentPage.useMemo[isDoctorOnLeave]"]);
+        }
+    }["BookAppointmentPage.useMemo[isDoctorOnLeave]"], [
+        selectedDoctor,
+        selectedDate,
+        leaves
+    ]);
+    const getSlotAvailability = (slot)=>{
+        if (isDoctorOnLeave) {
+            return {
+                available: false,
+                isLeave: true,
+                reason: `Dr. on Leave (${isDoctorOnLeave.reason || 'Duty Leave'})`
+            };
+        }
+        if (!selectedDoctor || !selectedDate) return {
+            available: true,
+            isLeave: false,
+            reason: 'Available'
+        };
+        const docClean = cleanDocName(selectedDoctor.name);
+        const docId = (selectedDoctor.id || '').toLowerCase().trim();
+        const docEmail = (selectedDoctor.email || '').toLowerCase().trim();
+        const selDateClean = normalizeDate(selectedDate);
+        const slotClean = (slot || '').trim().toLowerCase();
+        const isBooked = appointments.some((a)=>{
+            if (normalizeDate(a.date) !== selDateClean || (a.timeSlot || '').trim().toLowerCase() !== slotClean) return false;
+            if (a.status === 'CANCELLED' || a.status === 'LEAVE_CANCELLED') return false;
+            const aDocClean = cleanDocName(a.doctorName);
+            const aDocEmail = (a.doctorEmail || '').toLowerCase().trim();
+            const aDocId = (a.doctorId || '').toLowerCase().trim();
+            return aDocId && aDocId === docId || aDocEmail && aDocEmail === docEmail || aDocClean && docClean && (aDocClean.includes(docClean) || docClean.includes(aDocClean));
+        });
+        if (isBooked) {
+            return {
+                available: false,
+                isLeave: false,
+                reason: 'Slot Booked'
+            };
+        }
+        return {
+            available: true,
+            isLeave: false,
+            reason: 'Available'
+        };
+    };
     const triggerInstantEmail = async (apt)=>{
         if (!apt) return;
         setEmailSending(true);
@@ -247,6 +331,15 @@ function BookAppointmentPage() {
             alert('Please select a doctor.');
             return;
         }
+        if (isDoctorOnLeave) {
+            alert(`Dr. ${selectedDoctor.name} is on authorized duty leave on ${selectedDate} (${isDoctorOnLeave.reason || 'Scheduled Leave'}). Please select another date or specialist.`);
+            return;
+        }
+        const slotCheck = getSlotAvailability(selectedSlot);
+        if (!slotCheck.available) {
+            alert(`The selected time slot (${selectedSlot}) is not available (${slotCheck.reason}). Please select another slot.`);
+            return;
+        }
         setBookingLoading(true);
         const cleanEmail = (patientEmail || user?.email || 'ritikakushwaha62@gmail.com').trim().toLowerCase();
         const cleanName = `${patientFirstName} ${patientLastName}`.trim() || 'Patient Member';
@@ -283,7 +376,7 @@ function BookAppointmentPage() {
                     appointments: updated
                 })
             });
-            // Dispatch automated booking confirmation email
+            // Dispatch automated booking confirmation email to BOTH patient AND doctor
             try {
                 await fetch('/api/notifications/email', {
                     method: 'POST',
@@ -307,6 +400,53 @@ function BookAppointmentPage() {
             } catch (mailErr) {
                 console.warn('Auto mail error:', mailErr);
             }
+            // Dispatch iCalendar email invite to patient email
+            try {
+                await fetch('/api/appointments/book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tokenNumber: newToken,
+                        doctorName: selectedDoctor.name,
+                        department: selectedDoctor.specialisation,
+                        hospital: selectedDoctor.hospital || 'PrimeCare Multispecialty Hospital',
+                        date: selectedDate,
+                        timeSlot: selectedSlot,
+                        patientName: cleanName,
+                        patientEmail: cleanEmail,
+                        fee: selectedDoctor.fee
+                    })
+                });
+            } catch (icsMailErr) {
+                console.warn('ICS mail error:', icsMailErr);
+            }
+            // Generate Google Calendar deep-link for patient
+            try {
+                const calRes = await fetch('/api/calendar/add-event', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        patientName: cleanName,
+                        doctorName: selectedDoctor.name,
+                        specialisation: selectedDoctor.specialisation,
+                        date: selectedDate,
+                        timeSlot: selectedSlot,
+                        tokenNumber: newToken,
+                        fee: selectedDoctor.fee,
+                        hospital: selectedDoctor.hospital || 'PrimeCare Multispecialty Hospital'
+                    })
+                });
+                const calData = await calRes.json();
+                if (calData.success && calData.calendarUrl) {
+                    setCalendarUrl(calData.calendarUrl);
+                }
+            } catch (calErr) {
+                console.warn('Calendar deep-link generation error:', calErr);
+            }
             setBookedAppointment(newAppointment);
         } catch (err) {
             alert(`Booking failed: ${err.message}`);
@@ -325,7 +465,7 @@ function BookAppointmentPage() {
             children: [
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Navbar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                     fileName: "[project]/src/app/patient/book/page.tsx",
-                    lineNumber: 229,
+                    lineNumber: 365,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
@@ -346,7 +486,7 @@ function BookAppointmentPage() {
                                                             className: "w-6 h-6 text-emerald-400"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 238,
+                                                            lineNumber: 374,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -356,13 +496,13 @@ function BookAppointmentPage() {
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 239,
+                                                            lineNumber: 375,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 237,
+                                                    lineNumber: 373,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -374,7 +514,7 @@ function BookAppointmentPage() {
                                                             children: bookedAppointment.patientName
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 242,
+                                                            lineNumber: 378,
                                                             columnNumber: 35
                                                         }, this),
                                                         " with ",
@@ -383,7 +523,7 @@ function BookAppointmentPage() {
                                                             children: bookedAppointment.doctorName
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 242,
+                                                            lineNumber: 378,
                                                             columnNumber: 112
                                                         }, this),
                                                         " on ",
@@ -394,13 +534,13 @@ function BookAppointmentPage() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 241,
+                                                    lineNumber: 377,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 236,
+                                            lineNumber: 372,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -416,7 +556,7 @@ function BookAppointmentPage() {
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 253,
+                                                            lineNumber: 389,
                                                             columnNumber: 21
                                                         }, this),
                                                         " ",
@@ -424,8 +564,28 @@ function BookAppointmentPage() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 247,
+                                                    lineNumber: 383,
                                                     columnNumber: 19
+                                                }, this),
+                                                calendarUrl && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
+                                                    href: calendarUrl,
+                                                    target: "_blank",
+                                                    rel: "noopener noreferrer",
+                                                    className: "px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-lg shadow-blue-500/20",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$calendar$2d$plus$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CalendarPlus$3e$__["CalendarPlus"], {
+                                                            className: "w-4 h-4"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                                            lineNumber: 398,
+                                                            columnNumber: 23
+                                                        }, this),
+                                                        " Add to Google Calendar"
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                    lineNumber: 392,
+                                                    columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                     type: "button",
@@ -436,26 +596,26 @@ function BookAppointmentPage() {
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 260,
+                                                            lineNumber: 406,
                                                             columnNumber: 21
                                                         }, this),
                                                         " Print Slip"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 255,
+                                                    lineNumber: 401,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 246,
+                                            lineNumber: 382,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                    lineNumber: 235,
+                                    lineNumber: 371,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -469,7 +629,7 @@ function BookAppointmentPage() {
                                                     children: "Consulting Physician"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 267,
+                                                    lineNumber: 413,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
@@ -477,7 +637,7 @@ function BookAppointmentPage() {
                                                     children: bookedAppointment.doctorName
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 268,
+                                                    lineNumber: 414,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -485,13 +645,13 @@ function BookAppointmentPage() {
                                                     children: bookedAppointment.department
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 269,
+                                                    lineNumber: 415,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 266,
+                                            lineNumber: 412,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -502,7 +662,7 @@ function BookAppointmentPage() {
                                                     children: "Date & Time Slot"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 272,
+                                                    lineNumber: 418,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
@@ -510,7 +670,7 @@ function BookAppointmentPage() {
                                                     children: bookedAppointment.date
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 273,
+                                                    lineNumber: 419,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -518,13 +678,13 @@ function BookAppointmentPage() {
                                                     children: bookedAppointment.timeSlot
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 274,
+                                                    lineNumber: 420,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 271,
+                                            lineNumber: 417,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -535,7 +695,7 @@ function BookAppointmentPage() {
                                                     children: "Patient Details"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 277,
+                                                    lineNumber: 423,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
@@ -543,7 +703,7 @@ function BookAppointmentPage() {
                                                     children: bookedAppointment.patientName
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 278,
+                                                    lineNumber: 424,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -551,13 +711,13 @@ function BookAppointmentPage() {
                                                     children: bookedAppointment.patientEmail
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 279,
+                                                    lineNumber: 425,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 276,
+                                            lineNumber: 422,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -568,7 +728,7 @@ function BookAppointmentPage() {
                                                     children: "Consultation Fee"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 282,
+                                                    lineNumber: 428,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
@@ -576,7 +736,7 @@ function BookAppointmentPage() {
                                                     children: bookedAppointment.fee
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 283,
+                                                    lineNumber: 429,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -584,25 +744,25 @@ function BookAppointmentPage() {
                                                     children: "PrimeCare Hospital"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 284,
+                                                    lineNumber: 430,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 281,
+                                            lineNumber: 427,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                    lineNumber: 265,
+                                    lineNumber: 411,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/patient/book/page.tsx",
-                            lineNumber: 234,
+                            lineNumber: 370,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -620,7 +780,7 @@ function BookAppointmentPage() {
                                                         className: "w-4 h-4 text-emerald-400"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 295,
+                                                        lineNumber: 441,
                                                         columnNumber: 19
                                                     }, this),
                                                     " Select Specialist (",
@@ -629,12 +789,12 @@ function BookAppointmentPage() {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                lineNumber: 294,
+                                                lineNumber: 440,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 293,
+                                            lineNumber: 439,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -646,18 +806,27 @@ function BookAppointmentPage() {
                                                     children: dept
                                                 }, dept, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 301,
+                                                    lineNumber: 447,
                                                     columnNumber: 19
                                                 }, this))
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 299,
+                                            lineNumber: 445,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "space-y-3 max-h-[580px] overflow-y-auto pr-1",
                                             children: filteredDoctors.map((doc)=>{
                                                 const isSelected = selectedDoctor?.id === doc.id;
+                                                const docOnLeave = leaves.some((l)=>{
+                                                    if (normalizeDate(l.leaveDate) !== normalizeDate(selectedDate)) return false;
+                                                    const lDocClean = cleanDocName(l.doctorName);
+                                                    const docClean = cleanDocName(doc.name);
+                                                    const lDocId = (l.doctorId || '').toLowerCase().trim();
+                                                    const docId = (doc.id || '').toLowerCase().trim();
+                                                    const docEmail = (doc.email || '').toLowerCase().trim();
+                                                    return lDocId && lDocId === docId || docEmail && (l.doctorName || '').toLowerCase().includes(docEmail) || lDocClean && docClean && (lDocClean.includes(docClean) || docClean.includes(lDocClean));
+                                                });
                                                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                     onClick: ()=>setSelectedDoctor(doc),
                                                     className: `p-5 rounded-3xl border cursor-pointer transition flex flex-col justify-between space-y-3 ${isSelected ? 'bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xl' : 'bg-slate-900/70 border-slate-800 hover:border-slate-700'}`,
@@ -669,12 +838,33 @@ function BookAppointmentPage() {
                                                                     children: [
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                             children: [
-                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                                                                                    className: "font-bold text-base text-white",
-                                                                                    children: doc.name
-                                                                                }, void 0, false, {
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                    className: "flex items-center gap-2",
+                                                                                    children: [
+                                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                                                            className: "font-bold text-base text-white",
+                                                                                            children: doc.name
+                                                                                        }, void 0, false, {
+                                                                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                                            lineNumber: 490,
+                                                                                            columnNumber: 31
+                                                                                        }, this),
+                                                                                        docOnLeave && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                            className: "text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/40 text-red-400",
+                                                                                            children: [
+                                                                                                "On Leave (",
+                                                                                                selectedDate,
+                                                                                                ")"
+                                                                                            ]
+                                                                                        }, void 0, true, {
+                                                                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                                            lineNumber: 492,
+                                                                                            columnNumber: 33
+                                                                                        }, this)
+                                                                                    ]
+                                                                                }, void 0, true, {
                                                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                                    lineNumber: 332,
+                                                                                    lineNumber: 489,
                                                                                     columnNumber: 29
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -682,13 +872,13 @@ function BookAppointmentPage() {
                                                                                     children: doc.specialisation
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                                    lineNumber: 333,
+                                                                                    lineNumber: 497,
                                                                                     columnNumber: 29
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                            lineNumber: 331,
+                                                                            lineNumber: 488,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -696,13 +886,13 @@ function BookAppointmentPage() {
                                                                             children: doc.fee
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                            lineNumber: 335,
+                                                                            lineNumber: 499,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                    lineNumber: 330,
+                                                                    lineNumber: 487,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -714,13 +904,13 @@ function BookAppointmentPage() {
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                    lineNumber: 339,
+                                                                    lineNumber: 503,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 329,
+                                                            lineNumber: 486,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -732,25 +922,25 @@ function BookAppointmentPage() {
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 341,
+                                                            lineNumber: 505,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, doc.id, true, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 320,
+                                                    lineNumber: 477,
                                                     columnNumber: 21
                                                 }, this);
                                             })
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 316,
+                                            lineNumber: 462,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                    lineNumber: 292,
+                                    lineNumber: 438,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -767,7 +957,7 @@ function BookAppointmentPage() {
                                                         children: "Appointment Details"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 352,
+                                                        lineNumber: 516,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -775,7 +965,7 @@ function BookAppointmentPage() {
                                                         children: selectedDoctor?.name || 'Select a Physician'
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 353,
+                                                        lineNumber: 517,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -787,14 +977,68 @@ function BookAppointmentPage() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 354,
+                                                        lineNumber: 518,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                lineNumber: 351,
+                                                lineNumber: 515,
                                                 columnNumber: 17
+                                            }, this),
+                                            isDoctorOnLeave && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].div, {
+                                                initial: {
+                                                    opacity: 0,
+                                                    scale: 0.98
+                                                },
+                                                animate: {
+                                                    opacity: 1,
+                                                    scale: 1
+                                                },
+                                                className: "p-4 bg-red-950/50 border border-red-500/50 text-red-200 text-xs rounded-2xl flex items-center gap-3",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$alert$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertCircle$3e$__["AlertCircle"], {
+                                                        className: "w-5 h-5 text-red-400 flex-shrink-0"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 527,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                                className: "block font-bold text-sm text-red-300",
+                                                                children: "Doctor Unavailable (On Duty Leave)"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                lineNumber: 529,
+                                                                columnNumber: 23
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                children: [
+                                                                    selectedDoctor?.name,
+                                                                    " is on authorized leave on ",
+                                                                    selectedDate,
+                                                                    " (",
+                                                                    isDoctorOnLeave.reason || 'Scheduled Leave',
+                                                                    "). All time slots are unavailable."
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                lineNumber: 530,
+                                                                columnNumber: 23
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 528,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 522,
+                                                columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "space-y-4 text-xs",
@@ -809,7 +1053,7 @@ function BookAppointmentPage() {
                                                                         children: "First Name"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 360,
+                                                                        lineNumber: 538,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -820,13 +1064,13 @@ function BookAppointmentPage() {
                                                                         className: "w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 361,
+                                                                        lineNumber: 539,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 359,
+                                                                lineNumber: 537,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -836,7 +1080,7 @@ function BookAppointmentPage() {
                                                                         children: "Last Name"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 370,
+                                                                        lineNumber: 548,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -847,19 +1091,19 @@ function BookAppointmentPage() {
                                                                         className: "w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 371,
+                                                                        lineNumber: 549,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 369,
+                                                                lineNumber: 547,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 358,
+                                                        lineNumber: 536,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -872,7 +1116,7 @@ function BookAppointmentPage() {
                                                                         children: "Age"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 383,
+                                                                        lineNumber: 561,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -883,13 +1127,13 @@ function BookAppointmentPage() {
                                                                         className: "w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 384,
+                                                                        lineNumber: 562,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 382,
+                                                                lineNumber: 560,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -899,7 +1143,7 @@ function BookAppointmentPage() {
                                                                         children: "Gender"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 393,
+                                                                        lineNumber: 571,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -912,7 +1156,7 @@ function BookAppointmentPage() {
                                                                                 children: "Female"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                                lineNumber: 399,
+                                                                                lineNumber: 577,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -920,7 +1164,7 @@ function BookAppointmentPage() {
                                                                                 children: "Male"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                                lineNumber: 400,
+                                                                                lineNumber: 578,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -928,19 +1172,19 @@ function BookAppointmentPage() {
                                                                                 children: "Other"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                                lineNumber: 401,
+                                                                                lineNumber: 579,
                                                                                 columnNumber: 25
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 394,
+                                                                        lineNumber: 572,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 392,
+                                                                lineNumber: 570,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -950,7 +1194,7 @@ function BookAppointmentPage() {
                                                                         children: "Email Address (For Confirmation)"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 405,
+                                                                        lineNumber: 583,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -961,19 +1205,19 @@ function BookAppointmentPage() {
                                                                         className: "w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 406,
+                                                                        lineNumber: 584,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 404,
+                                                                lineNumber: 582,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 381,
+                                                        lineNumber: 559,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -983,7 +1227,7 @@ function BookAppointmentPage() {
                                                                 children: "Select Consultation Date"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 417,
+                                                                lineNumber: 595,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -994,13 +1238,13 @@ function BookAppointmentPage() {
                                                                 className: "w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 [color-scheme:dark]"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 418,
+                                                                lineNumber: 596,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 416,
+                                                        lineNumber: 594,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1010,13 +1254,44 @@ function BookAppointmentPage() {
                                                                 children: "Available Consultation Time Slots"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 428,
+                                                                lineNumber: 606,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                 className: "grid grid-cols-3 sm:grid-cols-4 gap-2",
                                                                 children: TIME_SLOTS.map((slot)=>{
                                                                     const isSelected = selectedSlot === slot;
+                                                                    const { available, isLeave, reason } = getSlotAvailability(slot);
+                                                                    if (!available) {
+                                                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                            type: "button",
+                                                                            disabled: true,
+                                                                            className: `py-2 px-2 rounded-xl font-bold border text-center transition cursor-not-allowed opacity-60 ${isLeave ? 'bg-red-950/30 text-red-400 border-red-500/40' : 'bg-slate-900/80 text-slate-500 border-slate-800 line-through'}`,
+                                                                            title: reason,
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                    className: "text-[11px]",
+                                                                                    children: slot
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                                    lineNumber: 625,
+                                                                                    columnNumber: 31
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                    className: "text-[9px] font-semibold uppercase mt-0.5",
+                                                                                    children: isLeave ? 'On Leave' : 'Booked'
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                                    lineNumber: 626,
+                                                                                    columnNumber: 31
+                                                                                }, this)
+                                                                            ]
+                                                                        }, slot, true, {
+                                                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                            lineNumber: 614,
+                                                                            columnNumber: 29
+                                                                        }, this);
+                                                                    }
                                                                     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                                         type: "button",
                                                                         onClick: ()=>setSelectedSlot(slot),
@@ -1024,19 +1299,19 @@ function BookAppointmentPage() {
                                                                         children: slot
                                                                     }, slot, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 433,
+                                                                        lineNumber: 632,
                                                                         columnNumber: 27
                                                                     }, this);
                                                                 })
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 429,
+                                                                lineNumber: 607,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 427,
+                                                        lineNumber: 605,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1046,7 +1321,7 @@ function BookAppointmentPage() {
                                                                 children: "Chief Medical Complaint / Symptoms"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 451,
+                                                                lineNumber: 650,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -1057,67 +1332,67 @@ function BookAppointmentPage() {
                                                                 className: "w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 452,
+                                                                lineNumber: 651,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 450,
+                                                        lineNumber: 649,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                lineNumber: 357,
+                                                lineNumber: 535,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                 type: "submit",
-                                                disabled: bookingLoading,
-                                                className: "w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-sm transition flex items-center justify-center gap-2 disabled:opacity-50",
-                                                children: bookingLoading ? 'Confirming Appointment...' : 'Confirm Appointment & Send Email'
+                                                disabled: bookingLoading || Boolean(isDoctorOnLeave) || !getSlotAvailability(selectedSlot).available,
+                                                className: "w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-sm transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed",
+                                                children: bookingLoading ? 'Confirming Appointment...' : isDoctorOnLeave ? `Dr. on Leave on ${selectedDate}` : !getSlotAvailability(selectedSlot).available ? 'Selected Slot Not Available' : 'Confirm Appointment & Send Email'
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                lineNumber: 462,
+                                                lineNumber: 661,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                        lineNumber: 350,
+                                        lineNumber: 514,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                    lineNumber: 349,
+                                    lineNumber: 513,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/patient/book/page.tsx",
-                            lineNumber: 290,
+                            lineNumber: 436,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/patient/book/page.tsx",
-                    lineNumber: 231,
+                    lineNumber: 367,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/patient/book/page.tsx",
-            lineNumber: 228,
+            lineNumber: 364,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/app/patient/book/page.tsx",
-        lineNumber: 227,
+        lineNumber: 363,
         columnNumber: 5
     }, this);
 }
-_s(BookAppointmentPage, "vUSA++xbTOoJiuaNcayL7awc6fY=", false, function() {
+_s(BookAppointmentPage, "6rIq2eNM2BQXxgvL87pKs4HVAF8=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$context$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"]
     ];

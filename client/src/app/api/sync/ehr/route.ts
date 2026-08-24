@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/navigation";
+import { NextResponse } from "next/server";
 import { getDbPool, initDb } from "@/lib/db";
 
 export const dynamic = 'force-dynamic';

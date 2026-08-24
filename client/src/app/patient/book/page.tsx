@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import Navbar from '@/components/Navbar';
@@ -9,7 +9,7 @@ import {
   Calendar, Clock, Stethoscope, User, 
   CheckCircle2, AlertCircle, ArrowRight, ShieldCheck, 
   Search, Building2, Award, CalendarX2, Ban, Users,
-  Mail, Printer
+  Mail, Printer, CalendarPlus
 } from 'lucide-react';
 
 interface DoctorProfile {
@@ -43,6 +43,15 @@ interface AppointmentItem {
   status?: string;
 }
 
+interface LeaveRecord {
+  id: string;
+  doctorId?: string;
+  doctorName?: string;
+  specialisation?: string;
+  leaveDate: string;
+  reason?: string;
+}
+
 const DEFAULT_DOCTORS: DoctorProfile[] = [
   { id: 'doc-cardio-01', email: 'ritikakushwaha62@gmail.com', name: 'Dr. Ritika Kushwaha', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, diagnostic angiographies, coronary interventions, and comprehensive lipid management.' },
   { id: 'doc-cardio-02', email: 'aarav.sharma@primecare.in', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS)', experience: '12 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease.' },
@@ -63,6 +72,7 @@ export default function BookAppointmentPage() {
   const { user } = useAuth();
   const [doctors, setDoctors] = useState<DoctorProfile[]>(DEFAULT_DOCTORS);
   const [appointments, setAppointments] = useState<AppointmentItem[]>([]);
+  const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [selectedDept, setSelectedDept] = useState('ALL');
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorProfile | null>(DEFAULT_DOCTORS[0]);
   
@@ -80,6 +90,7 @@ export default function BookAppointmentPage() {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookedAppointment, setBookedAppointment] = useState<AppointmentItem | null>(null);
   const [emailSending, setEmailSending] = useState(false);
+  const [calendarUrl, setCalendarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,6 +110,14 @@ export default function BookAppointmentPage() {
           setAppointments(apptData.appointments);
         }
       } catch {}
+
+      try {
+        const leavesRes = await fetch('/api/sync/leaves?includePast=true', { cache: 'no-store' });
+        const leavesData = await leavesRes.json();
+        if (leavesData.success && Array.isArray(leavesData.leaves)) {
+          setLeaves(leavesData.leaves);
+        }
+      } catch {}
     };
 
     fetchData();
@@ -114,6 +133,67 @@ export default function BookAppointmentPage() {
     if (selectedDept === 'ALL') return doctors;
     return doctors.filter(d => d.specialisation.toLowerCase() === selectedDept.toLowerCase());
   }, [doctors, selectedDept]);
+
+  const cleanDocName = (name?: string) => (name || '').toLowerCase().replace(/^dr\.\s*/i, '').trim();
+
+  const normalizeDate = (d?: string) => {
+    if (!d) return '';
+    return String(d).split('T')[0].trim().toLowerCase();
+  };
+
+  const isDoctorOnLeave = useMemo(() => {
+    if (!selectedDoctor || !selectedDate) return null;
+    const docClean = cleanDocName(selectedDoctor.name);
+    const docId = (selectedDoctor.id || '').toLowerCase().trim();
+    const docEmail = (selectedDoctor.email || '').toLowerCase().trim();
+    const selDateClean = normalizeDate(selectedDate);
+
+    return leaves.find(l => {
+      const leaveDateClean = normalizeDate(l.leaveDate);
+      if (leaveDateClean !== selDateClean) return false;
+
+      const lDocClean = cleanDocName(l.doctorName);
+      const lDocId = (l.doctorId || '').toLowerCase().trim();
+
+      const idMatch = Boolean(lDocId && docId && lDocId === docId);
+      const emailMatch = Boolean(docEmail && (l.doctorName || '').toLowerCase().includes(docEmail));
+      const nameMatch = Boolean(lDocClean && docClean && (lDocClean.includes(docClean) || docClean.includes(lDocClean)));
+
+      return idMatch || emailMatch || nameMatch;
+    });
+  }, [selectedDoctor, selectedDate, leaves]);
+
+  const getSlotAvailability = (slot: string) => {
+    if (isDoctorOnLeave) {
+      return { available: false, isLeave: true, reason: `Dr. on Leave (${isDoctorOnLeave.reason || 'Duty Leave'})` };
+    }
+    if (!selectedDoctor || !selectedDate) return { available: true, isLeave: false, reason: 'Available' };
+
+    const docClean = cleanDocName(selectedDoctor.name);
+    const docId = (selectedDoctor.id || '').toLowerCase().trim();
+    const docEmail = (selectedDoctor.email || '').toLowerCase().trim();
+    const selDateClean = normalizeDate(selectedDate);
+    const slotClean = (slot || '').trim().toLowerCase();
+
+    const isBooked = appointments.some(a => {
+      if (normalizeDate(a.date) !== selDateClean || (a.timeSlot || '').trim().toLowerCase() !== slotClean) return false;
+      if (a.status === 'CANCELLED' || a.status === 'LEAVE_CANCELLED') return false;
+
+      const aDocClean = cleanDocName(a.doctorName);
+      const aDocEmail = (a.doctorEmail || '').toLowerCase().trim();
+      const aDocId = (a.doctorId || '').toLowerCase().trim();
+
+      return (aDocId && aDocId === docId) ||
+             (aDocEmail && aDocEmail === docEmail) ||
+             (aDocClean && docClean && (aDocClean.includes(docClean) || docClean.includes(aDocClean)));
+    });
+
+    if (isBooked) {
+      return { available: false, isLeave: false, reason: 'Slot Booked' };
+    }
+
+    return { available: true, isLeave: false, reason: 'Available' };
+  };
 
   const triggerInstantEmail = async (apt: AppointmentItem) => {
     if (!apt) return;
@@ -159,6 +239,17 @@ export default function BookAppointmentPage() {
       return;
     }
 
+    if (isDoctorOnLeave) {
+      alert(`Dr. ${selectedDoctor.name} is on authorized duty leave on ${selectedDate} (${isDoctorOnLeave.reason || 'Scheduled Leave'}). Please select another date or specialist.`);
+      return;
+    }
+
+    const slotCheck = getSlotAvailability(selectedSlot);
+    if (!slotCheck.available) {
+      alert(`The selected time slot (${selectedSlot}) is not available (${slotCheck.reason}). Please select another slot.`);
+      return;
+    }
+
     setBookingLoading(true);
     const cleanEmail = (patientEmail || user?.email || 'ritikakushwaha62@gmail.com').trim().toLowerCase();
     const cleanName = `${patientFirstName} ${patientLastName}`.trim() || 'Patient Member';
@@ -192,7 +283,7 @@ export default function BookAppointmentPage() {
         body: JSON.stringify({ appointments: updated })
       });
 
-      // Dispatch automated booking confirmation email
+      // Dispatch automated booking confirmation email to BOTH patient AND doctor
       try {
         await fetch('/api/notifications/email', {
           method: 'POST',
@@ -213,6 +304,51 @@ export default function BookAppointmentPage() {
         });
       } catch (mailErr) {
         console.warn('Auto mail error:', mailErr);
+      }
+
+      // Dispatch iCalendar email invite to patient email
+      try {
+        await fetch('/api/appointments/book', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tokenNumber: newToken,
+            doctorName: selectedDoctor.name,
+            department: selectedDoctor.specialisation,
+            hospital: selectedDoctor.hospital || 'PrimeCare Multispecialty Hospital',
+            date: selectedDate,
+            timeSlot: selectedSlot,
+            patientName: cleanName,
+            patientEmail: cleanEmail,
+            fee: selectedDoctor.fee
+          })
+        });
+      } catch (icsMailErr) {
+        console.warn('ICS mail error:', icsMailErr);
+      }
+
+      // Generate Google Calendar deep-link for patient
+      try {
+        const calRes = await fetch('/api/calendar/add-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patientName: cleanName,
+            doctorName: selectedDoctor.name,
+            specialisation: selectedDoctor.specialisation,
+            date: selectedDate,
+            timeSlot: selectedSlot,
+            tokenNumber: newToken,
+            fee: selectedDoctor.fee,
+            hospital: selectedDoctor.hospital || 'PrimeCare Multispecialty Hospital',
+          })
+        });
+        const calData = await calRes.json();
+        if (calData.success && calData.calendarUrl) {
+          setCalendarUrl(calData.calendarUrl);
+        }
+      } catch (calErr) {
+        console.warn('Calendar deep-link generation error:', calErr);
       }
 
       setBookedAppointment(newAppointment);
@@ -252,6 +388,16 @@ export default function BookAppointmentPage() {
                   >
                     <Mail className="w-4 h-4" /> {emailSending ? 'Sending Email...' : 'Send Confirmation / Reminder Email'}
                   </button>
+                  {calendarUrl && (
+                    <a
+                      href={calendarUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-lg shadow-blue-500/20"
+                    >
+                      <CalendarPlus className="w-4 h-4" /> Add to Google Calendar
+                    </a>
+                  )}
                   <button
                     type="button"
                     onClick={() => window.print()}
@@ -316,6 +462,17 @@ export default function BookAppointmentPage() {
               <div className="space-y-3 max-h-[580px] overflow-y-auto pr-1">
                 {filteredDoctors.map(doc => {
                   const isSelected = selectedDoctor?.id === doc.id;
+                  const docOnLeave = leaves.some(l => {
+                    if (normalizeDate(l.leaveDate) !== normalizeDate(selectedDate)) return false;
+                    const lDocClean = cleanDocName(l.doctorName);
+                    const docClean = cleanDocName(doc.name);
+                    const lDocId = (l.doctorId || '').toLowerCase().trim();
+                    const docId = (doc.id || '').toLowerCase().trim();
+                    const docEmail = (doc.email || '').toLowerCase().trim();
+                    return (lDocId && lDocId === docId) ||
+                           (docEmail && (l.doctorName || '').toLowerCase().includes(docEmail)) ||
+                           (lDocClean && docClean && (lDocClean.includes(docClean) || docClean.includes(lDocClean)));
+                  });
                   return (
                     <div
                       key={doc.id}
@@ -329,7 +486,14 @@ export default function BookAppointmentPage() {
                       <div>
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="font-bold text-base text-white">{doc.name}</h3>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-base text-white">{doc.name}</h3>
+                              {docOnLeave && (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/40 text-red-400">
+                                  On Leave ({selectedDate})
+                                </span>
+                              )}
+                            </div>
                             <span className="text-xs font-semibold text-emerald-400">{doc.specialisation}</span>
                           </div>
                           <span className="text-xs font-mono font-bold text-emerald-300 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
@@ -353,6 +517,20 @@ export default function BookAppointmentPage() {
                   <h3 className="text-2xl font-extrabold text-white mt-0.5">{selectedDoctor?.name || 'Select a Physician'}</h3>
                   <p className="text-xs text-slate-400">{selectedDoctor?.specialisation} • {selectedDoctor?.hospital}</p>
                 </div>
+
+                {isDoctorOnLeave && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-4 bg-red-950/50 border border-red-500/50 text-red-200 text-xs rounded-2xl flex items-center gap-3"
+                  >
+                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                    <div>
+                      <strong className="block font-bold text-sm text-red-300">Doctor Unavailable (On Duty Leave)</strong>
+                      <span>{selectedDoctor?.name} is on authorized leave on {selectedDate} ({isDoctorOnLeave.reason || 'Scheduled Leave'}). All time slots are unavailable.</span>
+                    </div>
+                  </motion.div>
+                )}
 
                 <div className="space-y-4 text-xs">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -429,6 +607,27 @@ export default function BookAppointmentPage() {
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                       {TIME_SLOTS.map(slot => {
                         const isSelected = selectedSlot === slot;
+                        const { available, isLeave, reason } = getSlotAvailability(slot);
+
+                        if (!available) {
+                          return (
+                            <button
+                              key={slot}
+                              type="button"
+                              disabled
+                              className={`py-2 px-2 rounded-xl font-bold border text-center transition cursor-not-allowed opacity-60 ${
+                                isLeave
+                                  ? 'bg-red-950/30 text-red-400 border-red-500/40'
+                                  : 'bg-slate-900/80 text-slate-500 border-slate-800 line-through'
+                              }`}
+                              title={reason}
+                            >
+                              <div className="text-[11px]">{slot}</div>
+                              <div className="text-[9px] font-semibold uppercase mt-0.5">{isLeave ? 'On Leave' : 'Booked'}</div>
+                            </button>
+                          );
+                        }
+
                         return (
                           <button
                             key={slot}
@@ -461,10 +660,16 @@ export default function BookAppointmentPage() {
 
                 <button
                   type="submit"
-                  disabled={bookingLoading}
-                  className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-sm transition flex items-center justify-center gap-2 disabled:opacity-50"
+                  disabled={bookingLoading || Boolean(isDoctorOnLeave) || !getSlotAvailability(selectedSlot).available}
+                  className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-sm transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  {bookingLoading ? 'Confirming Appointment...' : 'Confirm Appointment & Send Email'}
+                  {bookingLoading
+                    ? 'Confirming Appointment...'
+                    : isDoctorOnLeave
+                    ? `Dr. on Leave on ${selectedDate}`
+                    : !getSlotAvailability(selectedSlot).available
+                    ? 'Selected Slot Not Available'
+                    : 'Confirm Appointment & Send Email'}
                 </button>
               </form>
             </div>

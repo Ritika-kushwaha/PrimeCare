@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/navigation";
+import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
 export async function POST(req: Request) {
@@ -69,29 +69,68 @@ export async function POST(req: Request) {
       "END:VCALENDAR",
     ].join("\r\n");
 
-    const smtpUser = process.env.SMTP_USER || "ritikakushwaha62@gmail.com";
-    const smtpPass = process.env.SMTP_PASS;
+    const smtpUser = (process.env.EMAIL_USER || process.env.SMTP_USER || "ritikakushwaha62@gmail.com").trim();
+    const smtpPass = (process.env.EMAIL_PASS || process.env.SMTP_PASS || "hwwgoqrbaiwpldzv").replace(/\s+/g, "");
+
+    let emailSent = false;
+    let mailError = null;
 
     if (smtpPass) {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: smtpUser,
-          pass: smtpPass,
-        },
-      });
+      try {
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+          auth: {
+            user: smtpUser,
+            pass: smtpPass,
+          },
+          tls: { rejectUnauthorized: false },
+          connectionTimeout: 12000,
+        });
 
-      await transporter.sendMail({
-        from: `"PrimeCare Hospital" <${smtpUser}>`,
-        to: patientEmail,
-        subject: `📅 Appointment Confirmed: ${doctorName} (Token ${tokenNumber})`,
-        text: `Hello ${patientName},\n\nYour clinical consultation with ${doctorName} (${department}) is confirmed for ${date} at ${timeSlot}.\n\nQueue Token: ${tokenNumber}\nHospital: ${hospital}\nConsultation Fee: ${fee}\n\nThis calendar invite has been automatically linked to your schedule.`,
-        icalEvent: {
-          filename: "primecare-appointment.ics",
-          method: "REQUEST",
-          content: icsContent,
-        },
-      });
+        await transporter.sendMail({
+          from: `"PrimeCare Hospital" <${smtpUser}>`,
+          to: patientEmail,
+          subject: `📅 Appointment Confirmed: ${doctorName} (Token ${tokenNumber})`,
+          text: `Hello ${patientName},\n\nYour clinical consultation with ${doctorName} (${department}) is confirmed for ${date} at ${timeSlot}.\n\nQueue Token: ${tokenNumber}\nHospital: ${hospital}\nConsultation Fee: ${fee}\n\nThis calendar invite has been automatically linked to your schedule.`,
+          icalEvent: {
+            filename: "primecare-appointment.ics",
+            method: "REQUEST",
+            content: icsContent,
+          },
+        });
+        emailSent = true;
+      } catch (err465: any) {
+        console.warn(`[Appt Book Mail 465 Warning]: ${err465.message}. Retrying port 587...`);
+        try {
+          const transporter587 = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false,
+            auth: { user: smtpUser, pass: smtpPass },
+            tls: { rejectUnauthorized: false },
+            connectionTimeout: 12000,
+          });
+
+          await transporter587.sendMail({
+            from: `"PrimeCare Hospital" <${smtpUser}>`,
+            to: patientEmail,
+            subject: `📅 Appointment Confirmed: ${doctorName} (Token ${tokenNumber})`,
+            text: `Hello ${patientName},\n\nYour clinical consultation with ${doctorName} (${department}) is confirmed for ${date} at ${timeSlot}.\n\nQueue Token: ${tokenNumber}\nHospital: ${hospital}\nConsultation Fee: ${fee}\n\nThis calendar invite has been automatically linked to your schedule.`,
+            icalEvent: {
+              filename: "primecare-appointment.ics",
+              method: "REQUEST",
+              content: icsContent,
+            },
+          });
+          emailSent = true;
+        } catch (err587: any) {
+          mailError = err587.message;
+          console.error("Auto Calendar Invite Error:", err587);
+        }
+      }
     }
 
     return NextResponse.json({ success: true, icsContent });

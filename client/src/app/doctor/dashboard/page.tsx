@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Navbar from '@/components/Navbar';
@@ -136,7 +136,7 @@ export default function DoctorDashboardPage() {
   const [allAppointments, setAllAppointments] = useState<AppointmentItem[]>([]);
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [activePatient, setActivePatient] = useState<AppointmentItem | null>(null);
-  const [filterMode, setFilterMode] = useState<'MY_PATIENTS' | 'ALL'>('ALL');
+  const [filterMode, setFilterMode] = useState<'MY_PATIENTS' | 'ALL'>('MY_PATIENTS');
   const [searchQueue, setSearchQueue] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   
@@ -194,7 +194,13 @@ export default function DoctorDashboardPage() {
       const docRes = await fetch('/api/sync/doctors', { cache: 'no-store' });
       const docData = await docRes.json();
       if (docData.success && Array.isArray(docData.doctors)) {
-        const myProfile = docData.doctors.find((d: any) => (d.email || '').toLowerCase().trim() === doctorEmail);
+        const myNameClean = cleanDoctorName(docName);
+        const myProfile = docData.doctors.find((d: any) => 
+          (d.id && user?.id && d.id === user.id) ||
+          (d.id && docId && d.id === docId) ||
+          (d.name && cleanDoctorName(d.name) === myNameClean) ||
+          (d.name && myNameClean && (cleanDoctorName(d.name).includes(myNameClean) || myNameClean.includes(cleanDoctorName(d.name))))
+        );
         
         if (myProfile && !initialLoadedRef.current) {
           initialLoadedRef.current = true;
@@ -293,10 +299,41 @@ export default function DoctorDashboardPage() {
     }
   };
 
+  const isMyPatient = useCallback((a: AppointmentItem) => {
+    if (!a) return false;
+    const cleanMyName = cleanDoctorName(docName);
+    const cleanAptDocName = cleanDoctorName(a.doctorName);
+    const cleanMyId = (docId || user?.id || '').toLowerCase().trim();
+    const cleanAptDocId = (a.doctorId || '').toLowerCase().trim();
+
+    // 1. Strict Doctor ID match if both IDs are present
+    if (cleanAptDocId && cleanMyId) {
+      if (cleanAptDocId === cleanMyId) return true;
+      return false; // Different Doctor ID -> NOT my patient!
+    }
+
+    // 2. Strict Doctor Name match if appointment names a doctor
+    if (cleanAptDocName && cleanMyName) {
+      const nameMatch = cleanAptDocName.includes(cleanMyName) || cleanMyName.includes(cleanAptDocName);
+      if (!nameMatch) return false; // Belongs to a different doctor (e.g. Dr. Ria Kushwaha vs Dr. Ram Kushwaha)!
+      return true;
+    }
+
+    // 3. Fallback email match ONLY if appointment has NO doctor name AND NO doctor ID
+    if (!cleanAptDocName && !cleanAptDocId && doctorEmail) {
+      const cleanMyEmail = doctorEmail.toLowerCase().trim();
+      const cleanAptDocEmail = (a.doctorEmail || '').toLowerCase().trim();
+      if (cleanAptDocEmail && cleanMyEmail && cleanAptDocEmail === cleanMyEmail) {
+        return true;
+      }
+    }
+
+    return false;
+  }, [docName, docId, doctorEmail, user]);
+
   // Active Outpatient Queue
   const activeQueue = useMemo(() => {
     const query = searchQueue.toLowerCase().trim();
-    const cleanDoc = cleanDoctorName(docName);
 
     return allAppointments.filter((a) => {
       if (!a || a.status === 'COMPLETED' || a.status === 'CANCELLED' || a.status === 'LEAVE_CANCELLED') return false;
@@ -304,28 +341,22 @@ export default function DoctorDashboardPage() {
       if (!matchSearch) return false;
 
       if (filterMode === 'MY_PATIENTS') {
-        const isMyDocEmail = (a.doctorEmail || '').toLowerCase().trim() === doctorEmail;
-        const isMyDocName = (a.doctorName || '').toLowerCase().includes(cleanDoc);
-        return isMyDocEmail || isMyDocName;
+        return isMyPatient(a);
       }
       return true;
     });
-  }, [allAppointments, filterMode, docName, doctorEmail, searchQueue]);
+  }, [allAppointments, filterMode, isMyPatient, searchQueue]);
 
   // Leave Affected Appointments
   const leaveAffectedAppointments = useMemo(() => {
-    const cleanDoc = cleanDoctorName(docName);
-
     return allAppointments.filter((a) => {
       if (!a || a.status !== 'LEAVE_CANCELLED') return false;
       if (filterMode === 'MY_PATIENTS') {
-        const isMyDocEmail = (a.doctorEmail || '').toLowerCase().trim() === doctorEmail;
-        const isMyDocName = (a.doctorName || '').toLowerCase().includes(cleanDoc);
-        return isMyDocEmail || isMyDocName;
+        return isMyPatient(a);
       }
       return true;
     });
-  }, [allAppointments, filterMode, docName, doctorEmail]);
+  }, [allAppointments, filterMode, isMyPatient]);
 
   useEffect(() => {
     if (activeQueue.length > 0 && (!activePatient || !activeQueue.some(p => p.id === activePatient.id))) {

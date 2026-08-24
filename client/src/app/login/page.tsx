@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
@@ -37,11 +37,27 @@ export default function LoginPage() {
     try {
       if (isForgotMode) {
         const cleanEmail = email.trim().toLowerCase();
-        const newTempPassword = 'Password@123';
-        localStorage.setItem(`pwd_${role}_${cleanEmail}`, newTempPassword);
-        setSuccessMsg(`Password for ${cleanEmail} reset to: ${newTempPassword}. You can now sign in.`);
-        setIsForgotMode(false);
-        setPassword(newTempPassword);
+        if (!cleanEmail) {
+          setErrorMsg('Email address is required to receive OTP.');
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch('/api/auth/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanEmail }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Failed to dispatch OTP to email.');
+        }
+
+        setSuccessMsg(data.message || `A 6-digit verification OTP has been sent to ${cleanEmail}. Check your inbox!`);
+        setTimeout(() => {
+          window.location.href = `/forgot-password?role=${role}&email=${encodeURIComponent(cleanEmail)}`;
+        }, 1500);
         setLoading(false);
         return;
       }
@@ -278,13 +294,12 @@ export default function LoginPage() {
                     <label className="text-slate-400 font-semibold flex items-center gap-1.5">
                       <Lock className="w-3.5 h-3.5 text-emerald-400" /> {role} Password
                     </label>
-                    <button
-                      type="button"
-                      onClick={() => { setIsForgotMode(true); setErrorMsg(''); setIsPendingReview(false); }}
-                      className="text-[11px] text-emerald-400 hover:underline flex items-center gap-1"
+                    <a
+                      href={`/forgot-password?role=${role}&email=${encodeURIComponent(email)}`}
+                      className="text-[11px] text-emerald-400 hover:underline flex items-center gap-1 font-semibold"
                     >
                       <KeyRound className="w-3 h-3" /> Forgot Password?
-                    </button>
+                    </a>
                   </div>
                   <input
                     type="password"

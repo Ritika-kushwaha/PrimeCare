@@ -1,11 +1,11 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
 export const dynamic = 'force-dynamic';
 
 async function sendMailHelper(to: string | string[], subject: string, html: string) {
-  const emailUser = (process.env.EMAIL_USER || '').trim();
-  const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
+  const emailUser = (process.env.EMAIL_USER || process.env.SMTP_USER || 'ritikakushwaha62@gmail.com').trim();
+  const emailPass = (process.env.EMAIL_PASS || process.env.SMTP_PASS || 'hwwgoqrbaiwpldzv').replace(/\s+/g, '');
   
   const recipients = (Array.isArray(to) ? to : [to])
     .filter(Boolean)
@@ -20,18 +20,15 @@ async function sendMailHelper(to: string | string[], subject: string, html: stri
     return { success: false, error: 'EMAIL_USER or EMAIL_PASS missing on server.' };
   }
 
+  // Dual-port transport strategy for max reliability
   try {
     const transporter = nodemailer.createTransport({
+      service: 'gmail',
       host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // TLS
-      auth: {
-        user: emailUser,
-        pass: emailPass,
-      },
-      tls: {
-        rejectUnauthorized: false
-      },
+      port: 465,
+      secure: true,
+      auth: { user: emailUser, pass: emailPass },
+      tls: { rejectUnauthorized: false },
       connectionTimeout: 12000,
     });
 
@@ -42,11 +39,33 @@ async function sendMailHelper(to: string | string[], subject: string, html: stri
       html,
     });
 
-    console.log(`[SMTP SUCCESS] Sent to: ${recipients.join(', ')} | ID: ${info.messageId}`);
+    console.log(`[SMTP SUCCESS - 465] Sent to: ${recipients.join(', ')} | ID: ${info.messageId}`);
     return { success: true, messageId: info.messageId, recipients };
-  } catch (smtpErr: any) {
-    console.error("[SMTP ERROR]:", smtpErr.message);
-    return { success: false, error: smtpErr.message };
+  } catch (err465: any) {
+    console.warn(`[SMTP 465 Warning]: ${err465.message}. Retrying on port 587 TLS...`);
+    try {
+      const transporter587 = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: { user: emailUser, pass: emailPass },
+        tls: { rejectUnauthorized: false },
+        connectionTimeout: 12000,
+      });
+
+      const info = await transporter587.sendMail({
+        from: `"PrimeCare Hospital Desk" <${emailUser}>`,
+        to: recipients.join(', '),
+        subject,
+        html,
+      });
+
+      console.log(`[SMTP SUCCESS - 587] Sent to: ${recipients.join(', ')} | ID: ${info.messageId}`);
+      return { success: true, messageId: info.messageId, recipients };
+    } catch (err587: any) {
+      console.error("[SMTP ERROR]:", err587.message);
+      return { success: false, error: err587.message };
+    }
   }
 }
 

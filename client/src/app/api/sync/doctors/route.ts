@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getDbPool, initDb } from "@/lib/db";
 
 export const dynamic = 'force-dynamic';
@@ -13,10 +13,13 @@ export async function GET() {
 
   try {
     const res = await pool.query(`
-      SELECT DISTINCT ON (LOWER(email)) 
-        id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio 
+      SELECT 
+        id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio,
+        working_hours_start AS "workingHoursStart",
+        working_hours_end AS "workingHoursEnd",
+        slot_duration_min AS "slotDurationMin"
       FROM pc_doctors 
-      ORDER BY LOWER(email), created_at DESC
+      ORDER BY created_at DESC
     `);
     return NextResponse.json(
       { success: true, doctors: res.rows || [] },
@@ -73,8 +76,8 @@ export async function POST(req: Request) {
     await pool.query(`DELETE FROM pc_doctors WHERE LOWER(email) = $1`, [cleanEmail]);
 
     await pool.query(`
-      INSERT INTO pc_doctors (id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      INSERT INTO pc_doctors (id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio, working_hours_start, working_hours_end, slot_duration_min)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     `, [
       docId,
       cleanEmail,
@@ -85,14 +88,24 @@ export async function POST(req: Request) {
       doc.hospital || 'PrimeCare Multispecialty Hospital',
       doc.fee || '₹1,000',
       doc.rating || '5.0 ★',
-      doc.bio || `Specialist in ${doc.specialisation || 'General Medicine'}.`
+      doc.bio || `Specialist in ${doc.specialisation || 'General Medicine'}.`,
+      doc.workingHoursStart || '09:00',
+      doc.workingHoursEnd || '17:00',
+      doc.slotDurationMin || 30
     ]);
 
+    const fName = doc.name.replace(/^Dr\.\s*/i, '').split(' ')[0] || 'Doctor';
+    const lName = doc.name.replace(/^Dr\.\s*/i, '').split(' ').slice(1).join(' ') || 'Specialist';
+
     await pool.query(`
-      UPDATE pc_users 
-      SET specialisation = $1, first_name = $2
-      WHERE LOWER(email) = $3 AND role = 'DOCTOR'
-    `, [doc.specialisation || 'General Medicine', doc.name.replace(/^Dr\.\s*/i, '').split(' ')[0], cleanEmail]);
+      INSERT INTO pc_users (id, email, role, first_name, last_name, password, specialisation, is_approved)
+      VALUES ($1, $2, 'DOCTOR', $3, $4, 'Doctor@123', $5, TRUE)
+      ON CONFLICT (email, role) DO UPDATE SET
+        specialisation = EXCLUDED.specialisation,
+        first_name = EXCLUDED.first_name,
+        last_name = EXCLUDED.last_name,
+        is_approved = TRUE
+    `, [`usr-${Date.now()}`, cleanEmail, fName, lName, doc.specialisation || 'General Medicine']);
 
     return NextResponse.json({ success: true });
   } catch (err: any) {
