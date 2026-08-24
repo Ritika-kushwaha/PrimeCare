@@ -71,6 +71,44 @@ const TIME_SLOTS = [
 ];
 
 export default function BookAppointmentPage() {
+  const [emailSending, setEmailSending] = useState(false);
+
+  const triggerInstantEmail = async (apt: any) => {
+    if (!apt) return;
+    setEmailSending(true);
+    const targetEmail = (apt.patientEmail || user?.email || 'ritikakushwaha62@gmail.com').trim().toLowerCase();
+
+    try {
+      const res = await fetch('/api/notifications/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'APPOINTMENT_CONFIRMATION',
+          recipientEmail: targetEmail,
+          patientEmail: targetEmail,
+          doctorEmail: apt.doctorEmail,
+          patientName: apt.patientName,
+          doctorName: apt.doctorName,
+          specialisation: apt.department,
+          date: apt.date,
+          timeSlot: apt.timeSlot,
+          tokenNumber: apt.tokenNumber,
+          fee: apt.fee
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert('Confirmation & Reminder email successfully sent to ' + targetEmail + '!');
+      } else {
+        alert('Email Dispatch Notice: ' + (data.error || 'Server rejected transport. Check SMTP.'));
+      }
+    } catch {
+      alert('Network error connecting to email API.');
+    } finally {
+      setEmailSending(false);
+    }
+  };
   const { user } = useAuth();
   const [doctors, setDoctors] = useState<DoctorProfile[]>(DEFAULT_DOCTORS);
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
@@ -364,41 +402,21 @@ export default function BookAppointmentPage() {
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={loadData}
-              className="text-xs text-emerald-400 hover:underline flex items-center gap-1.5 self-start sm:self-auto bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-800 font-semibold"
-            >
-              <RefreshCw className="w-3.5 h-3.5" /> Refresh Cloud Roster
-            </button>
-          </div>
-
-          {/* CONFIRMATION BANNER & TICKET MODAL */}
-          <AnimatePresence>
-            {bookingSuccess && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="p-6 sm:p-8 rounded-3xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 shadow-2xl space-y-6"
-              >
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-emerald-500/20 pb-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-xl font-extrabold text-white">
-                      <CheckCircle2 className="w-6 h-6 text-emerald-400" /> Slot Confirmed • Token {bookingSuccess.tokenNumber}
-                    </div>
-                    <p className="text-xs text-emerald-300">
-                      Confirmed for <strong>{bookingSuccess.patientName}</strong> with {bookingSuccess.doctorName} on {bookingSuccess.date} at {bookingSuccess.timeSlot}.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => window.print()}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 font-bold text-xs transition"
-                    >
-                      <Printer className="w-4 h-4" /> Print Appointment Slip
-                    </button>
+                            <button
+                  type="button"
+                  onClick={() => triggerInstantEmail(bookedAppointment)}
+                  disabled={emailSending}
+                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                >
+                  <Mail className="w-3.5 h-3.5" /> {emailSending ? 'Sending Email...' : 'Send Confirmation / Reminder Email'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center gap-1.5 transition"
+                >
+                  <Printer className="w-3.5 h-3.5" /> Print Appointment Slip
+                </button>
 
                     <a
                       href={getGoogleCalendarUrl(bookingSuccess)}
@@ -909,6 +927,7 @@ export default function BookAppointmentPage() {
     </ProtectedRoute>
   );
 }
+
 
 
 

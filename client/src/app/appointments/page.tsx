@@ -1,11 +1,11 @@
 ﻿'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Mail,  useState, useEffect, useMemo, useCallback } from 'react';
 import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { useAuth } from '@/context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import { Mail,  useAuth } from '@/context/AuthContext';
+import { Mail,  motion, AnimatePresence } from 'framer-motion';
+import { Mail,  
   Calendar, Clock, Stethoscope, User, 
   CheckCircle2, AlertCircle, ArrowRight, ShieldCheck, 
   Search, Building2, Award, CalendarX2, Ban, Users, 
@@ -909,6 +909,7 @@ export default function BookAppointmentPage() {
     </ProtectedRoute>
   );
 }
+
 
 
 

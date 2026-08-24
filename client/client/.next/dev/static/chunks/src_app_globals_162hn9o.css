@@ -2503,6 +2503,10 @@
     opacity: .4;
   }
 
+  .disabled\:opacity-50:disabled {
+    opacity: .5;
+  }
+
   @media (min-width: 40rem) {
     .sm\:block {
       display: block;
