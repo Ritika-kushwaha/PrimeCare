@@ -182,7 +182,7 @@ export default function DoctorDashboardPage() {
     }
     return 'Dr. Specialist';
   });
-  const [docSpecialty, setDocSpecialty] = useState(user?.specialisation || 'Cardiology');
+    const [docSpecialty, setDocSpecialty] = useState(() => user?.specialisation || 'General Medicine');
   const [docQualification, setDocQualification] = useState('MD, DM (Cardiology - AIIMS Delhi)');
   const [docExperience, setDocExperience] = useState('14 Years Practice');
   const [docHospital, setDocHospital] = useState('PrimeCare Apex Heart Institute');
@@ -238,7 +238,11 @@ export default function DoctorDashboardPage() {
       } else {
         setDocName(myProfile.name);
       }
-      setDocSpecialty(myProfile.specialisation);
+            if (myProfile.specialisation) {
+        setDocSpecialty(myProfile.specialisation);
+      } else if (user?.specialisation) {
+        setDocSpecialty(user.specialisation);
+      }
       setDocQualification(myProfile.qualification);
       setDocExperience(myProfile.experience);
       setDocHospital(myProfile.hospital);
@@ -307,7 +311,15 @@ export default function DoctorDashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ doctor: updatedProfile })
       });
-      setProfileSuccessMsg('Doctor profile successfully updated across all devices!');
+            try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const u = JSON.parse(storedUser);
+          u.specialisation = docSpecialty;
+          localStorage.setItem('user', JSON.stringify(u));
+        }
+      } catch {}
+      setProfileSuccessMsg('Doctor profile & department updated across all devices!');
       setTimeout(() => setProfileSuccessMsg(''), 4000);
     } catch (err) {
       setProfileSuccessMsg('Failed to update doctor profile.');
@@ -1357,6 +1369,7 @@ export default function DoctorDashboardPage() {
     </ProtectedRoute>
   );
 }
+
 
 
 
