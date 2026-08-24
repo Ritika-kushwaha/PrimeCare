@@ -85,7 +85,7 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<'CONSULTATIONS' | 'LEAVE_AFFECTED' | 'DONE' | 'DOCTORS' | 'LEAVES'>('CONSULTATIONS');
   
   const [appointments, setAppointments] = useState<AppointmentItem[]>([]);
-  const [doctorProfiles, setDoctorProfiles] = useState<DoctorProfile[]>(DEFAULT_DOCTORS);
+  const [doctorProfiles, setDoctorProfiles] = useState<DoctorProfile[]>([]);
   const [doctorApplications, setDoctorApplications] = useState<DoctorApplication[]>([]);
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,7 +124,7 @@ export default function AdminDashboardPage() {
     try {
       const docRes = await fetch('/api/sync/doctors', { cache: 'no-store' });
       const docData = await docRes.json();
-      if (docData.success && Array.isArray(docData.doctors) && docData.doctors.length > 0) {
+            if (docData.success && Array.isArray(docData.doctors)) {
         setDoctorProfiles(docData.doctors);
       }
     } catch {}
@@ -1320,6 +1320,7 @@ export default function AdminDashboardPage() {
     </ProtectedRoute>
   );
 }
+
 
 
 
