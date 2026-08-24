@@ -29,13 +29,13 @@ async function sendMailHelper(to: string | string[], subject: string, html: stri
     return { success: false, error: 'No recipient provided' };
   }
 
-  // 1. Standard Gmail SMTP via Port 587 (Vercel Serverless Compatible)
+  // 1. Gmail SMTP Transport (Port 587 TLS)
   if (emailUser && emailPass) {
     try {
       const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
-        secure: false, // TLS
+        secure: false,
         auth: {
           user: emailUser,
           pass: emailPass,
@@ -49,7 +49,7 @@ async function sendMailHelper(to: string | string[], subject: string, html: stri
       });
 
       const info = await transporter.sendMail({
-        from: `"PrimeCare Medical Desk" <${emailUser}>`,
+        from: `"PrimeCare Hospital Desk" <${emailUser}>`,
         to: recipients.join(', '),
         subject,
         html,
@@ -88,7 +88,7 @@ async function sendMailHelper(to: string | string[], subject: string, html: stri
     }
   }
 
-  return { success: false, error: 'No valid EMAIL_USER/EMAIL_PASS or RESEND_API_KEY configured in environment' };
+  return { success: false, error: 'No configured mail transport' };
 }
 
 export async function POST(req: Request) {
@@ -114,7 +114,32 @@ export async function POST(req: Request) {
 
     const cleanRecipient = (recipientEmail || patientEmail || doctorEmail || '').trim().toLowerCase();
 
-    // 1. APPOINTMENT BOOKING CONFIRMATION
+    // 1. APPOINTMENT REMINDER (To Patient & Doctor)
+    if (type === 'APPOINTMENT_REMINDER') {
+      const targets = [patientEmail, doctorEmail].filter(Boolean).map(e => e.trim().toLowerCase());
+      const subject = `⏰ Reminder: Upcoming Appointment with ${doctorName || 'Dr.'} on ${date}`;
+      const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #38bdf8; border-radius: 12px; background: #0f172a; color: #f8fafc;">
+          <h2 style="color: #38bdf8; margin-bottom: 8px;">PrimeCare Outpatient Visit Reminder</h2>
+          <p style="font-size: 15px; color: #e2e8f0;">This is a friendly reminder for your upcoming medical consultation.</p>
+          <div style="background: #1e293b; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #334155;">
+            <p style="margin: 4px 0; color: #94a3b8;"><strong>Patient:</strong> <span style="color: #f8fafc; font-weight: bold;">${patientName || 'Member'}</span></p>
+            <p style="margin: 4px 0; color: #94a3b8;"><strong>Doctor:</strong> <span style="color: #38bdf8; font-weight: bold;">${doctorName || 'Specialist'}</span></p>
+            <p style="margin: 4px 0; color: #94a3b8;"><strong>Specialty:</strong> <span style="color: #34d399;">${specialisation || 'General Medicine'}</span></p>
+            <p style="margin: 4px 0; color: #94a3b8;"><strong>Scheduled Date & Slot:</strong> <span style="color: #fbbf24; font-weight: bold;">${date} at ${timeSlot}</span></p>
+            <p style="margin: 4px 0; color: #94a3b8;"><strong>Token Number:</strong> <span style="color: #38bdf8; font-family: monospace; font-size: 16px; font-weight: bold;">#${tokenNumber || '101'}</span></p>
+            <p style="margin: 4px 0; color: #94a3b8;"><strong>Consultation Fee:</strong> <span style="color: #cbd5e1;">${fee || '₹1,000'}</span></p>
+          </div>
+          <p style="color: #94a3b8; font-size: 13px;">Please arrive 10-15 minutes prior to your allocated slot.</p>
+          <a href="https://primecare-app-jet.vercel.app/login" style="display: inline-block; background: #38bdf8; color: #082f49; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 12px;">View Consultation Details</a>
+        </div>
+      `;
+
+      const result = await sendMailHelper(targets, subject, html);
+      return NextResponse.json({ success: result.success, details: result, recipients: targets });
+    }
+
+    // 2. APPOINTMENT CONFIRMATION
     if (type === 'APPOINTMENT_CONFIRMATION') {
       const targets = [patientEmail, doctorEmail].filter(Boolean).map(e => e.trim().toLowerCase());
       const subject = `🏥 PrimeCare Appointment Confirmed - Token #${tokenNumber || '101'}`;
@@ -139,7 +164,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: result.success, details: result, recipients: targets });
     }
 
-    // 2. DOCTOR SIGNUP REQUEST
+    // 3. DOCTOR SIGNUP REQUEST
     if (type === 'NEW_DOCTOR_APPLICATION_ADMIN_ALERT') {
       const adminEmails = adminEmail ? [adminEmail.trim().toLowerCase()] : await getAdminEmails();
       const subject = `⚠️ New Doctor Approval Request: ${doctorName} (${specialisation || 'General Medicine'})`;
@@ -161,7 +186,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: result.success, details: result, targetAdmins: adminEmails });
     }
 
-    // 3. DOCTOR APPROVAL
+    // 4. DOCTOR APPROVAL
     if (type === 'DOCTOR_APPROVED') {
       const subject = "🎉 Welcome to PrimeCare - Your Doctor Account is Approved!";
       const html = `
@@ -184,7 +209,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: result.success, details: result });
     }
 
-    // 4. DOCTOR REJECTION
+    // 5. DOCTOR REJECTION
     if (type === 'DOCTOR_REJECTED') {
       const subject = "PrimeCare Application Status: Verification Unsuccessful";
       const html = `
@@ -199,7 +224,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: result.success, details: result });
     }
 
-    // 5. DUTY LEAVE NOTIFICATION
+    // 6. DUTY LEAVE NOTIFICATION
     if (type === 'LEAVE_APPROVED') {
       const subject = `📅 PrimeCare Duty Notice: Leave Confirmed on ${leaveDate}`;
       const html = `
