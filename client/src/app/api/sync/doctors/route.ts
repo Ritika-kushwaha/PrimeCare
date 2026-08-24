@@ -25,10 +25,12 @@ export async function GET() {
         );
       `);
 
+      // Fetch distinct by email so NO duplicate doctor cards can ever exist
       const res = await pool.query(`
-        SELECT id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio 
+        SELECT DISTINCT ON (LOWER(email)) 
+          id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio 
         FROM pc_doctors 
-        ORDER BY created_at ASC
+        ORDER BY LOWER(email), created_at DESC
       `);
 
       return NextResponse.json(
@@ -47,8 +49,38 @@ export async function POST(req: Request) {
   const pool = getDbPool();
   try {
     const data = await req.json();
-    const doc = data.doctor;
 
+    // 1. DELETE ACTION
+    if (data.action === 'DELETE') {
+      const docEmail = (data.email || '').trim().toLowerCase();
+      const docId = data.id;
+
+      if (pool && (docEmail || docId)) {
+        if (docEmail) {
+          await pool.query(`DELETE FROM pc_doctors WHERE LOWER(email) = $1`, [docEmail]);
+          await pool.query(`DELETE FROM pc_users WHERE LOWER(email) = $1 AND role = 'DOCTOR'`, [docEmail]);
+          await pool.query(`DELETE FROM pc_doctor_applications WHERE LOWER(email) = $1`, [docEmail]);
+          await pool.query(`DELETE FROM pc_leaves WHERE LOWER(doctor_name) LIKE $1 OR doctor_id = $2`, [`%${docEmail}%`, docId || '']);
+          await pool.query(`
+            UPDATE pc_appointments 
+            SET status = 'CANCELLED', leave_reason = 'Doctor account deactivated by Administrator' 
+            WHERE LOWER(doctor_email) = $1 AND status NOT IN ('COMPLETED', 'CANCELLED')
+          `, [docEmail]);
+        }
+        if (docId) {
+          await pool.query(`DELETE FROM pc_doctors WHERE id = $1`, [docId]);
+          await pool.query(`
+            UPDATE pc_appointments 
+            SET status = 'CANCELLED', leave_reason = 'Doctor account deactivated by Administrator' 
+            WHERE doctor_id = $1 AND status NOT IN ('COMPLETED', 'CANCELLED')
+          `, [docId]);
+        }
+      }
+      return NextResponse.json({ success: true, message: 'Doctor permanently deleted across all tables.' });
+    }
+
+    // 2. UPSERT DOCTOR (ONE UNIQUE ENTRY PER EMAIL)
+    const doc = data.doctor;
     if (!doc || !doc.name || !doc.email) {
       return NextResponse.json({ success: false, error: 'Doctor details required' }, { status: 400 });
     }
@@ -57,7 +89,9 @@ export async function POST(req: Request) {
       const cleanEmail = doc.email.trim().toLowerCase();
       const docId = doc.id || ('doc-' + Date.now());
 
-      // 1. Update pc_doctors table
+      // Clean up any stale duplicate rows for this email first
+      await pool.query(`DELETE FROM pc_doctors WHERE LOWER(email) = $1 AND id != $2`, [cleanEmail, docId]);
+
       await pool.query(`
         INSERT INTO pc_doctors (id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -83,7 +117,6 @@ export async function POST(req: Request) {
         doc.bio || `Specialist in ${doc.specialisation || 'General Medicine'}.`
       ]);
 
-      // 2. Also update pc_users table so login session & auth tokens reflect the new department
       await pool.query(`
         UPDATE pc_users 
         SET specialisation = $1, first_name = $2
