@@ -132,11 +132,9 @@ const deduplicateEHR = (records: PatientEHR[]): PatientEHR[] => {
 
 export default function DoctorDashboardPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'CLINICAL' | 'LEAVE_AFFECTED' | 'EHR' | 'DOCTOR_LIST' | 'PROFILE'>('CLINICAL');
+  const [activeTab, setActiveTab] = useState<'CLINICAL' | 'LEAVE_AFFECTED' | 'EHR' | 'PROFILE'>('CLINICAL');
   const [allAppointments, setAllAppointments] = useState<AppointmentItem[]>([]);
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
-  const [doctorsList, setDoctorsList] = useState<DoctorProfile[]>([]);
-  const [searchDoctorList, setSearchDoctorList] = useState('');
   const [activePatient, setActivePatient] = useState<AppointmentItem | null>(null);
   const [filterMode, setFilterMode] = useState<'MY_PATIENTS' | 'ALL'>('MY_PATIENTS');
   const [searchQueue, setSearchQueue] = useState('');
@@ -196,7 +194,6 @@ export default function DoctorDashboardPage() {
       const docRes = await fetch('/api/sync/doctors', { cache: 'no-store' });
       const docData = await docRes.json();
       if (docData.success && Array.isArray(docData.doctors)) {
-        setDoctorsList(docData.doctors);
         const myNameClean = cleanDoctorName(docName);
         const myProfile = docData.doctors.find((d: any) => 
           (d.id && user?.id && d.id === user.id) ||
@@ -652,16 +649,6 @@ export default function DoctorDashboardPage() {
                 <History className="w-3.5 h-3.5" /> Patient EHR ({ehrRegistry.length})
               </button>
 
-              <button
-                type="button"
-                onClick={() => { setActiveTab('DOCTOR_LIST'); loadData(); }}
-                className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap ${
-                  activeTab === 'DOCTOR_LIST' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Users className="w-3.5 h-3.5" /> Doctor List ({doctorsList.length})
-              </button>
-              
               <button
                 type="button"
                 onClick={() => setActiveTab('PROFILE')}
@@ -1166,117 +1153,6 @@ export default function DoctorDashboardPage() {
                 </button>
               </form>
             </div>
-          )}
-
-          {activeTab === 'DOCTOR_LIST' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-6"
-            >
-              <div className="bg-slate-900/80 p-6 rounded-3xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
-                    <Users className="w-5 h-5 text-purple-400" /> Hospital Doctor Directory & Roster
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Complete list of approved medical specialists, qualifications, experience, and current duty status across all departments.
-                  </p>
-                </div>
-
-                <div className="relative w-full md:w-72">
-                  <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-                  <input
-                    type="text"
-                    value={searchDoctorList}
-                    onChange={(e) => setSearchDoctorList(e.target.value)}
-                    placeholder="Search doctor or specialty..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {doctorsList
-                  .filter((d) => {
-                    const q = searchDoctorList.toLowerCase().trim();
-                    if (!q) return true;
-                    return (
-                      (d.name || '').toLowerCase().includes(q) ||
-                      (d.specialisation || '').toLowerCase().includes(q) ||
-                      (d.email || '').toLowerCase().includes(q)
-                    );
-                  })
-                  .map((doc) => {
-                    const isMe = (doc.id && docId && doc.id === docId) || (doc.email && doctorEmail && doc.email.toLowerCase() === doctorEmail);
-                    const isOnLeave = leaves.some((l) => {
-                      const lClean = cleanDoctorName(l.doctorName);
-                      const dClean = cleanDoctorName(doc.name);
-                      return (l.doctorId && doc.id && l.doctorId === doc.id) || (lClean && dClean && lClean === dClean);
-                    });
-
-                    return (
-                      <div
-                        key={doc.id}
-                        className={`p-5 rounded-3xl border transition space-y-4 ${
-                          isMe
-                            ? 'bg-purple-950/20 border-purple-500/40 shadow-lg shadow-purple-500/10'
-                            : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center font-extrabold text-base shadow-md">
-                              {doc.name.replace(/^Dr\.\s*/i, '').charAt(0) || 'D'}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-extrabold text-sm text-white">{doc.name}</h3>
-                                {isMe && (
-                                  <span className="px-2 py-0.5 rounded-md bg-purple-500/20 border border-purple-500/30 text-purple-300 font-bold text-[10px]">
-                                    YOU
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs font-semibold text-purple-400 mt-0.5">{doc.specialisation}</p>
-                            </div>
-                          </div>
-
-                          {isOnLeave ? (
-                            <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold text-[10px] flex items-center gap-1">
-                              <CalendarX2 className="w-3 h-3" /> On Leave
-                            </span>
-                          ) : (
-                            <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-[10px] flex items-center gap-1">
-                              <BadgeCheck className="w-3 h-3" /> Active
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="space-y-2 pt-2 border-t border-slate-800/80 text-xs text-slate-300">
-                          <div className="flex items-center gap-2">
-                            <Award className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                            <span>{doc.qualification || 'MBBS, MD'} • {doc.experience || 'Specialist'}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Building2 className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                            <span className="truncate">{doc.hospital || 'PrimeCare Multispecialty Hospital'}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Mail className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                            <span className="truncate text-slate-400">{doc.email}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-xs">
-                          <span className="font-bold text-emerald-400">{doc.fee || '₹1,000'} Consultation Fee</span>
-                          <span className="text-slate-400 font-semibold">{doc.rating || '5.0 ★'}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </motion.div>
           )}
 
         </main>
