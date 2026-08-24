@@ -4,16 +4,6 @@ import { getDbPool, initDb } from "@/lib/db";
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const DEFAULT_DOCTORS = [
-  { id: 'doc-cardio-01', email: 'ritikakushwaha62@gmail.com', name: 'Dr. Ritika Kushwaha', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS Delhi)', experience: '14 Years Practice', hospital: 'PrimeCare Apex Heart Institute', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease, diagnostic angiographies, coronary interventions, and comprehensive lipid management.' },
-  { id: 'doc-cardio-02', email: 'aarav.sharma@primecare.in', name: 'Dr. Aarav Sharma', specialisation: 'Cardiology', qualification: 'MD, DM (Cardiology - AIIMS)', experience: '12 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,200', rating: '4.9 ★', bio: 'Senior Interventional Cardiologist specializing in preventive heart disease.' },
-  { id: 'doc-cardio-03', email: 'meera.kulkarni@primecare.in', name: 'Dr. Meera Kulkarni', specialisation: 'Cardiology', qualification: 'MD, DNB (Cardiology)', experience: '10 Years Practice', hospital: 'PrimeCare Metro Hospital', fee: '₹1,400', rating: '4.8 ★', bio: 'Specialist in non-invasive coronary imaging, pediatric cardiology, and heart rhythm management.' },
-  { id: 'doc-neuro-01', email: 'priya.nair@primecare.in', name: 'Dr. Priya Nair', specialisation: 'Neurology', qualification: 'MD, DM (Neurology - NIMHANS)', experience: '12 Years Practice', hospital: 'PrimeCare Neuroscience Center', fee: '₹1,500', rating: '4.9 ★', bio: 'Consultant Neurologist focused on headache disorders, neuropathies, epilepsy, and acute stroke treatment.' },
-  { id: 'doc-ortho-01', email: 'vikram.patel@primecare.in', name: 'Dr. Vikram Patel', specialisation: 'Orthopedics', qualification: 'MS (Orthopedics), MCh', experience: '15 Years Practice', hospital: 'PrimeCare Ortho Wing', fee: '₹1,000', rating: '4.7 ★', bio: 'Joint replacement, arthroscopic ligament surgery, and complex sports injury rehabilitation specialist.' },
-  { id: 'doc-pedia-01', email: 'ananya.deshmukh@primecare.in', name: 'Dr. Ananya Deshmukh', specialisation: 'Pediatrics', qualification: 'MD (Pediatrics), DCH', experience: '9 Years Practice', hospital: 'PrimeCare Children Pavilion', fee: '₹900', rating: '5.0 ★', bio: 'Pediatrician handling newborn intensive care, routine growth assessments, and childhood immunizations.' },
-  { id: 'doc-derma-01', email: 'rohan.mehta@primecare.in', name: 'Dr. Rohan Mehta', specialisation: 'Dermatology', qualification: 'MD (Dermatology)', experience: '8 Years Practice', hospital: 'PrimeCare Skin Clinic', fee: '₹1,100', rating: '4.8 ★', bio: 'Specialist in laser therapeutics, clinical dermatology, acne scarring, and trichology.' },
-];
-
 export async function GET() {
   await initDb();
   const pool = getDbPool();
@@ -41,22 +31,15 @@ export async function GET() {
         ORDER BY created_at ASC
       `);
 
-      // Merge defaults with dynamic doctors from database
-      const dbDoctors = res.rows || [];
-      const mergedMap = new Map<string, any>();
-      
-      DEFAULT_DOCTORS.forEach(d => mergedMap.set(d.email.toLowerCase(), d));
-      dbDoctors.forEach(d => mergedMap.set(d.email.toLowerCase(), d));
-
       return NextResponse.json(
-        { success: true, doctors: Array.from(mergedMap.values()) },
+        { success: true, doctors: res.rows || [] },
         { headers: { 'Cache-Control': 'no-store, max-age=0' } }
       );
     } catch (err: any) {
       console.error("GET doctors error:", err);
     }
   }
-  return NextResponse.json({ success: true, doctors: DEFAULT_DOCTORS });
+  return NextResponse.json({ success: true, doctors: [] });
 }
 
 export async function POST(req: Request) {
@@ -74,6 +57,7 @@ export async function POST(req: Request) {
       const cleanEmail = doc.email.trim().toLowerCase();
       const docId = doc.id || ('doc-' + Date.now());
 
+      // 1. Update pc_doctors table
       await pool.query(`
         INSERT INTO pc_doctors (id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -98,6 +82,13 @@ export async function POST(req: Request) {
         doc.rating || '5.0 ★',
         doc.bio || `Specialist in ${doc.specialisation || 'General Medicine'}.`
       ]);
+
+      // 2. Also update pc_users table so login session & auth tokens reflect the new department
+      await pool.query(`
+        UPDATE pc_users 
+        SET specialisation = $1, first_name = $2
+        WHERE LOWER(email) = $3 AND role = 'DOCTOR'
+      `, [doc.specialisation || 'General Medicine', doc.name.replace(/^Dr\.\s*/i, '').split(' ')[0], cleanEmail]);
     }
 
     return NextResponse.json({ success: true, doctor: doc });
