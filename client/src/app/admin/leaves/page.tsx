@@ -387,6 +387,7 @@ export default function AdminDashboardPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type: 'DOCTOR_APPROVED',
+            adminEmail: user?.email,
             recipientEmail: app.email,
             recipientName: app.name,
             specialisation: app.specialisation
@@ -445,6 +446,7 @@ export default function AdminDashboardPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type: 'LEAVE_APPROVED',
+            adminEmail: user?.email,
             recipientEmail: selectedLeaveDoctor.email,
             doctorName: selectedLeaveDoctor.name,
             leaveDate,
@@ -1290,3 +1292,4 @@ export default function AdminDashboardPage() {
     </ProtectedRoute>
   );
 }
+
