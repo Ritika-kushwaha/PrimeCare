@@ -52,7 +52,7 @@ export async function POST(req: Request) {
           ('usr-doc-def7', 'rohan.mehta@primecare.in', 'DOCTOR', 'Rohan', 'Mehta', 'password123', 'Dermatology', TRUE),
           ('usr-pat-def2', 'ritika@example.com', 'PATIENT', 'Ritika', 'Kushwaha', 'password123', 'General', TRUE),
           ('usr-doc-def8', 'ritika@example.com', 'DOCTOR', 'Ritika', 'Doctor', 'password123', 'Cardiology', TRUE)
-        ON CONFLICT (email, role) DO UPDATE SET password = EXCLUDED.password, is_approved = TRUE;
+        ON CONFLICT (email, role) DO UPDATE SET password = EXCLUDED.password;
       `);
     } catch {}
 
@@ -73,24 +73,26 @@ export async function POST(req: Request) {
           await pool.query(`
             INSERT INTO pc_users (id, email, role, first_name, last_name, password, is_approved)
             VALUES ($1, $2, 'PATIENT', $3, 'Member', $4, TRUE)
-            ON CONFLICT (email, role) DO UPDATE SET password = EXCLUDED.password, is_approved = TRUE
+            ON CONFLICT (email, role) DO UPDATE SET password = EXCLUDED.password
           `, [`usr-pat-${Date.now()}`, cleanEmail, fName, password || 'Patient@123']);
         } else if (role === 'DOCTOR') {
           const docCheck = await pool.query(`SELECT id, name, specialisation FROM pc_doctors WHERE LOWER(email) = $1 LIMIT 1`, [cleanEmail]);
-          const docRow = docCheck.rows[0] || { name: 'Dr. Specialist', specialisation: 'General Medicine' };
-          const fName = docRow.name.replace(/^Dr\.\s*/i, '').split(' ')[0] || 'Doctor';
-          const lName = docRow.name.replace(/^Dr\.\s*/i, '').split(' ').slice(1).join(' ') || 'Specialist';
-          
-          await pool.query(`
-            INSERT INTO pc_users (id, email, role, first_name, last_name, password, specialisation, is_approved)
-            VALUES ($1, $2, 'DOCTOR', $3, $4, $5, $6, TRUE)
-            ON CONFLICT (email, role) DO UPDATE SET password = EXCLUDED.password, is_approved = TRUE
-          `, [`usr-doc-${Date.now()}`, cleanEmail, fName, lName, password || 'Doctor@123', docRow.specialisation]);
+          if (docCheck.rows.length > 0) {
+            const docRow = docCheck.rows[0];
+            const fName = docRow.name.replace(/^Dr\.\s*/i, '').split(' ')[0] || 'Doctor';
+            const lName = docRow.name.replace(/^Dr\.\s*/i, '').split(' ').slice(1).join(' ') || 'Specialist';
+            
+            await pool.query(`
+              INSERT INTO pc_users (id, email, role, first_name, last_name, password, specialisation, is_approved)
+              VALUES ($1, $2, 'DOCTOR', $3, $4, $5, $6, TRUE)
+              ON CONFLICT (email, role) DO UPDATE SET password = EXCLUDED.password
+            `, [`usr-doc-${Date.now()}`, cleanEmail, fName, lName, password || 'Doctor@123', docRow.specialisation]);
+          }
         } else if (role === 'ADMIN') {
           await pool.query(`
             INSERT INTO pc_users (id, email, role, first_name, last_name, password, is_approved)
             VALUES ($1, $2, 'ADMIN', 'System', 'Administrator', $3, TRUE)
-            ON CONFLICT (email, role) DO UPDATE SET password = EXCLUDED.password, is_approved = TRUE
+            ON CONFLICT (email, role) DO UPDATE SET password = EXCLUDED.password
           `, [`usr-admin-${Date.now()}`, cleanEmail, password || 'Admin@PrimeCare2026']);
         }
 
@@ -119,7 +121,7 @@ export async function POST(req: Request) {
         } catch {}
       }
 
-      // Check approval status
+      // Check approval status strictly for doctor accounts
       const isActuallyApproved = Boolean(u.isApproved === true || u.isApproved === 'true' || u.isApproved === 1 || role === 'PATIENT' || role === 'ADMIN');
       if (role === 'DOCTOR' && !isActuallyApproved) {
         return NextResponse.json({

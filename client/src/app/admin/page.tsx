@@ -107,7 +107,8 @@ export default function AdminDashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ doctor: profile }),
       });
-      if (!res.ok) throw new Error('Failed to save doctor profile');
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to save doctor profile');
       return true;
     } catch (err: any) {
       showMsg(err.message, true);
@@ -129,7 +130,7 @@ export default function AdminDashboardPage() {
     }
 
     if (doctors.some(d => d.email.toLowerCase() === cleanEmail)) {
-      showMsg(`A doctor with email "${cleanEmail}" already exists.`, true);
+      showMsg(`A doctor with email "${cleanEmail}" already exists in roster.`, true);
       return;
     }
 
@@ -146,7 +147,8 @@ export default function AdminDashboardPage() {
       setDoctors(prev => [newProfile, ...prev]);
       setNewForm(DEFAULT_FORM);
       setActiveTab('DOCTORS');
-      showMsg(`Dr. ${cleanName} added successfully.`);
+      showMsg(`Dr. ${cleanName} added & saved to database successfully.`);
+      await loadDoctors();
     }
   };
 

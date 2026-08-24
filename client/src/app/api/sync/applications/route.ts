@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getDbPool, initDb } from "@/lib/db";
 
 export const dynamic = 'force-dynamic';
@@ -73,15 +73,11 @@ export async function POST(req: Request) {
         const docId = id || ('doc-' + Date.now());
 
         // 4. Upsert directly into pc_doctors so new doctors appear on /patient/book and admin portal
+        await pool.query(`DELETE FROM pc_doctors WHERE LOWER(email) = $1 OR id = $2`, [cleanEmail, docId]);
+
         await pool.query(`
           INSERT INTO pc_doctors (id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio)
           VALUES ($1, $2, $3, $4, $5, $6, 'PrimeCare Multispecialty Hospital', '₹1,000', '5.0 ★', $7)
-          ON CONFLICT (email) DO UPDATE SET
-            name = EXCLUDED.name,
-            specialisation = EXCLUDED.specialisation,
-            qualification = EXCLUDED.qualification,
-            experience = EXCLUDED.experience,
-            bio = EXCLUDED.bio
         `, [
           docId,
           cleanEmail,

@@ -73,7 +73,7 @@ export async function POST(req: Request) {
     const cleanEmail = doc.email.trim().toLowerCase();
     const docId = doc.id || ('doc-' + Date.now());
 
-    await pool.query(`DELETE FROM pc_doctors WHERE LOWER(email) = $1`, [cleanEmail]);
+    await pool.query(`DELETE FROM pc_doctors WHERE LOWER(email) = $1 OR id = $2`, [cleanEmail, docId]);
 
     await pool.query(`
       INSERT INTO pc_doctors (id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio, working_hours_start, working_hours_end, slot_duration_min)
@@ -107,7 +107,15 @@ export async function POST(req: Request) {
         is_approved = TRUE
     `, [`usr-${Date.now()}`, cleanEmail, fName, lName, doc.specialisation || 'General Medicine']);
 
-    return NextResponse.json({ success: true });
+    try {
+      await pool.query(`
+        INSERT INTO pc_doctor_applications (id, name, email, reg_number, specialisation, qualification, experience, status)
+        VALUES ($1, $2, $3, 'NMC-ADMIN-ADDED', $4, $5, $6, 'APPROVED')
+        ON CONFLICT (id) DO UPDATE SET status = 'APPROVED'
+      `, [`app-${Date.now()}`, doc.name, cleanEmail, doc.specialisation || 'General Medicine', doc.qualification || 'MBBS, MD', doc.experience || 'Practice Specialist']);
+    } catch {}
+
+    return NextResponse.json({ success: true, doctor: { ...doc, id: docId } });
   } catch (err: any) {
     console.error("POST doctors error:", err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
