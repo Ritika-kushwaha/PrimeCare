@@ -25,7 +25,6 @@ export async function GET() {
         );
       `);
 
-      // Fetch distinct by email so NO duplicate doctor cards can ever exist
       const res = await pool.query(`
         SELECT DISTINCT ON (LOWER(email)) 
           id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio 
@@ -35,7 +34,7 @@ export async function GET() {
 
       return NextResponse.json(
         { success: true, doctors: res.rows || [] },
-        { headers: { 'Cache-Control': 'no-store, max-age=0' } }
+        { headers: { 'Cache-Control': 'no-store, max-age=0, must-revalidate' } }
       );
     } catch (err: any) {
       console.error("GET doctors error:", err);
@@ -50,36 +49,32 @@ export async function POST(req: Request) {
   try {
     const data = await req.json();
 
-    // 1. DELETE ACTION
+    // 1. DELETE ACTION VIA POST
     if (data.action === 'DELETE') {
       const docEmail = (data.email || '').trim().toLowerCase();
-      const docId = data.id;
+      const docId = (data.id || '').trim();
 
-      if (pool && (docEmail || docId)) {
+      if (pool) {
         if (docEmail) {
           await pool.query(`DELETE FROM pc_doctors WHERE LOWER(email) = $1`, [docEmail]);
           await pool.query(`DELETE FROM pc_users WHERE LOWER(email) = $1 AND role = 'DOCTOR'`, [docEmail]);
           await pool.query(`DELETE FROM pc_doctor_applications WHERE LOWER(email) = $1`, [docEmail]);
-          await pool.query(`DELETE FROM pc_leaves WHERE LOWER(doctor_name) LIKE $1 OR doctor_id = $2`, [`%${docEmail}%`, docId || '']);
+          await pool.query(`DELETE FROM pc_leaves WHERE LOWER(doctor_name) LIKE $1`, [`%${docEmail}%`]);
           await pool.query(`
             UPDATE pc_appointments 
-            SET status = 'CANCELLED', leave_reason = 'Doctor account deactivated by Administrator' 
+            SET status = 'CANCELLED', leave_reason = 'Doctor account deleted' 
             WHERE LOWER(doctor_email) = $1 AND status NOT IN ('COMPLETED', 'CANCELLED')
           `, [docEmail]);
         }
         if (docId) {
           await pool.query(`DELETE FROM pc_doctors WHERE id = $1`, [docId]);
-          await pool.query(`
-            UPDATE pc_appointments 
-            SET status = 'CANCELLED', leave_reason = 'Doctor account deactivated by Administrator' 
-            WHERE doctor_id = $1 AND status NOT IN ('COMPLETED', 'CANCELLED')
-          `, [docId]);
+          await pool.query(`DELETE FROM pc_leaves WHERE doctor_id = $1`, [docId]);
         }
       }
-      return NextResponse.json({ success: true, message: 'Doctor permanently deleted across all tables.' });
+      return NextResponse.json({ success: true });
     }
 
-    // 2. UPSERT DOCTOR (ONE UNIQUE ENTRY PER EMAIL)
+    // 2. UPSERT DOCTOR
     const doc = data.doctor;
     if (!doc || !doc.name || !doc.email) {
       return NextResponse.json({ success: false, error: 'Doctor details required' }, { status: 400 });
@@ -89,21 +84,11 @@ export async function POST(req: Request) {
       const cleanEmail = doc.email.trim().toLowerCase();
       const docId = doc.id || ('doc-' + Date.now());
 
-      // Clean up any stale duplicate rows for this email first
-      await pool.query(`DELETE FROM pc_doctors WHERE LOWER(email) = $1 AND id != $2`, [cleanEmail, docId]);
+      await pool.query(`DELETE FROM pc_doctors WHERE LOWER(email) = $1`, [cleanEmail]);
 
       await pool.query(`
         INSERT INTO pc_doctors (id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        ON CONFLICT (email) DO UPDATE SET
-          name = EXCLUDED.name,
-          specialisation = EXCLUDED.specialisation,
-          qualification = EXCLUDED.qualification,
-          experience = EXCLUDED.experience,
-          hospital = EXCLUDED.hospital,
-          fee = EXCLUDED.fee,
-          rating = EXCLUDED.rating,
-          bio = EXCLUDED.bio
       `, [
         docId,
         cleanEmail,
