@@ -47,8 +47,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const storedToken = localStorage.getItem("token");
       const storedUser = localStorage.getItem("user");
       if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser);
+        // Clear session if unapproved doctor
+        if (parsed.role === "DOCTOR" && !parsed.isApproved) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          setUser(null);
+          setToken(null);
+        } else {
+          setToken(storedToken);
+          setUser(parsed);
+        }
       }
     } catch (e) {
       console.error("Failed to restore session", e);
@@ -62,50 +71,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const cleanPassword = (password || "").trim();
 
     if (!cleanEmail) throw new Error("Please enter your email address.");
-    if (!cleanPassword || cleanPassword.length < 4) throw new Error("Password must be at least 4 characters long.");
+    if (!cleanPassword) throw new Error("Please enter your password.");
 
-    let authenticatedUser: User | null = null;
+    const res = await fetch('/api/auth/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'LOGIN',
+        email: cleanEmail,
+        password: cleanPassword,
+        role
+      })
+    });
 
-    try {
-      const res = await fetch('/api/auth/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'LOGIN',
-          email: cleanEmail,
-          password: cleanPassword,
-          role
-        })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.user) {
-          authenticatedUser = data.user;
-        } else if (data.error) {
-          throw new Error(data.error);
-        }
-      }
-    } catch (err: any) {
-      if (err.message && !err.message.includes('JSON')) {
-        throw err;
-      }
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Authentication failed.');
     }
 
-    if (!authenticatedUser) {
-      const nameParts = cleanEmail.split("@")[0].split(/[._-]/);
-      const firstName = role === 'ADMIN' ? 'Admin' : (nameParts[0] ? nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1) : "Member");
-      const lastName = nameParts[1] ? nameParts[1].charAt(0).toUpperCase() + nameParts[1].slice(1) : "";
+    const authenticatedUser: User = data.user;
 
-      authenticatedUser = {
-        id: `usr-${Date.now()}`,
-        email: cleanEmail,
-        role: role,
-        firstName,
-        lastName,
-        specialisation: role === "DOCTOR" ? "General Medicine" : undefined,
-        isApproved: role !== "DOCTOR" || cleanEmail.includes("ritikakushwaha"),
-      };
+    // Strict gate for doctors
+    if (authenticatedUser.role === 'DOCTOR' && !authenticatedUser.isApproved) {
+      throw new Error('Your Doctor Application is pending administrator verification. Please wait for Admin approval before logging in.');
     }
 
     const generatedToken = `jwt-primecare-${Date.now()}`;
@@ -137,59 +125,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const cleanEmail = userData.email.trim().toLowerCase();
     const cleanPassword = (userData.password || "Password@123").trim();
 
-    if (!userData.firstName.trim() || !userData.lastName.trim()) {
-      throw new Error("First and Last name are required.");
+    if (!userData.firstName.trim()) {
+      throw new Error("First name is required.");
     }
 
     if (userData.role === "DOCTOR" && !userData.regNumber) {
-      throw new Error("Medical Council Registration Number (NMC/MCI ID) is required.");
+      throw new Error("NMC / MCI Medical Registration ID is required for verification.");
     }
 
-    let newUser: User | null = null;
-
-    try {
-      const res = await fetch('/api/auth/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'REGISTER',
-          email: cleanEmail,
-          password: cleanPassword,
-          role: userData.role,
-          firstName: userData.firstName.trim(),
-          lastName: userData.lastName.trim(),
-          specialisation: userData.specialisation,
-          regNumber: userData.regNumber
-        })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.user) {
-          newUser = data.user;
-        } else if (data.error) {
-          throw new Error(data.error);
-        }
-      }
-    } catch (err: any) {
-      if (err.message && !err.message.includes('JSON')) {
-        throw err;
-      }
-    }
-
-    if (!newUser) {
-      newUser = {
-        id: `usr-${Date.now()}`,
+    const res = await fetch('/api/auth/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'REGISTER',
         email: cleanEmail,
+        password: cleanPassword,
         role: userData.role,
         firstName: userData.firstName.trim(),
         lastName: userData.lastName.trim(),
-        specialisation: userData.specialisation || "General Medicine",
-        regNumber: userData.regNumber,
-        isApproved: userData.role !== "DOCTOR" || cleanEmail.includes("ritikakushwaha"),
-      };
+        specialisation: userData.specialisation,
+        regNumber: userData.regNumber
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Registration failed.');
     }
 
+    const newUser: User = data.user;
+
+    // If role is DOCTOR, do NOT auto-login.
+    if (userData.role === 'DOCTOR') {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+      setToken(null);
+      return false; // Returns false to indicate approval is pending
+    }
+
+    // Patients and Admin auto-login
     const generatedToken = `jwt-primecare-${Date.now()}`;
     localStorage.setItem("token", generatedToken);
     localStorage.setItem("user", JSON.stringify(newUser));
@@ -198,8 +173,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (userData.role === "ADMIN") {
       router.replace("/admin/leaves");
-    } else if (userData.role === "DOCTOR") {
-      router.replace("/doctor/dashboard");
     } else {
       router.replace("/patient/book");
     }

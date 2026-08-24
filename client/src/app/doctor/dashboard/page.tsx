@@ -176,10 +176,9 @@ export default function DoctorDashboardPage() {
 
   // Dynamic Doctor Profile State
   const [docId, setDocId] = useState('doc-' + Date.now());
-    const [docName, setDocName] = useState(() => {
+      const [docName, setDocName] = useState(() => {
     if (user?.firstName) {
-      const full = ("Dr. " + user.firstName + " " + (user.lastName || "")).trim();
-      return full;
+      return ("Dr. " + user.firstName.trim() + " " + (user.lastName || "").trim()).trim();
     }
     return 'Dr. Specialist';
   });
@@ -234,7 +233,11 @@ export default function DoctorDashboardPage() {
       }
 
       setDocId(myProfile.id);
-      setDocName(myProfile.name);
+            if (user?.firstName) {
+        setDocName(("Dr. " + user.firstName.trim() + " " + (user.lastName || "").trim()).trim());
+      } else {
+        setDocName(myProfile.name);
+      }
       setDocSpecialty(myProfile.specialisation);
       setDocQualification(myProfile.qualification);
       setDocExperience(myProfile.experience);
@@ -1354,5 +1357,6 @@ export default function DoctorDashboardPage() {
     </ProtectedRoute>
   );
 }
+
 
 
