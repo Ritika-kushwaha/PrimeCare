@@ -25,7 +25,7 @@ async function sendMailHelper(to: string | string[], subject: string, html: stri
   const resendKey = process.env.RESEND_API_KEY;
   const recipients = Array.isArray(to) ? to : [to];
 
-  // 1. SMTP / Gmail App Password Transport
+  // 1. SMTP Transport
   if (emailUser && emailPass) {
     try {
       const transporter = nodemailer.createTransport({
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
     const { type, recipientEmail, adminEmail, doctorName, specialisation, regNumber, leaveDate, reason } = await req.json();
     const cleanRecipient = (recipientEmail || '').trim().toLowerCase();
 
-    // 1. DOCTOR SIGNUP -> DYNAMICALLY FIND ADMIN EMAIL(S) FROM DB
+    // 1. DOCTOR SIGNUP -> DISPATCH TO ADMIN
     if (type === 'NEW_DOCTOR_APPLICATION_ADMIN_ALERT') {
       const adminEmails = adminEmail ? [adminEmail.trim().toLowerCase()] : await getAdminEmails();
       const subject = `⚠️ New Doctor Approval Request: ${doctorName} (${specialisation || 'General Medicine'})`;
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
             <p style="margin: 4px 0; color: #94a3b8;"><strong>Access Status:</strong> <span style="color: #34d399; font-weight: bold;">UNLOCKED & ACTIVE</span></p>
             <p style="margin: 4px 0; color: #94a3b8;"><strong>Registered Login Email:</strong> <span style="color: #f8fafc;">${cleanRecipient}</span></p>
           </div>
-          <p style="color: #94a3b8; font-size: 13px;">You can now log in to the PrimeCare Doctor Workspace with your registered password to manage patient queues and prescriptions.</p>
+          <p style="color: #94a3b8; font-size: 13px;">You are now listed in the public booking directory and can log in to the PrimeCare Doctor Workspace with your registered password.</p>
           <a href="https://primecare-app-jet.vercel.app/login" style="display: inline-block; background: #10b981; color: #022c22; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 12px;">Sign In to Doctor Workspace</a>
         </div>
       `;
@@ -139,7 +139,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: result.success, details: result, targetDoctor: cleanRecipient });
     }
 
-    // 3. DUTY LEAVE NOTICE TO DOCTOR
+    // 3. ADMIN REJECTS DOCTOR -> SEND REJECTION NOTICE TO DOCTOR
+    if (type === 'DOCTOR_REJECTED') {
+      const subject = "PrimeCare Application Status: Verification Unsuccessful";
+      const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #ef4444; border-radius: 12px; background: #0f172a; color: #f8fafc;">
+          <h2 style="color: #ef4444; margin-bottom: 8px;">PrimeCare Medical Administration</h2>
+          <p style="font-size: 16px; color: #e2e8f0;">Dear <strong>${doctorName || 'Applicant'}</strong>,</p>
+          <p style="color: #cbd5e1; line-height: 1.6;">
+            Thank you for your interest in joining the PrimeCare clinical faculty. Following review by the Medical Board, your application could not be approved at this time due to unverifiable credentials or medical registration ID discrepancies.
+          </p>
+          <div style="background: #1e293b; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #334155;">
+            <p style="margin: 4px 0; color: #94a3b8;"><strong>Status:</strong> <span style="color: #f87171; font-weight: bold;">APPLICATION REJECTED</span></p>
+            <p style="margin: 4px 0; color: #94a3b8;"><strong>Account Notice:</strong> <span style="color: #cbd5e1;">Existing credentials have been deleted. You may re-register with valid medical documentation.</span></p>
+          </div>
+          <p style="color: #94a3b8; font-size: 13px;">If you believe this was an error, please create a new registration with valid NMC / MCI registration documents.</p>
+          <a href="https://primecare-app-jet.vercel.app/login" style="display: inline-block; background: #334155; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 12px;">Create New Registration</a>
+        </div>
+      `;
+
+      const result = await sendMailHelper(cleanRecipient, subject, html);
+      return NextResponse.json({ success: result.success, details: result, targetDoctor: cleanRecipient });
+    }
+
+    // 4. DUTY LEAVE NOTICE TO DOCTOR
     if (type === 'LEAVE_APPROVED') {
       const subject = `📅 PrimeCare Duty Notice: Leave Confirmed on ${leaveDate}`;
       const html = `
@@ -150,7 +173,7 @@ export async function POST(req: Request) {
           <div style="background: #1e293b; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #334155;">
             <p style="margin: 4px 0; color: #94a3b8;"><strong>Leave Date:</strong> <span style="color: #fbbf24; font-weight: bold;">${leaveDate}</span></p>
             <p style="margin: 4px 0; color: #94a3b8;"><strong>Reason:</strong> <span style="color: #e2e8f0;">${reason || 'Medical / Duty Leave'}</span></p>
-            <p style="margin: 4px 0; color: #94a3b8;"><strong>Queue Notice:</strong> <span style="color: #38bdf8;">All matching patient bookings have been moved to the "Due to Dr. on Leave" tab for rescheduling.</span></p>
+            <p style="margin: 4px 0; color: #94a3b8;"><strong>Queue Notice:</strong> <span style="color: #38bdf8;">All matching patient bookings have been shifted to the "Due to Dr. on Leave" tab for rescheduling.</span></p>
           </div>
         </div>
       `;
