@@ -176,12 +176,12 @@ export default function DoctorDashboardPage() {
 
   // Dynamic Doctor Profile State
   const [docId, setDocId] = useState('doc-' + Date.now());
-  const [docName, setDocName] = useState(() => {
+    const [docName, setDocName] = useState(() => {
     if (user?.firstName) {
-      const full = `Dr. ${user.firstName} ${user.lastName || ''}`.trim();
-      return full.startsWith('Dr.') ? full : `Dr. ${full}`;
+      const full = ("Dr. " + user.firstName + " " + (user.lastName || "")).trim();
+      return full;
     }
-    return 'Dr. Ritika Kushwaha';
+    return 'Dr. Specialist';
   });
   const [docSpecialty, setDocSpecialty] = useState(user?.specialisation || 'Cardiology');
   const [docQualification, setDocQualification] = useState('MD, DM (Cardiology - AIIMS Delhi)');
@@ -1354,4 +1354,5 @@ export default function DoctorDashboardPage() {
     </ProtectedRoute>
   );
 }
+
 

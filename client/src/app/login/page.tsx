@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { useAuth, Role } from '@/context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Lock, Mail, User, Stethoscope, ShieldCheck, 
-  ArrowRight, KeyRound, AlertCircle, CheckCircle2, UserPlus, LogIn, FileBadge
+  ArrowRight, KeyRound, AlertCircle, CheckCircle2, UserPlus, LogIn, FileBadge, Clock
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [role, setRole] = useState<Role>('PATIENT');
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [isForgotMode, setIsForgotMode] = useState(false);
+  const [isPendingReview, setIsPendingReview] = useState(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,6 +31,7 @@ export default function LoginPage() {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
+    setIsPendingReview(false);
     setLoading(true);
 
     try {
@@ -45,7 +47,7 @@ export default function LoginPage() {
       }
 
       if (isRegisterMode) {
-        await register({
+        const autoLoggedIn = await register({
           email,
           role,
           firstName,
@@ -54,10 +56,36 @@ export default function LoginPage() {
           specialisation: role === 'DOCTOR' ? specialisation : undefined,
           regNumber: role === 'DOCTOR' ? regNumber : undefined,
         });
+
+        if (role === 'DOCTOR' && !autoLoggedIn) {
+          // DISPATCH EMAIL ALERT TO ADMIN
+          try {
+            await fetch('/api/notifications/email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'NEW_DOCTOR_APPLICATION_ADMIN_ALERT',
+                recipientEmail: email,
+                doctorName: `Dr. ${firstName.trim()} ${lastName.trim()}`.trim(),
+                specialisation,
+                regNumber
+              })
+            });
+          } catch (mailErr) {
+            console.warn("Admin mail trigger error:", mailErr);
+          }
+
+          setIsPendingReview(true);
+          setSuccessMsg('Your application & NMC registration number have been sent to the Hospital Administrator. An approval email will be sent to you once verified.');
+          setIsRegisterMode(false);
+        }
       } else {
         await login(email, role, password);
       }
     } catch (err: any) {
+      if (err.message && (err.message.includes('pending') || err.message.includes('approved yet'))) {
+        setIsPendingReview(true);
+      }
       setErrorMsg(err.message || 'Authentication failed. Please check your credentials.');
     } finally {
       setLoading(false);
@@ -71,11 +99,10 @@ export default function LoginPage() {
       <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
         <div className="w-full max-w-md space-y-6">
           
-          {/* ROLE SELECTOR TABS */}
           <div className="grid grid-cols-3 gap-2 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 text-xs font-bold">
             <button
               type="button"
-              onClick={() => { setRole('PATIENT'); setErrorMsg(''); }}
+              onClick={() => { setRole('PATIENT'); setErrorMsg(''); setIsPendingReview(false); }}
               className={`py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 ${
                 role === 'PATIENT' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
               }`}
@@ -84,7 +111,7 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => { setRole('DOCTOR'); setErrorMsg(''); }}
+              onClick={() => { setRole('DOCTOR'); setErrorMsg(''); setIsPendingReview(false); }}
               className={`py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 ${
                 role === 'DOCTOR' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
@@ -93,7 +120,7 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => { setRole('ADMIN'); setErrorMsg(''); }}
+              onClick={() => { setRole('ADMIN'); setErrorMsg(''); setIsPendingReview(false); }}
               className={`py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 ${
                 role === 'ADMIN' ? 'bg-red-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
@@ -102,7 +129,6 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {/* MAIN CARD */}
           <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-2xl space-y-6">
             
             <div className="border-b border-slate-800 pb-3">
@@ -118,14 +144,31 @@ export default function LoginPage() {
                   ? 'Enter your email to receive a temporary reset password.'
                   : isRegisterMode
                   ? role === 'DOCTOR'
-                    ? 'Enter your details & NMC/MCI registration ID for verification.'
+                    ? 'Enter your name, department, & NMC registration ID for administrator verification.'
                     : 'Fill out your details to start booking outpatient consultations.'
+                  : role === 'DOCTOR'
+                  ? 'Enter your approved doctor credentials to open clinical workspace.'
                   : 'Enter your email and password to access your dashboard.'}
               </p>
             </div>
 
-            {/* ERROR BANNER */}
-            {errorMsg && (
+            {isPendingReview && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-4 bg-amber-950/40 border border-amber-500/50 text-amber-200 text-xs rounded-2xl space-y-2"
+              >
+                <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
+                  <Clock className="w-4 h-4 text-amber-400" />
+                  <span>Application Under Administrative Verification</span>
+                </div>
+                <p className="leading-relaxed text-[11px] text-amber-200/90">
+                  Your medical registration credentials have been sent to the Hospital Administrator for approval. An approval email will be dispatched to your email once unlocked.
+                </p>
+              </motion.div>
+            )}
+
+            {errorMsg && !isPendingReview && (
               <motion.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -133,14 +176,13 @@ export default function LoginPage() {
               >
                 <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <strong className="block font-bold">Authentication Error</strong>
+                  <strong className="block font-bold">Authentication Notice</strong>
                   <span>{errorMsg}</span>
                 </div>
               </motion.div>
             )}
 
-            {/* SUCCESS BANNER */}
-            {successMsg && (
+            {successMsg && !isPendingReview && (
               <motion.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -163,7 +205,7 @@ export default function LoginPage() {
                         required
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="e.g. Ananya"
+                        placeholder="e.g. Ramesh"
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
@@ -174,7 +216,7 @@ export default function LoginPage() {
                         required
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        placeholder="e.g. Verma"
+                        placeholder="e.g. Gupta"
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
@@ -207,7 +249,7 @@ export default function LoginPage() {
                           required
                           value={regNumber}
                           onChange={(e) => setRegNumber(e.target.value)}
-                          placeholder="e.g. MCI-2024-88910"
+                          placeholder="e.g. NMC-2026-88120"
                           className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 uppercase font-mono"
                         />
                       </div>
@@ -238,7 +280,7 @@ export default function LoginPage() {
                     </label>
                     <button
                       type="button"
-                      onClick={() => { setIsForgotMode(true); setErrorMsg(''); }}
+                      onClick={() => { setIsForgotMode(true); setErrorMsg(''); setIsPendingReview(false); }}
                       className="text-[11px] text-emerald-400 hover:underline flex items-center gap-1"
                     >
                       <KeyRound className="w-3 h-3" /> Forgot Password?
@@ -271,7 +313,7 @@ export default function LoginPage() {
                 ) : isForgotMode ? (
                   'Reset Password & Sign In'
                 ) : isRegisterMode ? (
-                  <><UserPlus className="w-4 h-4" /> Register {role} Account</>
+                  <><UserPlus className="w-4 h-4" /> Submit {role} Registration</>
                 ) : (
                   <><LogIn className="w-4 h-4" /> Sign In as {role} <ArrowRight className="w-4 h-4" /></>
                 )}
@@ -281,10 +323,10 @@ export default function LoginPage() {
             <div className="text-center pt-2 border-t border-slate-800/80 text-xs">
               {isRegisterMode ? (
                 <p className="text-slate-400">
-                  Already registered?{' '}
+                  Already verified?{' '}
                   <button
                     type="button"
-                    onClick={() => { setIsRegisterMode(false); setIsForgotMode(false); setErrorMsg(''); }}
+                    onClick={() => { setIsRegisterMode(false); setIsForgotMode(false); setErrorMsg(''); setIsPendingReview(false); }}
                     className="text-emerald-400 font-bold hover:underline"
                   >
                     Sign In
@@ -295,7 +337,7 @@ export default function LoginPage() {
                   Need a new account?{' '}
                   <button
                     type="button"
-                    onClick={() => { setIsRegisterMode(true); setIsForgotMode(false); setErrorMsg(''); }}
+                    onClick={() => { setIsRegisterMode(true); setIsForgotMode(false); setErrorMsg(''); setIsPendingReview(false); }}
                     className="text-emerald-400 font-bold hover:underline"
                   >
                     Create {role} Account

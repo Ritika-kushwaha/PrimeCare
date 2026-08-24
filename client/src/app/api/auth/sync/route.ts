@@ -12,10 +12,9 @@ export async function POST(req: Request) {
     const cleanEmail = (email || '').trim().toLowerCase();
 
     if (!cleanEmail) {
-      return NextResponse.json({ success: false, error: 'Email required' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Email is required' }, { status: 400 });
     }
 
-    // 1. Ensure pc_users table exists
     if (pool) {
       await pool.query(`
         CREATE TABLE IF NOT EXISTS pc_users (
@@ -34,27 +33,47 @@ export async function POST(req: Request) {
       `);
     }
 
+    // --- LOGIN FLOW ---
     if (action === 'LOGIN') {
       if (pool) {
         const res = await pool.query(
           `SELECT id, email, role, first_name AS "firstName", last_name AS "lastName", 
                   password, specialisation, reg_number AS "regNumber", is_approved AS "isApproved" 
            FROM pc_users 
-           WHERE email = $1 AND role = $2`,
+           WHERE LOWER(email) = $1 AND role = $2`,
           [cleanEmail, role]
         );
 
         if (res.rows.length > 0) {
           const u = res.rows[0];
+
           if (password && u.password && u.password !== password && password !== 'Password@123') {
-            return NextResponse.json({ success: false, error: `Invalid password for ${role} profile.` }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'Invalid password. Please check your credentials.' }, { status: 401 });
           }
+
+          // STRICT CHECK: Doctors MUST have is_approved = true
+          if (role === 'DOCTOR' && !u.isApproved) {
+            return NextResponse.json({
+              success: false,
+              isPendingApproval: true,
+              error: 'Your Doctor Application has not been approved yet. Please wait for the Hospital Administrator to verify your NMC ID and approve your account.'
+            }, { status: 403 });
+          }
+
           return NextResponse.json({ success: true, user: u });
         }
       }
 
-      // Default fallback user if not found yet in database
-      const isApproved = role !== 'DOCTOR' || cleanEmail.includes('ritikakushwaha');
+      // If user not in database
+      if (role === 'DOCTOR') {
+        return NextResponse.json({
+          success: false,
+          isPendingApproval: true,
+          error: 'No verified doctor account found with this email. Please sign up or wait for Admin approval.'
+        }, { status: 403 });
+      }
+
+      // Default Admin / Patient auto-fallback
       const fallbackUser = {
         id: `usr-${Date.now()}`,
         email: cleanEmail,
@@ -62,26 +81,19 @@ export async function POST(req: Request) {
         firstName: firstName || (role === 'ADMIN' ? 'Admin' : 'Member'),
         lastName: lastName || '',
         specialisation: specialisation || (role === 'DOCTOR' ? 'General Medicine' : undefined),
-        isApproved
+        isApproved: true
       };
-
-      if (pool) {
-        await pool.query(
-          `INSERT INTO pc_users (id, email, role, first_name, last_name, password, specialisation, reg_number, is_approved)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-           ON CONFLICT (email, role) DO NOTHING`,
-          [fallbackUser.id, cleanEmail, role, fallbackUser.firstName, fallbackUser.lastName, password || 'Password@123', fallbackUser.specialisation || null, null, isApproved]
-        );
-      }
 
       return NextResponse.json({ success: true, user: fallbackUser });
     }
 
+    // --- REGISTRATION FLOW ---
     if (action === 'REGISTER') {
-      const isApproved = role !== 'DOCTOR' || cleanEmail.includes('ritikakushwaha');
+      const isApproved = role !== 'DOCTOR'; // EVERY DOCTOR STARTS UNAPPROVED
       const userId = `usr-${Date.now()}`;
-      const fName = firstName || 'Member';
-      const lName = lastName || '';
+      const fName = (firstName || 'Member').trim();
+      const lName = (lastName || '').trim();
+      const fullName = role === 'DOCTOR' ? `Dr. ${fName} ${lName}`.trim() : `${fName} ${lName}`.trim();
 
       if (pool) {
         await pool.query(
@@ -97,19 +109,27 @@ export async function POST(req: Request) {
         );
 
         if (role === 'DOCTOR') {
-          const fullName = `Dr. ${fName} ${lName}`.trim();
           await pool.query(
             `INSERT INTO pc_doctor_applications (id, name, email, reg_number, specialisation, qualification, experience, status)
-             VALUES ($1, $2, $3, $4, $5, 'MBBS, MD', 'Practice Consultant', 'PENDING')
+             VALUES ($1, $2, $3, $4, $5, 'MBBS, MD', 'Practice Specialist', 'PENDING')
              ON CONFLICT (id) DO NOTHING`,
-            [`app-${Date.now()}`, fullName, cleanEmail, regNumber, specialisation || 'General Medicine']
+            [`app-${Date.now()}`, fullName, cleanEmail, regNumber || 'PENDING-NMC', specialisation || 'General Medicine']
           );
         }
       }
 
       return NextResponse.json({ 
         success: true, 
-        user: { id: userId, email: cleanEmail, role, firstName: fName, lastName: lName, specialisation, regNumber, isApproved } 
+        user: { 
+          id: userId, 
+          email: cleanEmail, 
+          role, 
+          firstName: fName, 
+          lastName: lName, 
+          specialisation, 
+          regNumber, 
+          isApproved 
+        } 
       });
     }
 
