@@ -89,10 +89,23 @@ export default function AdminDashboardPage() {
       const fetchedDocs: DoctorProfile[] = (data.success && Array.isArray(data.doctors)) ? data.doctors : [];
 
       const docMap = new Map<string, DoctorProfile>();
-      DEFAULT_DOCTORS.forEach(d => docMap.set(d.id, d));
-      fetchedDocs.forEach(d => docMap.set(d.id, d));
+      DEFAULT_DOCTORS.forEach(d => {
+        docMap.set(d.id, d);
+        if (d.email) docMap.set(d.email.toLowerCase(), d);
+      });
 
-      setDoctors(Array.from(docMap.values()));
+      fetchedDocs.forEach(d => {
+        if (d.email) {
+          const key = d.email.toLowerCase();
+          const existing = docMap.get(key) || docMap.get(d.id);
+          docMap.set(key, { ...existing, ...d });
+        } else if (d.id) {
+          docMap.set(d.id, d);
+        }
+      });
+
+      const uniqueDocs = Array.from(new Set(docMap.values()));
+      setDoctors(uniqueDocs);
     } catch (err) {
       console.error('Failed to load doctors:', err);
       setDoctors(DEFAULT_DOCTORS);
