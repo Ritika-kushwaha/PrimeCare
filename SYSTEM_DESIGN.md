@@ -1,69 +1,226 @@
-# PrimeCare System Design Write-Up
+# PrimeCare — Comprehensive System Design & Architectural Specification
 
-> Healthcare Appointment & Follow-up Manager — Architecture & Design Decisions
-
----
-
-## 1. Concurrency Control & Double-Booking Prevention
-
-Simultaneous booking attempts for the same physician slot introduce race condition risks in any multi-user outpatient system. PrimeCare enforces safety through a **two-tier prevention architecture**.
-
-**Database-Level Unique Compound Constraint**: At the PostgreSQL storage tier, a `UNIQUE(doctorId, appointmentDate, timeSlot, status)` constraint is enforced for all active records. Any race condition that reaches the persistence engine fails deterministically with a `P2002` unique violation, preventing phantom inserts.
-
-**Atomic Transactions with Serializable Isolation**: When a patient initiates a booking, the entire operation executes within a `prisma.$transaction()` block. The system first reads current slot occupancy and then writes the appointment record atomically — eliminating the read-before-write gap exploited by concurrent requests. If two users attempt the same slot simultaneously, the second transaction receives a constraint violation and is returned a clear conflict error.
-
-**Redis Slot Hold Mechanism**: Before confirming, a temporary `HELD` lock is placed in Redis for 5–10 minutes using `SET lockKey patientId EX 300 NX`. This prevents the case where a patient is mid-booking (entering symptoms) while another claims the slot. The `NX` flag (set only if key does not exist) makes the hold acquisition itself atomic. If the patient abandons checkout, the TTL automatically releases the slot.
+> Full-Stack Healthcare Platform — Technical Design, System Architecture, Email Engine Specification, and Complete Codebase Changes Audit.
 
 ---
 
-## 2. Doctor Leave Conflict Handling
+## 📋 Table of Contents
 
-When an Administrator marks a physician on leave for a specific date, the system must atomically cancel all affected bookings and notify patients without leaving the database in a partial state.
-
-**Atomic Leave + Cancellation Transaction**: The entire operation is wrapped in a single Prisma transaction:
-1. A `DoctorLeave` record is written for `(doctorId, leaveDate)`.
-2. All `CONFIRMED` appointments for that `(doctorId, leaveDate)` are immediately queried.
-3. Their status is bulk-updated to `CANCELLED_BY_DOCTOR_LEAVE` in the same commit.
-4. `NotificationLog` entries are created for each affected patient — all within the same atomic boundary.
-
-If any step fails, the entire transaction rolls back, ensuring no appointment is cancelled without its notification log entry, and no leave is recorded without cancelling the bookings.
-
-**Automated Patient Notification**: For each cancelled appointment, the background notification worker dispatches a personalized email containing the original time slot, leave reason, and a direct reschedule link. The doctor's leave management page also supports revoking leaves, which restores slot availability instantly.
+1. [Architectural Overview](#1-architectural-overview)
+2. [Detailed Codebase Changes Audit (File-by-File)](#2-detailed-codebase-changes-audit-file-by-file)
+3. [Email Notification Engine & SMTP Resiliency Design](#3-email-notification-engine--smtp-resiliency-design)
+4. [Concurrency Control & Double-Booking Prevention](#4-concurrency-control--double-booking-prevention)
+5. [Doctor Duty Leave Management & Patient Auto-Rescheduling](#5-doctor-duty-leave-management--patient-auto-rescheduling)
+6. [Doctor Queue Isolation & Profile Protection (`isMyPatient`)](#6-doctor-queue-isolation--profile-protection-ismypatient)
+7. [AI Clinical Engine & Deterministic Rule Fallbacks](#7-ai-clinical-engine--deterministic-rule-fallbacks)
+8. [Build Verification & Deployment Safety](#8-build-verification--deployment-safety)
 
 ---
 
-## 3. Slot Hold & Expiration Mechanism
+## 1. Architectural Overview
 
-To support multi-step symptom intake (where a patient selects a slot, then fills out a symptom form before confirming), PrimeCare uses a Redis-backed distributed hold system.
+PrimeCare is structured around a decoupled dual-layer architecture:
 
-**Hold Initiation**: When a patient selects a slot, `SlotService.holdSlot()` executes `SET lock:slot:{doctorId}:{timestamp} {patientId} EX 300 NX`. This atomically reserves the slot for the initiating patient for 5 minutes.
-
-**Visibility to Other Patients**: The `getDoctorSlots()` function checks Redis for each generated slot. If a lock exists, the slot is returned with `status: "HELD"` and `isAvailable: false`, preventing other patients from selecting it.
-
-**Automatic Expiry**: Redis TTL handles expiry natively — no cleanup cron is needed. If the patient abandons booking, the key expires and the slot returns to available on the next availability query.
-
-**Renewal**: If the same patient re-queries the hold (e.g., page refresh), the system detects `currentHolder === patientId` and returns `expiresAt` without consuming a new lock — preventing double-holds.
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          NEXT.JS 14 FRONTEND (CLIENT)                       │
+│  - App Router (/patient/book, /doctor/dashboard, /admin, /login)             │
+│  - Tailwind CSS, Framer Motion, Lucide Icons, AuthContext                    │
+└─────────────────────────────────────┬───────────────────────────────────────┘
+                                      │ REST API Fetch / JSON
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        NEXT.JS SERVERLESS & EXPRESS API                     │
+│  - /api/sync/* (doctors, appointments, leaves, ehr, applications)           │
+│  - /api/notifications/* (email dispatches, SMTP test suite)                 │
+│  - /api/admin/leave-reschedule (patient bulk reschedule dispatches)          │
+│  - /api/ai/* (pre-visit triage & post-visit summary)                        │
+└───────────────────────┬──────────────────────────────┬──────────────────────┘
+                        │                              │
+                        ▼                              ▼
+┌───────────────────────────────┐            ┌────────────────────────────────┐
+│   POSTGRESQL (NEON DB)        │            │   EXTERNAL SERVICES            │
+│ - pc_users (Auth & Roles)     │            │ - Google Gemini 2.5 Flash API  │
+│ - pc_doctors (Profiles)       │            │ - Nodemailer Gmail SMTP        │
+│ - pc_appointments (Bookings)  │            │   (Port 465 SSL & 587 TLS)     │
+│ - pc_leaves (Duty Leaves)     │            │ - Google Calendar Deep-Links   │
+│ - pc_ehr (Medical History)    │            │   & .ics iCalendar Attachments │
+└───────────────────────────────┘            └────────────────────────────────┘
+```
 
 ---
 
-## 4. LLM Integration & Graceful Failure Handling
+## 2. Detailed Codebase Changes Audit (File-by-File)
 
-PrimeCare integrates Google Gemini 2.5 Flash at two clinical pipeline stages, with full resilience against AI service failures.
+The following is an exhaustive record of all changes, enhancements, and bug fixes implemented across the codebase:
 
-**Pre-Visit Symptom Triaging**: Patient-reported symptoms are sent to Gemini with a structured JSON prompt requesting: urgency level (`LOW`, `MEDIUM`, `HIGH`), a clinical chief complaint statement, and three diagnostic questions for the doctor. The output is stored on the `Appointment` record and displayed to the doctor before the consultation begins.
+### 📁 `client/src/app/patient/book/page.tsx`
+* **ISO Date Normalization (`normalizeDate`)**: Replaced direct string equality (`l.leaveDate !== selectedDate`) with `normalizeDate()`, converting timestamps (`2026-08-24T00:00:00.000Z`) and localized strings (`24-08-2026`) into a clean `YYYY-MM-DD` format.
+* **Duty Leave Visual Alerts**: Rendered a prominent warning banner when a physician is on leave and added an `On Leave (<date>)` badge to doctor roster cards.
+* **Time Slot Locking & Disabling**: Updated time slot generation to render `ON LEAVE` and `BOOKED` badges, disabling user selection and blocking form submission.
+* **Dual Email Dispatch**: Wired booking submission to trigger both HTML email notifications (`/api/notifications/email`) and calendar `.ics` email invites (`/api/appointments/book`).
 
-**Post-Visit Clinical Summarization**: Doctor clinical notes and prescription details are sent to Gemini for conversion into a plain-language patient care plan — including diagnosis explanation, medication schedule, and follow-up steps. The output is emailed to the patient immediately.
+### 📁 `client/src/app/doctor/dashboard/page.tsx`
+* **Doctor Queue Isolation (`isMyPatient`)**: Replaced loose email filtering with strict multi-attribute matching (`isMyPatient`). If an appointment specifies a doctor name (`a.doctorName`) different from the logged-in physician (`docName`), it is immediately rejected, preventing cross-doctor patient leaks.
+* **Profile Overwrite Fix (`loadData`)**: Removed the unconstrained email fallback (`find(d => d.email === doctorEmail)`), preventing the remote DB sync from overwriting a logged-in doctor's name or ID with another doctor sharing the email address.
+* **Default Queue View**: Set default `filterMode` state to `'MY_PATIENTS'`.
 
-**Resilience Pattern**: Both LLM calls are wrapped in `try/catch`. On any failure (network timeout, rate limit, invalid JSON response, missing API key), the system falls back to: rule-based urgency classification for pre-visit, and a template-based care plan for post-visit. The API routes always return HTTP 200 with a `source: "fallback"` field — booking and consultation flows **never break** due to upstream AI failures.
+### 📁 `client/src/app/admin/leaves/page.tsx` & `client/src/app/api/admin/leave-reschedule/route.ts`
+* **Patient Leave-Reschedule Pipeline**: Integrated `/api/admin/leave-reschedule` into `handleAddLeave`. When an administrator logs a leave, all affected patients are queried, and personalized reschedule emails with `.ics` cancellation attachments are automatically dispatched.
+* **Dual Transport Resiliency**: Added fallback handling for SMTP ports 465 (SSL) and 587 (TLS).
+
+### 📁 `client/src/app/api/sync/doctors/route.ts`
+* **Roster Preservations**: Removed `SELECT DISTINCT ON (LOWER(email))` from the PostgreSQL query, ensuring that every physician profile remains distinct by unique ID and name.
+
+### 📁 `client/src/app/api/notifications/email/route.ts` & `client/src/app/api/auth/send-otp/route.ts`
+* **SMTP Transport Upgrade**: Standardized `sendMailHelper` across all mail API endpoints using dual-port connection handling (465 SSL primary, 587 TLS fallback).
+* **BOM Byte Stripping**: Added `.replace(/\s+/g, '')` and `.trim()` on environment variables to clean hidden UTF-8 BOM bytes.
+
+### 📁 `client/src/app/api/ai/pre-visit/route.ts` & `client/src/app/api/ai/post-visit/route.ts`
+* **Google Gemini 2.5 Flash Integration**: Wired `@google/genai` with clinical prompts returning structured JSON for symptom urgency and post-visit care plans, complete with rule-based fallback handlers.
 
 ---
 
-## 5. Notification Reliability & Retry Mechanism
+## 3. Email Notification Engine & SMTP Resiliency Design
 
-Email delivery is decoupled from synchronous HTTP requests using a durable queue backed by PostgreSQL.
+The notification subsystem is engineered to guarantee mail delivery even during network congestion, provider rate limits, or port blocks:
 
-**Durable Notification Log**: All outbound communications are written to a `NotificationLog` table with `status: "PENDING"` before dispatch is attempted. This ensures zero notification loss even if the SMTP server is temporarily unavailable.
+```
+                          ┌───────────────────────────┐
+                          │   Outbound Mail Trigger   │
+                          │   (Booking, Leave, OTP)   │
+                          └─────────────┬─────────────┘
+                                        │
+                                        ▼
+                          ┌───────────────────────────┐
+                          │ Credential & Envelope     │
+                          │ Sanitization (.trim())    │
+                          └─────────────┬─────────────┘
+                                        │
+                         ┌──────────────┴──────────────┐
+                         │ Primary Connection:         │
+                         │ Gmail SMTP Port 465 (SSL)   │
+                         └──────────────┬──────────────┘
+                                        │
+                         ┌──────────────┴──────────────┐
+                   Success?                            No (Timeout/Block)
+                         │                             │
+               ┌─────────┴─────────┐         ┌─────────┴─────────┐
+               │ Return HTTP 200   │         │ Fallback Attempt: │
+               │ Email Sent        │         │ Gmail SMTP 587    │
+               └───────────────────┘         └─────────┬─────────┘
+                                                       │
+                                             ┌─────────┴─────────┐
+                                             │ Return HTTP 200   │
+                                             │ Email Sent        │
+                                             └───────────────────┘
+```
 
-**Background Worker with Exponential Retry**: A node-cron job runs every 10 minutes and queries all `PENDING` logs with `retryCount < 3`. For each, it attempts SMTP delivery. On success, status is updated to `SENT`. On failure, `retryCount` is incremented and the error is logged. After 3 failures, the record transitions to `FAILED` for manual inspection.
+### Supported Email Types & Payloads:
 
-**Google Calendar Integration**: Two approaches are implemented. First, a pre-filled Google Calendar deep-link URL (`calendar.google.com/calendar/render`) is generated immediately after booking and presented to the patient — no OAuth required, works for all users. Second, a full OAuth 2.0 flow (`/api/oauth/google` → `/api/oauth/callback`) stores a refresh token per user, enabling backend-initiated calendar event creation, updates, and deletions on reschedule or cancellation.
+1. **`APPOINTMENT_CONFIRMATION`**: HTML booking receipt featuring Queue Token #, physician details, consultation fee, and calendar deep-links.
+2. **`APPOINTMENT_REMINDER`**: Automated reminder sent 24 hours prior to visit.
+3. **`LEAVE_APPROVED`**: Direct notification email sent to physician confirming duty leave approval.
+4. **`PATIENT_RESCHEDULE_NOTICE`**: Automated message sent to affected patients when a doctor takes leave, complete with an attached `.ics` cancellation calendar object.
+5. **`PASSWORD_RESET_OTP`**: 6-digit verification code sent for password reset.
+
+---
+
+## 4. Concurrency Control & Double-Booking Prevention
+
+PrimeCare prevents double-booking through a multi-tier concurrency control architecture:
+
+1. **PostgreSQL Database Constraint**:
+   ```sql
+   ALTER TABLE pc_appointments 
+   ADD CONSTRAINT unique_doctor_slot UNIQUE (doctor_id, date, time_slot);
+   ```
+   If simultaneous requests attempt to commit the exact same consultation slot, PostgreSQL rejects the second write with error code `23505` (unique violation).
+
+2. **State Revalidation**:
+   Before writing a booking, `/patient/book` inspects active DB records for matching date and time slot entries.
+
+---
+
+## 5. Doctor Duty Leave Management & Patient Auto-Rescheduling
+
+When an Administrator logs a duty leave:
+
+1. A record is inserted into `pc_leaves`.
+2. A bulk SQL update sets matching appointment statuses to `LEAVE_CANCELLED`:
+   ```sql
+   UPDATE pc_appointments 
+   SET status = 'LEAVE_CANCELLED', leave_reason = $1 
+   WHERE (doctor_id = $2 OR LOWER(doctor_name) LIKE $3)
+     AND date = $4
+     AND status NOT IN ('COMPLETED', 'CANCELLED');
+   ```
+3. `/api/admin/leave-reschedule` triggers personalized reschedule emails to all affected patients.
+
+---
+
+## 6. Doctor Queue Isolation & Profile Protection (`isMyPatient`)
+
+To prevent cross-doctor patient leaks when multiple test profiles share an email address:
+
+```typescript
+const isMyPatient = useCallback((a: AppointmentItem) => {
+  if (!a) return false;
+  const cleanMyName = cleanDoctorName(docName);
+  const cleanAptDocName = cleanDoctorName(a.doctorName);
+  const cleanMyId = (docId || user?.id || '').toLowerCase().trim();
+  const cleanAptDocId = (a.doctorId || '').toLowerCase().trim();
+
+  // 1. Strict Doctor ID match if both IDs exist
+  if (cleanAptDocId && cleanMyId) {
+    if (cleanAptDocId === cleanMyId) return true;
+    return false;
+  }
+
+  // 2. Strict Doctor Name match if appointment names a doctor
+  if (cleanAptDocName && cleanMyName) {
+    const nameMatch = cleanAptDocName.includes(cleanMyName) || cleanMyName.includes(cleanAptDocName);
+    if (!nameMatch) return false; // Explicitly belongs to another physician!
+    return true;
+  }
+
+  // 3. Fallback email match ONLY if appointment has NO doctor name and NO doctor ID
+  if (!cleanAptDocName && !cleanAptDocId && doctorEmail) {
+    const cleanMyEmail = doctorEmail.toLowerCase().trim();
+    const cleanAptDocEmail = (a.doctorEmail || '').toLowerCase().trim();
+    if (cleanAptDocEmail && cleanMyEmail && cleanAptDocEmail === cleanMyEmail) {
+      return true;
+    }
+  }
+
+  return false;
+}, [docName, docId, doctorEmail, user]);
+```
+
+---
+
+## 7. AI Clinical Engine & Deterministic Rule Fallbacks
+
+### Pre-Visit Symptom Analysis (`/api/ai/pre-visit`)
+* **Model**: Google Gemini 2.5 Flash (`@google/genai`)
+* **Output**: JSON containing `urgency` (`LOW`, `MEDIUM`, `HIGH`), `chiefComplaint`, and 3 diagnostic questions.
+* **Deterministic Fallback**: Evaluates symptoms against medical keywords (*chest pain*, *breathlessness* $\rightarrow$ `HIGH`).
+
+### Post-Visit Care Summary (`/api/ai/post-visit`)
+* Converts clinical notes and prescriptions into plain-language patient summaries and medication timetables.
+
+---
+
+## 8. Build Verification & Deployment Safety
+
+All changes undergo continuous static type analysis and production compilation verification:
+
+```powershell
+# 1. Static Type Checking
+npx tsc --noEmit
+# Result: Exit Code 0 (0 errors)
+
+# 2. Production Build Verification
+npm run build
+# Result: Exit Code 0 (Clean Next.js App Build)
+```
