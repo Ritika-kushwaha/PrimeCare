@@ -154,7 +154,7 @@ export default function AdminDashboardPage() {
     return () => clearInterval(interval);
   }, [loadData]);
 
-  // Active Leaves (Only Today & Future)
+  // Active Leaves (Today & Future)
   const activeLeaves = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     return leaves.filter(l => l.leaveDate >= today).sort((a, b) => a.leaveDate.localeCompare(b.leaveDate));
@@ -197,7 +197,6 @@ export default function AdminDashboardPage() {
 
   const cleanDoctorName = (name?: string) => (name || '').toLowerCase().replace('dr. ', '').trim();
 
-  // Helper: Get Leave History for a specific Doctor
   const getDoctorLeaves = useCallback((doc: DoctorProfile) => {
     const docClean = cleanDoctorName(doc.name);
     const docId = doc.id;
@@ -241,7 +240,6 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Reschedule Slot Check
   const isRescheduleDoctorOnLeave = useMemo(() => {
     if (!reschedulingApt) return null;
     const docClean = cleanDoctorName(reschedulingApt.doctorName);
@@ -353,40 +351,27 @@ export default function AdminDashboardPage() {
     setTimeout(() => setActionSuccessMsg(''), 5000);
   };
 
-  // APPROVE DOCTOR: Update DB, Add to Public Doctors Table, Dispatch Acceptance Email
+  // 1. APPROVE DOCTOR: Adds to Postgres Doctors List & Sends Acceptance Email
   const handleApproveDoctor = async (app: DoctorApplication) => {
     try {
       const cleanAppEmail = app.email.trim().toLowerCase();
       const docFullName = app.name.startsWith('Dr.') ? app.name : 'Dr. ' + app.name;
 
-      // 1. Update application status & pc_users.is_approved
       await fetch('/api/sync/applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: app.id, email: cleanAppEmail, status: 'APPROVED' })
+        body: JSON.stringify({ 
+          id: app.id, 
+          email: cleanAppEmail, 
+          status: 'APPROVED',
+          name: docFullName,
+          specialisation: app.specialisation,
+          qualification: app.qualification,
+          regNumber: app.regNumber
+        })
       });
 
-      // 2. Add doctor directly to public doctor roster in PostgreSQL
-      const newDocProfile: DoctorProfile = {
-        id: app.id || ('doc-' + Date.now()),
-        email: cleanAppEmail,
-        name: docFullName,
-        specialisation: app.specialisation || 'General Medicine',
-        qualification: app.qualification || 'MBBS, MD',
-        experience: app.experience || 'Practice Specialist',
-        hospital: 'PrimeCare Multispecialty Hospital',
-        fee: '₹1,000',
-        rating: '5.0 ★',
-        bio: 'Verified Clinical Specialist in ' + (app.specialisation || 'General Medicine') + '. NMC Reg: ' + app.regNumber
-      };
-
-      await fetch('/api/sync/doctors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ doctor: newDocProfile })
-      });
-
-      // 3. Dispatch Acceptance Email to Doctor
+      // Dispatch Acceptance Email to Doctor
       try {
         await fetch('/api/notifications/email', {
           method: 'POST',
@@ -412,7 +397,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // REJECT DOCTOR: Delete from users, mark application rejected, send rejection notice
+  // 2. REJECT DOCTOR: Deletes credentials & Sends Rejection Notice Email
   const handleRejectDoctor = async (app: DoctorApplication) => {
     try {
       const cleanAppEmail = app.email.trim().toLowerCase();
@@ -423,6 +408,7 @@ export default function AdminDashboardPage() {
         body: JSON.stringify({ id: app.id, email: cleanAppEmail, status: 'REJECTED' })
       });
 
+      // Dispatch Rejection Notice Email
       try {
         await fetch('/api/notifications/email', {
           method: 'POST',
@@ -439,14 +425,14 @@ export default function AdminDashboardPage() {
       }
 
       await loadData();
-      setActionSuccessMsg('Application for ' + app.name + ' rejected. Credentials removed and rejection email sent.');
+      setActionSuccessMsg('Application for ' + app.name + ' rejected. Credentials deleted and notice email sent.');
       setTimeout(() => setActionSuccessMsg(''), 5000);
     } catch {
       alert('Failed to reject application.');
     }
   };
 
-  // ADD LEAVE: Permanent Record, Auto Shift & Email Notification
+  // 3. ADD LEAVE: Permanent Record, Auto Shift & Doctor Leave Email
   const handleAddLeave = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionSuccessMsg('Recording leave, sending doctor email notification & shifting appointments...');
@@ -841,7 +827,7 @@ export default function AdminDashboardPage() {
                           <button
                             type="button"
                             onClick={() => handleApproveDoctor(app)}
-                            className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition"
+                            className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-md shadow-emerald-500/20"
                           >
                             Approve & Add to Roster
                           </button>
