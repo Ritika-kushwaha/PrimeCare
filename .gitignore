@@ -1,8 +1,19 @@
 node_modules
+.next
+client/.next
+client/client/.next
+dist
+out
+.vercel
+.vscode
+.idea
+*.log
+
 # Keep environment variables out of version control
 .env
+.env.local
+.env*.local
+!.env.example
+!.env.production.example
 
 /generated/prisma
-
-.vercel
-.env*
