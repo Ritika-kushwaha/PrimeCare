@@ -148,6 +148,13 @@ export async function POST(req: Request) {
 
     // --- 2. REGISTER ---
     if (action === 'REGISTER') {
+      if (role === 'ADMIN') {
+        return NextResponse.json({
+          success: false,
+          error: 'Admin registration is disabled. Only 1 System Admin account exists.'
+        }, { status: 400 });
+      }
+
       const fName = (firstName || '').trim();
       const lName = (lastName || '').trim();
 

@@ -336,7 +336,11 @@ export default function LoginPage() {
             </form>
 
             <div className="text-center pt-2 border-t border-slate-800/80 text-xs">
-              {isRegisterMode ? (
+              {role === 'ADMIN' ? (
+                <p className="text-slate-500 font-medium italic">
+                  System Admin registration is disabled. Only 1 fixed System Admin profile exists.
+                </p>
+              ) : isRegisterMode ? (
                 <p className="text-slate-400">
                   Already verified?{' '}
                   <button
