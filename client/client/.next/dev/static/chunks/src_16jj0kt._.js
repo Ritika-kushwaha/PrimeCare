@@ -19,8 +19,18 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$alert$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertCircle$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/circle-alert.mjs [app-client] (ecmascript) <export default as AlertCircle>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/arrow-right.mjs [app-client] (ecmascript) <export default as ArrowRight>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/search.mjs [app-client] (ecmascript) <export default as Search>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$building$2d$2$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Building2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/building-2.mjs [app-client] (ecmascript) <export default as Building2>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$award$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Award$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/award.mjs [app-client] (ecmascript) <export default as Award>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$calendar$2d$x$2d$2$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CalendarX2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/calendar-x-2.mjs [app-client] (ecmascript) <export default as CalendarX2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$users$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Users$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/users.mjs [app-client] (ecmascript) <export default as Users>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$printer$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Printer$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/printer.mjs [app-client] (ecmascript) <export default as Printer>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$briefcase$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Briefcase$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/briefcase.mjs [app-client] (ecmascript) <export default as Briefcase>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$star$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Star$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/star.mjs [app-client] (ecmascript) <export default as Star>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevron-right.mjs [app-client] (ecmascript) <export default as ChevronRight>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$refresh$2d$cw$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__RefreshCw$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/refresh-cw.mjs [app-client] (ecmascript) <export default as RefreshCw>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/x.mjs [app-client] (ecmascript) <export default as X>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$download$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Download$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/download.mjs [app-client] (ecmascript) <export default as Download>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$external$2d$link$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ExternalLink$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/external-link.mjs [app-client] (ecmascript) <export default as ExternalLink>");
 ;
 var _s = __turbopack_context__.k.signature();
 'use client';
@@ -137,20 +147,46 @@ function BookAppointmentPage() {
     const [leaves, setLeaves] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
     const [existingAppointments, setExistingAppointments] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
     const [selectedDoctor, setSelectedDoctor] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(DEFAULT_DOCTORS[0]);
-    const [selectedDate, setSelectedDate] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('2026-08-28');
+    // Dynamic Initial Date (Today formatted as YYYY-MM-DD)
+    const todayStr = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "BookAppointmentPage.useMemo[todayStr]": ()=>new Date().toISOString().split('T')[0]
+    }["BookAppointmentPage.useMemo[todayStr]"], []);
+    const [selectedDate, setSelectedDate] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(todayStr);
     const [selectedSlot, setSelectedSlot] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('10:00 AM');
     const [sharedEmail, setSharedEmail] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(user?.email || 'patient@primecare.in');
-    const [patientFirstName, setPatientFirstName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(user?.firstName || 'Ritika');
-    const [patientLastName, setPatientLastName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(user?.lastName || 'Kushwaha');
+    const [patientFirstName, setPatientFirstName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(user?.firstName || 'Member');
+    const [patientLastName, setPatientLastName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(user?.lastName || '');
     const [patientAge, setPatientAge] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('21');
     const [patientGender, setPatientGender] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('Female');
-    const [symptoms, setSymptoms] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('Routine cardiovascular checkup');
+    const [symptoms, setSymptoms] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('Routine clinical consultation & health checkup');
     const [searchDoc, setSearchDoc] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [selectedSpecialty, setSelectedSpecialty] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('ALL');
     const [inspectDoctor, setInspectDoctor] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [bookingSuccess, setBookingSuccess] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [slotConflictError, setSlotConflictError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [isSubmitting, setIsSubmitting] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    // Generate Next 6 Upcoming Dates for Quick Selection
+    const quickDates = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "BookAppointmentPage.useMemo[quickDates]": ()=>{
+            const list = [];
+            const base = new Date();
+            for(let i = 0; i < 6; i++){
+                const d = new Date(base);
+                d.setDate(base.getDate() + i);
+                const iso = d.toISOString().split('T')[0];
+                const label = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short'
+                });
+                list.push({
+                    iso,
+                    label
+                });
+            }
+            return list;
+        }
+    }["BookAppointmentPage.useMemo[quickDates]"], []);
     const loadData = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
         "BookAppointmentPage.useCallback[loadData]": async ()=>{
             try {
@@ -190,7 +226,7 @@ function BookAppointmentPage() {
             if (user?.email) setSharedEmail(user.email);
             if (user?.firstName) setPatientFirstName(user.firstName);
             if (user?.lastName) setPatientLastName(user.lastName);
-            const interval = setInterval(loadData, 5000);
+            const interval = setInterval(loadData, 6000);
             return ({
                 "BookAppointmentPage.useEffect": ()=>clearInterval(interval)
             })["BookAppointmentPage.useEffect"];
@@ -199,42 +235,52 @@ function BookAppointmentPage() {
         user,
         loadData
     ]);
-    const isDoctorOnLeave = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
-        "BookAppointmentPage.useMemo[isDoctorOnLeave]": ()=>{
-            const selName = selectedDoctor.name.toLowerCase().replace('dr. ', '').trim();
+    const cleanDoctorName = (name)=>(name || '').toLowerCase().replace('dr. ', '').trim();
+    // Check if Selected Doctor is On Approved Leave on Selected Date
+    const doctorLeaveRecord = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "BookAppointmentPage.useMemo[doctorLeaveRecord]": ()=>{
+            const selClean = cleanDoctorName(selectedDoctor.name);
             const selId = selectedDoctor.id;
             return leaves.find({
-                "BookAppointmentPage.useMemo[isDoctorOnLeave]": (l)=>{
+                "BookAppointmentPage.useMemo[doctorLeaveRecord]": (l)=>{
                     if (l.leaveDate !== selectedDate) return false;
-                    const lName = (l.doctorName || '').toLowerCase().replace('dr. ', '').trim();
-                    const lId = l.doctorId;
-                    return lId && lId === selId || lName && (lName.includes(selName) || selName.includes(lName));
+                    const lClean = cleanDoctorName(l.doctorName);
+                    return l.doctorId && l.doctorId === selId || lClean && (lClean.includes(selClean) || selClean.includes(lClean));
                 }
-            }["BookAppointmentPage.useMemo[isDoctorOnLeave]"]);
+            }["BookAppointmentPage.useMemo[doctorLeaveRecord]"]);
         }
-    }["BookAppointmentPage.useMemo[isDoctorOnLeave]"], [
+    }["BookAppointmentPage.useMemo[doctorLeaveRecord]"], [
         leaves,
         selectedDoctor,
         selectedDate
     ]);
     const currentMemberName = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
         "BookAppointmentPage.useMemo[currentMemberName]": ()=>{
-            return `${(patientFirstName || '').trim()} ${(patientLastName || '').trim()}`.trim();
+            return `${(patientFirstName || '').trim()} ${(patientLastName || '').trim()}`.trim() || 'Patient Member';
         }
     }["BookAppointmentPage.useMemo[currentMemberName]"], [
         patientFirstName,
         patientLastName
     ]);
+    // Per-doctor slot availability check
     const getSlotAvailability = (slot)=>{
-        const cleanMember = currentMemberName.toLowerCase();
-        if (isDoctorOnLeave) {
+        if (doctorLeaveRecord) {
             return {
                 available: false,
-                reason: `${selectedDoctor.name} is on Leave on ${selectedDate}`,
+                reason: `${selectedDoctor.name} is on Leave (${doctorLeaveRecord.reason || 'Leave'})`,
                 statusType: 'DOCTOR_ON_LEAVE'
             };
         }
-        const existingDoctorBooking = existingAppointments.find((a)=>(a.doctorId === selectedDoctor.id || a.doctorName?.toLowerCase().includes(selectedDoctor.name.toLowerCase().replace('dr. ', '').trim())) && a.date === selectedDate && a.timeSlot === slot && a.status !== 'CANCELLED' && a.status !== 'LEAVE_CANCELLED');
+        const selClean = cleanDoctorName(selectedDoctor.name);
+        const selId = selectedDoctor.id;
+        const cleanMember = currentMemberName.toLowerCase();
+        const existingDoctorBooking = existingAppointments.find((a)=>{
+            if (a.date !== selectedDate || a.timeSlot !== slot) return false;
+            if (a.status === 'CANCELLED' || a.status === 'LEAVE_CANCELLED') return false;
+            const aDocClean = cleanDoctorName(a.doctorName);
+            const isThisDoctor = a.doctorId && a.doctorId === selId || aDocClean && aDocClean.includes(selClean);
+            return isThisDoctor;
+        });
         if (existingDoctorBooking) {
             const isMe = (existingDoctorBooking.patientName || '').toLowerCase() === cleanMember;
             return {
@@ -245,7 +291,7 @@ function BookAppointmentPage() {
         }
         return {
             available: true,
-            reason: 'Available (1 Person Only)',
+            reason: 'Available (1 Patient Slot)',
             statusType: 'FREE'
         };
     };
@@ -279,6 +325,56 @@ function BookAppointmentPage() {
     }["BookAppointmentPage.useMemo[specialties]"], [
         doctors
     ]);
+    const getGoogleCalendarUrl = (apt)=>{
+        const title = encodeURIComponent(`PrimeCare Appointment with ${apt.doctorName}`);
+        const details = encodeURIComponent(`Outpatient Consultation with ${apt.doctorName} (${apt.department}) at ${apt.hospital}.\nToken: ${apt.tokenNumber}\nChief Complaint: ${apt.symptoms}`);
+        const location = encodeURIComponent(apt.hospital || 'PrimeCare Hospital');
+        const [year, month, day] = apt.date.split('-');
+        const [time, period] = apt.timeSlot.split(' ');
+        let [hours, mins] = time.split(':').map(Number);
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        const startStr = `${year}${month}${day}T${String(hours).padStart(2, '0')}${String(mins).padStart(2, '0')}00`;
+        const endHour = hours + 1;
+        const endStr = `${year}${month}${day}T${String(endHour).padStart(2, '0')}${String(mins).padStart(2, '0')}00`;
+        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+    };
+    const downloadICS = (apt)=>{
+        const [year, month, day] = apt.date.split('-');
+        const [time, period] = apt.timeSlot.split(' ');
+        let [hours, mins] = time.split(':').map(Number);
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        const startStr = `${year}${month}${day}T${String(hours).padStart(2, '0')}${String(mins).padStart(2, '0')}00`;
+        const endStr = `${year}${month}${day}T${String(hours + 1).padStart(2, '0')}${String(mins).padStart(2, '0')}00`;
+        const icsContent = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//PrimeCare Healthcare//Outpatient System//EN',
+            'BEGIN:VEVENT',
+            `UID:${apt.id}@primecare.in`,
+            `DTSTAMP:${startStr}Z`,
+            `DTSTART:${startStr}`,
+            `DTEND:${endStr}`,
+            `SUMMARY:PrimeCare: ${apt.doctorName} - ${apt.department}`,
+            `DESCRIPTION:Appointment with ${apt.doctorName} at ${apt.hospital}. Token: ${apt.tokenNumber}. Symptoms: ${apt.symptoms}`,
+            `LOCATION:${apt.hospital}`,
+            'STATUS:CONFIRMED',
+            'END:VEVENT',
+            'END:VCALENDAR'
+        ].join('\r\n');
+        const blob = new Blob([
+            icsContent
+        ], {
+            type: 'text/calendar;charset=utf-8'
+        });
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.setAttribute('download', `PrimeCare_Appointment_${apt.tokenNumber}.ics`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
     const handleBooking = async (e)=>{
         e.preventDefault();
         setSlotConflictError(null);
@@ -290,8 +386,8 @@ function BookAppointmentPage() {
             setIsSubmitting(false);
             return;
         }
-        if (isDoctorOnLeave) {
-            setSlotConflictError(`${selectedDoctor.name} is on approved leave on ${selectedDate}.`);
+        if (doctorLeaveRecord) {
+            setSlotConflictError(`${selectedDoctor.name} is on approved leave on ${selectedDate} (${doctorLeaveRecord.reason || 'Leave'}). Please select another date or physician.`);
             setIsSubmitting(false);
             return;
         }
@@ -307,12 +403,13 @@ function BookAppointmentPage() {
             tokenNumber,
             doctorId: selectedDoctor.id,
             doctorName: selectedDoctor.name,
+            doctorEmail: selectedDoctor.email,
             department: selectedDoctor.specialisation,
             fee: selectedDoctor.fee,
             hospital: selectedDoctor.hospital,
             date: selectedDate,
             timeSlot: selectedSlot,
-            symptoms: symptoms || 'General Consultation',
+            symptoms: symptoms || 'Routine Consultation',
             patientName: fullName,
             patientEmail: cleanEmail || 'patient@primecare.in',
             age: patientAge,
@@ -336,10 +433,10 @@ function BookAppointmentPage() {
             });
             const data = await res.json();
             if (!data.success) {
-                throw new Error(data.error || 'Database save failed.');
+                console.warn("Database sync notice:", data.error);
             }
         } catch (err) {
-            console.error("Booking error:", err);
+            console.error("Booking sync error:", err);
         }
         setExistingAppointments((prev)=>[
                 appointment,
@@ -357,13 +454,20 @@ function BookAppointmentPage() {
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
             className: "min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white",
             children: [
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Navbar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "print:hidden",
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Navbar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
+                        fileName: "[project]/src/app/patient/book/page.tsx",
+                        lineNumber: 349,
+                        columnNumber: 11
+                    }, this)
+                }, void 0, false, {
                     fileName: "[project]/src/app/patient/book/page.tsx",
-                    lineNumber: 268,
+                    lineNumber: 348,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
-                    className: "flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8",
+                    className: "flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8 print:hidden",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "flex flex-col md:flex-row md:items-center justify-between gap-4",
@@ -377,14 +481,14 @@ function BookAppointmentPage() {
                                                     className: "w-3.5 h-3.5"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 274,
+                                                    lineNumber: 357,
                                                     columnNumber: 17
                                                 }, this),
                                                 " Outpatient Booking Desk"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 273,
+                                            lineNumber: 356,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
@@ -392,46 +496,46 @@ function BookAppointmentPage() {
                                             children: "Doctor Discovery & Outpatient Booking"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 276,
+                                            lineNumber: 359,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                             className: "text-xs sm:text-sm text-slate-400 mt-1",
-                                            children: "Real-time physician duty status and calendar synchronized slot booking."
+                                            children: "Real-time physician duty status, automated calendar sync, and printable token generation."
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 279,
+                                            lineNumber: 362,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                    lineNumber: 272,
+                                    lineNumber: 355,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     type: "button",
                                     onClick: loadData,
-                                    className: "text-xs text-emerald-400 hover:underline flex items-center gap-1.5 self-start sm:self-auto bg-slate-900 px-3 py-2 rounded-xl border border-slate-800",
+                                    className: "text-xs text-emerald-400 hover:underline flex items-center gap-1.5 self-start sm:self-auto bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-800 font-semibold",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$refresh$2d$cw$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__RefreshCw$3e$__["RefreshCw"], {
                                             className: "w-3.5 h-3.5"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 289,
+                                            lineNumber: 372,
                                             columnNumber: 15
                                         }, this),
-                                        " Refresh Slots"
+                                        " Refresh Cloud Roster"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                    lineNumber: 284,
+                                    lineNumber: 367,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/patient/book/page.tsx",
-                            lineNumber: 271,
+                            lineNumber: 354,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatePresence"], {
@@ -444,89 +548,312 @@ function BookAppointmentPage() {
                                     opacity: 1,
                                     scale: 1
                                 },
-                                className: "p-6 rounded-3xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4",
+                                className: "p-6 sm:p-8 rounded-3xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 shadow-2xl space-y-6",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "space-y-1",
+                                        className: "flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-emerald-500/20 pb-4",
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "flex items-center gap-2 text-base font-bold text-emerald-100",
+                                                className: "space-y-1",
                                                 children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle2$3e$__["CheckCircle2"], {
-                                                        className: "w-6 h-6 text-emerald-400"
-                                                    }, void 0, false, {
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "flex items-center gap-2 text-xl font-extrabold text-white",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle2$3e$__["CheckCircle2"], {
+                                                                className: "w-6 h-6 text-emerald-400"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                lineNumber: 387,
+                                                                columnNumber: 23
+                                                            }, this),
+                                                            " Slot Confirmed • Token ",
+                                                            bookingSuccess.tokenNumber
+                                                        ]
+                                                    }, void 0, true, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 302,
+                                                        lineNumber: 386,
                                                         columnNumber: 21
                                                     }, this),
-                                                    " Confirmed • Token ",
-                                                    bookingSuccess.tokenNumber
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                        className: "text-xs text-emerald-300",
+                                                        children: [
+                                                            "Confirmed for ",
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                                children: bookingSuccess.patientName
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                lineNumber: 390,
+                                                                columnNumber: 37
+                                                            }, this),
+                                                            " with ",
+                                                            bookingSuccess.doctorName,
+                                                            " on ",
+                                                            bookingSuccess.date,
+                                                            " at ",
+                                                            bookingSuccess.timeSlot,
+                                                            "."
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 389,
+                                                        columnNumber: 21
+                                                    }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                lineNumber: 301,
+                                                lineNumber: 385,
                                                 columnNumber: 19
                                             }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                className: "text-xs text-emerald-300",
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex flex-wrap items-center gap-2.5",
                                                 children: [
-                                                    "Slot confirmed for ",
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
-                                                        children: bookingSuccess.patientName
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                        type: "button",
+                                                        onClick: ()=>window.print(),
+                                                        className: "flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 font-bold text-xs transition",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$printer$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Printer$3e$__["Printer"], {
+                                                                className: "w-4 h-4"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                lineNumber: 400,
+                                                                columnNumber: 23
+                                                            }, this),
+                                                            " Print Appointment Slip"
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 395,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
+                                                        href: getGoogleCalendarUrl(bookingSuccess),
+                                                        target: "_blank",
+                                                        rel: "noopener noreferrer",
+                                                        className: "flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-md shadow-blue-600/20",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$external$2d$link$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ExternalLink$3e$__["ExternalLink"], {
+                                                                className: "w-4 h-4"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                lineNumber: 409,
+                                                                columnNumber: 23
+                                                            }, this),
+                                                            " Add to Google Calendar"
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 403,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                        type: "button",
+                                                        onClick: ()=>downloadICS(bookingSuccess),
+                                                        className: "flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-md shadow-emerald-500/20",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$download$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Download$3e$__["Download"], {
+                                                                className: "w-4 h-4"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                lineNumber: 417,
+                                                                columnNumber: 23
+                                                            }, this),
+                                                            " Download .ics"
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 412,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                        type: "button",
+                                                        onClick: ()=>{
+                                                            setBookingSuccess(null);
+                                                            setPatientFirstName('');
+                                                            setPatientLastName('');
+                                                        },
+                                                        className: "p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800",
+                                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
+                                                            className: "w-4 h-4"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                                            lineNumber: 429,
+                                                            columnNumber: 23
+                                                        }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 305,
-                                                        columnNumber: 40
-                                                    }, this),
-                                                    " with ",
-                                                    bookingSuccess.doctorName,
-                                                    " on ",
-                                                    bookingSuccess.date,
-                                                    " at ",
-                                                    bookingSuccess.timeSlot,
-                                                    ". Saved to central hospital database!"
+                                                        lineNumber: 420,
+                                                        columnNumber: 21
+                                                    }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                lineNumber: 304,
+                                                lineNumber: 394,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                        lineNumber: 300,
+                                        lineNumber: 384,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "flex flex-wrap items-center gap-2.5 flex-shrink-0",
-                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                            type: "button",
-                                            onClick: ()=>{
-                                                setBookingSuccess(null);
-                                                setPatientFirstName('');
-                                                setPatientLastName('');
-                                            },
-                                            className: "flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition",
-                                            children: "+ Book Another Slot"
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 310,
-                                            columnNumber: 19
-                                        }, this)
-                                    }, void 0, false, {
+                                        className: "grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "p-3.5 bg-slate-950/70 rounded-2xl border border-emerald-500/20",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-slate-400 block text-[10px] uppercase font-bold",
+                                                        children: "Consulting Physician"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 436,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                        className: "text-white text-sm block mt-0.5",
+                                                        children: bookingSuccess.doctorName
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 437,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-emerald-400 text-[11px]",
+                                                        children: bookingSuccess.department
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 438,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 435,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "p-3.5 bg-slate-950/70 rounded-2xl border border-emerald-500/20",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-slate-400 block text-[10px] uppercase font-bold",
+                                                        children: "Date & Time Slot"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 441,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                        className: "text-white text-sm block mt-0.5",
+                                                        children: bookingSuccess.date
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 442,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-emerald-400 text-[11px] font-mono",
+                                                        children: bookingSuccess.timeSlot
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 443,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 440,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "p-3.5 bg-slate-950/70 rounded-2xl border border-emerald-500/20",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-slate-400 block text-[10px] uppercase font-bold",
+                                                        children: "Patient Details"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 446,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                        className: "text-white text-sm block mt-0.5",
+                                                        children: bookingSuccess.patientName
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 447,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-slate-400 text-[11px]",
+                                                        children: [
+                                                            bookingSuccess.age,
+                                                            " Yrs • ",
+                                                            bookingSuccess.gender
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 448,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 445,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "p-3.5 bg-slate-950/70 rounded-2xl border border-emerald-500/20",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-slate-400 block text-[10px] uppercase font-bold",
+                                                        children: "Affiliated Center"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 451,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                        className: "text-white text-sm block mt-0.5",
+                                                        children: bookingSuccess.hospital
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 452,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-emerald-400 text-[11px] font-mono",
+                                                        children: [
+                                                            "Fee: ",
+                                                            bookingSuccess.fee
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 453,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 450,
+                                                columnNumber: 19
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                        lineNumber: 309,
+                                        lineNumber: 434,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                lineNumber: 295,
+                                lineNumber: 379,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/app/patient/book/page.tsx",
-                            lineNumber: 293,
+                            lineNumber: 377,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -536,43 +863,32 @@ function BookAppointmentPage() {
                                     className: "lg:col-span-5 space-y-4",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "p-4 bg-slate-900/80 border border-slate-800 rounded-3xl space-y-3",
+                                            className: "p-5 bg-slate-900/80 border border-slate-800 rounded-3xl space-y-3",
                                             children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                                                    className: "text-sm font-bold text-white flex items-center justify-between",
-                                                    children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            className: "flex items-center gap-2",
-                                                            children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$stethoscope$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Stethoscope$3e$__["Stethoscope"], {
-                                                                    className: "w-4 h-4 text-emerald-400"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                    lineNumber: 332,
-                                                                    columnNumber: 21
-                                                                }, this),
-                                                                " Select Specialist"
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 331,
-                                                            columnNumber: 19
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            className: "text-[11px] text-slate-400",
-                                                            children: [
-                                                                filteredDoctors.length,
-                                                                " available"
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 334,
-                                                            columnNumber: 19
-                                                        }, this)
-                                                    ]
-                                                }, void 0, true, {
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex items-center justify-between",
+                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                                                        className: "text-sm font-bold text-white flex items-center gap-2",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$stethoscope$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Stethoscope$3e$__["Stethoscope"], {
+                                                                className: "w-4 h-4 text-emerald-400"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                lineNumber: 467,
+                                                                columnNumber: 21
+                                                            }, this),
+                                                            " Select Specialist (",
+                                                            filteredDoctors.length,
+                                                            ")"
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 466,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                }, void 0, false, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 330,
+                                                    lineNumber: 465,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -582,30 +898,47 @@ function BookAppointmentPage() {
                                                             className: "w-4 h-4 absolute left-3 top-3 text-slate-500"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 338,
+                                                            lineNumber: 472,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                                             type: "text",
                                                             value: searchDoc,
                                                             onChange: (e)=>setSearchDoc(e.target.value),
-                                                            placeholder: "Search doctor or specialty...",
-                                                            className: "w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 outline-none"
+                                                            placeholder: "Search doctor, hospital, qualification...",
+                                                            className: "w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 339,
+                                                            lineNumber: 473,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 337,
+                                                    lineNumber: 471,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex gap-1.5 overflow-x-auto pb-1 text-[11px] font-bold",
+                                                    children: specialties.map((spec)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                            type: "button",
+                                                            onClick: ()=>setSelectedSpecialty(spec),
+                                                            className: `px-3 py-1 rounded-lg transition whitespace-nowrap ${selectedSpecialty === spec ? 'bg-emerald-500 text-slate-950 font-bold' : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'}`,
+                                                            children: spec
+                                                        }, spec, false, {
+                                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                                            lineNumber: 484,
+                                                            columnNumber: 21
+                                                        }, this))
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                    lineNumber: 482,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 329,
+                                            lineNumber: 464,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -614,7 +947,7 @@ function BookAppointmentPage() {
                                                 const isSelected = selectedDoctor.id === doc.id;
                                                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                     onClick: ()=>setSelectedDoctor(doc),
-                                                    className: `p-4 rounded-2xl border cursor-pointer transition-all space-y-2.5 ${isSelected ? 'bg-emerald-950/40 border-emerald-500 shadow-xl ring-2 ring-emerald-500/30' : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'}`,
+                                                    className: `p-5 rounded-2xl border cursor-pointer transition-all space-y-3 ${isSelected ? 'bg-emerald-950/40 border-emerald-500 shadow-xl ring-2 ring-emerald-500/30' : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'}`,
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                             className: "flex items-start justify-between",
@@ -622,20 +955,20 @@ function BookAppointmentPage() {
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                     children: [
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
-                                                                            className: "font-bold text-sm text-white flex items-center gap-1.5",
+                                                                            className: "font-bold text-base text-white flex items-center gap-1.5",
                                                                             children: [
                                                                                 doc.name,
                                                                                 isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle2$3e$__["CheckCircle2"], {
                                                                                     className: "w-4 h-4 text-emerald-400"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                                    lineNumber: 366,
+                                                                                    lineNumber: 517,
                                                                                     columnNumber: 44
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                            lineNumber: 364,
+                                                                            lineNumber: 515,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -643,53 +976,169 @@ function BookAppointmentPage() {
                                                                             children: doc.specialisation
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                            lineNumber: 368,
+                                                                            lineNumber: 519,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                    lineNumber: 363,
+                                                                    lineNumber: 514,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                    className: "text-xs font-mono font-bold text-emerald-300 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20",
+                                                                    className: "text-xs font-mono font-bold text-emerald-300 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20",
                                                                     children: doc.fee
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                    lineNumber: 370,
+                                                                    lineNumber: 521,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 362,
+                                                            lineNumber: 513,
+                                                            columnNumber: 23
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "flex flex-wrap gap-2 text-[10px] text-slate-300",
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                    className: "px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 flex items-center gap-1",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$award$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Award$3e$__["Award"], {
+                                                                            className: "w-3 h-3 text-blue-400"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                            lineNumber: 528,
+                                                                            columnNumber: 27
+                                                                        }, this),
+                                                                        " ",
+                                                                        doc.qualification
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                    lineNumber: 527,
+                                                                    columnNumber: 25
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                    className: "px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 flex items-center gap-1",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$briefcase$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Briefcase$3e$__["Briefcase"], {
+                                                                            className: "w-3 h-3 text-emerald-400"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                            lineNumber: 531,
+                                                                            columnNumber: 27
+                                                                        }, this),
+                                                                        " ",
+                                                                        doc.experience
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                    lineNumber: 530,
+                                                                    columnNumber: 25
+                                                                }, this),
+                                                                doc.rating && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                    className: "px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold flex items-center gap-1",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$star$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Star$3e$__["Star"], {
+                                                                            className: "w-3 h-3 fill-amber-400"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                            lineNumber: 535,
+                                                                            columnNumber: 29
+                                                                        }, this),
+                                                                        " ",
+                                                                        doc.rating
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                    lineNumber: 534,
+                                                                    columnNumber: 27
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                                            lineNumber: 526,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                            className: "text-[11px] text-slate-300 line-clamp-2",
-                                                            children: doc.bio || doc.qualification
-                                                        }, void 0, false, {
+                                                            className: "text-[11px] text-slate-400 line-clamp-2 italic",
+                                                            children: [
+                                                                '"',
+                                                                doc.bio,
+                                                                '"'
+                                                            ]
+                                                        }, void 0, true, {
                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 374,
+                                                            lineNumber: 540,
+                                                            columnNumber: 23
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "flex items-center justify-between pt-2 border-t border-slate-800/80 text-[11px]",
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                    className: "text-slate-400 flex items-center gap-1",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$building$2d$2$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Building2$3e$__["Building2"], {
+                                                                            className: "w-3 h-3 text-slate-500"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                            lineNumber: 546,
+                                                                            columnNumber: 27
+                                                                        }, this),
+                                                                        " ",
+                                                                        doc.hospital
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                    lineNumber: 545,
+                                                                    columnNumber: 25
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                    type: "button",
+                                                                    onClick: (e)=>{
+                                                                        e.stopPropagation();
+                                                                        setInspectDoctor(doc);
+                                                                    },
+                                                                    className: "text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-0.5",
+                                                                    children: [
+                                                                        "Full Profile ",
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__["ChevronRight"], {
+                                                                            className: "w-3.5 h-3.5"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                            lineNumber: 556,
+                                                                            columnNumber: 40
+                                                                        }, this)
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                    lineNumber: 548,
+                                                                    columnNumber: 25
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                                            lineNumber: 544,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, doc.id, true, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 353,
+                                                    lineNumber: 504,
                                                     columnNumber: 21
                                                 }, this);
                                             })
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                            lineNumber: 349,
+                                            lineNumber: 500,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                    lineNumber: 328,
+                                    lineNumber: 463,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -708,15 +1157,15 @@ function BookAppointmentPage() {
                                                                 children: "Selected Physician"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 386,
+                                                                lineNumber: 571,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                                                                className: "font-extrabold text-lg text-white",
+                                                                className: "font-extrabold text-xl text-white",
                                                                 children: selectedDoctor.name
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 387,
+                                                                lineNumber: 572,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -728,13 +1177,13 @@ function BookAppointmentPage() {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 388,
+                                                                lineNumber: 573,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 385,
+                                                        lineNumber: 570,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -745,28 +1194,90 @@ function BookAppointmentPage() {
                                                                 children: "Consultation Fee"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 391,
+                                                                lineNumber: 576,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                className: "text-sm font-mono font-black text-emerald-300 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20",
+                                                                className: "text-base font-mono font-black text-emerald-300 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20",
                                                                 children: selectedDoctor.fee
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 392,
+                                                                lineNumber: 577,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 390,
+                                                        lineNumber: 575,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                lineNumber: 384,
+                                                lineNumber: 569,
                                                 columnNumber: 17
+                                            }, this),
+                                            doctorLeaveRecord && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].div, {
+                                                initial: {
+                                                    opacity: 0,
+                                                    y: -6
+                                                },
+                                                animate: {
+                                                    opacity: 1,
+                                                    y: 0
+                                                },
+                                                className: "p-4 bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs rounded-2xl flex items-start gap-3",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$calendar$2d$x$2d$2$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CalendarX2$3e$__["CalendarX2"], {
+                                                        className: "w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 589,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "space-y-1",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                                className: "block text-sm font-bold text-amber-300",
+                                                                children: "Doctor on Approved Leave"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                lineNumber: 591,
+                                                                columnNumber: 23
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                className: "leading-relaxed",
+                                                                children: [
+                                                                    selectedDoctor.name,
+                                                                    " is on duty leave on ",
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                                        children: selectedDate
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                        lineNumber: 593,
+                                                                        columnNumber: 67
+                                                                    }, this),
+                                                                    " (",
+                                                                    doctorLeaveRecord.reason || 'Medical Leave',
+                                                                    "). All slots on this date are locked. Please choose a different date or consult another specialist."
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                lineNumber: 592,
+                                                                columnNumber: 23
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 590,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 584,
+                                                columnNumber: 19
                                             }, this),
                                             slotConflictError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "p-4 bg-red-950/50 border border-red-500/40 text-red-200 text-xs rounded-2xl flex items-center gap-3",
@@ -775,20 +1286,20 @@ function BookAppointmentPage() {
                                                         className: "w-5 h-5 text-red-400 flex-shrink-0"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 400,
+                                                        lineNumber: 601,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                         children: slotConflictError
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 401,
+                                                        lineNumber: 602,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                lineNumber: 399,
+                                                lineNumber: 600,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -801,14 +1312,14 @@ function BookAppointmentPage() {
                                                                 className: "w-3.5 h-3.5"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 407,
+                                                                lineNumber: 609,
                                                                 columnNumber: 21
                                                             }, this),
                                                             " Patient Details"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 406,
+                                                        lineNumber: 608,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -821,7 +1332,7 @@ function BookAppointmentPage() {
                                                                         children: "First Name"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 412,
+                                                                        lineNumber: 614,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -829,16 +1340,16 @@ function BookAppointmentPage() {
                                                                         required: true,
                                                                         value: patientFirstName,
                                                                         onChange: (e)=>setPatientFirstName(e.target.value),
-                                                                        className: "w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                                                                        className: "w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 413,
+                                                                        lineNumber: 615,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 411,
+                                                                lineNumber: 613,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -848,7 +1359,7 @@ function BookAppointmentPage() {
                                                                         children: "Last Name"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 422,
+                                                                        lineNumber: 624,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -856,22 +1367,22 @@ function BookAppointmentPage() {
                                                                         required: true,
                                                                         value: patientLastName,
                                                                         onChange: (e)=>setPatientLastName(e.target.value),
-                                                                        className: "w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                                                                        className: "w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 423,
+                                                                        lineNumber: 625,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 421,
+                                                                lineNumber: 623,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 410,
+                                                        lineNumber: 612,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -884,7 +1395,7 @@ function BookAppointmentPage() {
                                                                         children: "Age"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 435,
+                                                                        lineNumber: 637,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -892,16 +1403,16 @@ function BookAppointmentPage() {
                                                                         required: true,
                                                                         value: patientAge,
                                                                         onChange: (e)=>setPatientAge(e.target.value),
-                                                                        className: "w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                                                                        className: "w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 436,
+                                                                        lineNumber: 638,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 434,
+                                                                lineNumber: 636,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -911,20 +1422,20 @@ function BookAppointmentPage() {
                                                                         children: "Gender"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 445,
+                                                                        lineNumber: 647,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
                                                                         value: patientGender,
                                                                         onChange: (e)=>setPatientGender(e.target.value),
-                                                                        className: "w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none",
+                                                                        className: "w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500",
                                                                         children: [
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                                                 value: "Female",
                                                                                 children: "Female"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                                lineNumber: 451,
+                                                                                lineNumber: 653,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -932,7 +1443,7 @@ function BookAppointmentPage() {
                                                                                 children: "Male"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                                lineNumber: 452,
+                                                                                lineNumber: 654,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -940,29 +1451,29 @@ function BookAppointmentPage() {
                                                                                 children: "Other"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                                lineNumber: 453,
+                                                                                lineNumber: 655,
                                                                                 columnNumber: 25
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 446,
+                                                                        lineNumber: 648,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 444,
+                                                                lineNumber: 646,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                 children: [
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
                                                                         className: "block text-[11px] font-semibold text-slate-400 mb-1",
-                                                                        children: "Account Email"
+                                                                        children: "Shared Account Email"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 457,
+                                                                        lineNumber: 659,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -970,38 +1481,93 @@ function BookAppointmentPage() {
                                                                         required: true,
                                                                         value: sharedEmail,
                                                                         onChange: (e)=>setSharedEmail(e.target.value),
-                                                                        className: "w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none"
+                                                                        className: "w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 458,
+                                                                        lineNumber: 660,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 456,
+                                                                lineNumber: 658,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 433,
+                                                        lineNumber: 635,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                lineNumber: 405,
+                                                lineNumber: 607,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "space-y-2",
                                                 children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                        className: "block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2",
-                                                        children: "Select Date"
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "flex items-center justify-between",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                                className: "block text-xs font-bold uppercase tracking-wider text-slate-400",
+                                                                children: "Select Date"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                lineNumber: 674,
+                                                                columnNumber: 21
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                className: "text-[10px] text-emerald-400 font-semibold",
+                                                                children: [
+                                                                    "Active: ",
+                                                                    selectedDate
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                lineNumber: 675,
+                                                                columnNumber: 21
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                        lineNumber: 673,
+                                                        columnNumber: 19
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "flex gap-2 overflow-x-auto pb-1 text-xs",
+                                                        children: quickDates.map((q)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                type: "button",
+                                                                onClick: ()=>setSelectedDate(q.iso),
+                                                                className: `px-3 py-2 rounded-xl border transition whitespace-nowrap flex flex-col items-center ${selectedDate === q.iso ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-extrabold shadow-md shadow-emerald-500/20' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'}`,
+                                                                children: [
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                        className: "text-[11px]",
+                                                                        children: q.label
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                        lineNumber: 691,
+                                                                        columnNumber: 25
+                                                                    }, this),
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                        className: "text-[9px] opacity-75",
+                                                                        children: q.iso
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                        lineNumber: 692,
+                                                                        columnNumber: 25
+                                                                    }, this)
+                                                                ]
+                                                            }, q.iso, true, {
+                                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                                lineNumber: 681,
+                                                                columnNumber: 23
+                                                            }, this))
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 470,
+                                                        lineNumber: 679,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1009,16 +1575,16 @@ function BookAppointmentPage() {
                                                         required: true,
                                                         value: selectedDate,
                                                         onChange: (e)=>setSelectedDate(e.target.value),
-                                                        className: "w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none [color-scheme:dark]"
+                                                        className: "w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 [color-scheme:dark]"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 471,
+                                                        lineNumber: 697,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                lineNumber: 469,
+                                                lineNumber: 672,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1031,7 +1597,7 @@ function BookAppointmentPage() {
                                                                 children: "Available Consultation Slots"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 482,
+                                                                lineNumber: 709,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1039,13 +1605,13 @@ function BookAppointmentPage() {
                                                                 children: "1 Patient per Slot"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 485,
+                                                                lineNumber: 712,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 481,
+                                                        lineNumber: 708,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1064,7 +1630,7 @@ function BookAppointmentPage() {
                                                                             children: slot
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                            lineNumber: 501,
+                                                                            lineNumber: 728,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1072,52 +1638,52 @@ function BookAppointmentPage() {
                                                                             children: slotInfo.reason
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                            lineNumber: 502,
+                                                                            lineNumber: 729,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, slot, true, {
                                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                    lineNumber: 495,
+                                                                    lineNumber: 722,
                                                                     columnNumber: 27
                                                                 }, this);
                                                             }
                                                             return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                                 type: "button",
                                                                 onClick: ()=>setSelectedSlot(slot),
-                                                                className: `py-2.5 px-3 rounded-xl text-xs font-bold border transition text-left flex flex-col justify-between ${isSlotSelected ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'}`,
+                                                                className: `py-2.5 px-3 rounded-xl text-xs font-bold border transition text-left flex flex-col justify-between ${isSlotSelected ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20 font-black' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'}`,
                                                                 children: [
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                         children: slot
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 518,
+                                                                        lineNumber: 745,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                        className: `text-[9px] ${isSlotSelected ? 'text-slate-900' : 'text-emerald-400'}`,
+                                                                        className: `text-[9px] ${isSlotSelected ? 'text-slate-900 font-extrabold' : 'text-emerald-400'}`,
                                                                         children: "Available"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                        lineNumber: 519,
+                                                                        lineNumber: 746,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, slot, true, {
                                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                                lineNumber: 508,
+                                                                lineNumber: 735,
                                                                 columnNumber: 25
                                                             }, this);
                                                         })
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 488,
+                                                        lineNumber: 715,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                lineNumber: 480,
+                                                lineNumber: 707,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1127,7 +1693,7 @@ function BookAppointmentPage() {
                                                         children: "Chief Complaint"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 527,
+                                                        lineNumber: 755,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -1135,23 +1701,23 @@ function BookAppointmentPage() {
                                                         required: true,
                                                         value: symptoms,
                                                         onChange: (e)=>setSymptoms(e.target.value),
-                                                        className: "w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none"
+                                                        className: "w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                                        lineNumber: 528,
+                                                        lineNumber: 756,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                lineNumber: 526,
+                                                lineNumber: 754,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                 type: "submit",
-                                                disabled: isSubmitting || Boolean(isDoctorOnLeave),
+                                                disabled: isSubmitting || Boolean(doctorLeaveRecord),
                                                 className: "w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-2xl shadow-lg shadow-emerald-500/20 text-xs sm:text-sm transition flex items-center justify-center gap-2 disabled:opacity-40",
-                                                children: isSubmitting ? 'Saving to Database...' : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                                                children: isSubmitting ? 'Confirming with Database...' : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
                                                     children: [
                                                         "Confirm & Lock Slot for ",
                                                         currentMemberName,
@@ -1160,56 +1726,583 @@ function BookAppointmentPage() {
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/patient/book/page.tsx",
-                                                            lineNumber: 542,
-                                                            columnNumber: 108
+                                                            lineNumber: 770,
+                                                            columnNumber: 114
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                                    lineNumber: 542,
-                                                    columnNumber: 62
+                                                    lineNumber: 770,
+                                                    columnNumber: 68
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/patient/book/page.tsx",
-                                                lineNumber: 537,
+                                                lineNumber: 765,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/patient/book/page.tsx",
-                                        lineNumber: 383,
+                                        lineNumber: 567,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/patient/book/page.tsx",
-                                    lineNumber: 382,
+                                    lineNumber: 566,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/patient/book/page.tsx",
-                            lineNumber: 326,
+                            lineNumber: 460,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/patient/book/page.tsx",
-                    lineNumber: 270,
+                    lineNumber: 352,
                     columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatePresence"], {
+                    children: inspectDoctor && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].div, {
+                            initial: {
+                                opacity: 0,
+                                scale: 0.95
+                            },
+                            animate: {
+                                opacity: 1,
+                                scale: 1
+                            },
+                            exit: {
+                                opacity: 0,
+                                scale: 0.95
+                            },
+                            className: "w-full max-w-xl p-6 sm:p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-6",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex justify-between items-start border-b border-slate-800 pb-4",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 mb-1 inline-block",
+                                                    children: "Verified Clinical Faculty"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                    lineNumber: 789,
+                                                    columnNumber: 21
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                    className: "text-2xl font-extrabold text-white",
+                                                    children: inspectDoctor.name
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                    lineNumber: 792,
+                                                    columnNumber: 21
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                    className: "text-xs text-emerald-400 font-semibold",
+                                                    children: inspectDoctor.specialisation
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                    lineNumber: 793,
+                                                    columnNumber: 21
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                            lineNumber: 788,
+                                            columnNumber: 19
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            onClick: ()=>setInspectDoctor(null),
+                                            className: "text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
+                                                className: "w-5 h-5"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 796,
+                                                columnNumber: 21
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                            lineNumber: 795,
+                                            columnNumber: 19
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                    lineNumber: 787,
+                                    columnNumber: 17
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "grid grid-cols-2 gap-3 text-xs",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "p-3.5 bg-slate-950 rounded-2xl border border-slate-800",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-slate-400 block text-[10px] uppercase font-bold",
+                                                    children: "Qualification"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                    lineNumber: 802,
+                                                    columnNumber: 21
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                    className: "text-white mt-1 block",
+                                                    children: inspectDoctor.qualification
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                    lineNumber: 803,
+                                                    columnNumber: 21
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                            lineNumber: 801,
+                                            columnNumber: 19
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "p-3.5 bg-slate-950 rounded-2xl border border-slate-800",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-slate-400 block text-[10px] uppercase font-bold",
+                                                    children: "Clinical Experience"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                    lineNumber: 806,
+                                                    columnNumber: 21
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                    className: "text-white mt-1 block",
+                                                    children: inspectDoctor.experience
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                    lineNumber: 807,
+                                                    columnNumber: 21
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                            lineNumber: 805,
+                                            columnNumber: 19
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "p-3.5 bg-slate-950 rounded-2xl border border-slate-800",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-slate-400 block text-[10px] uppercase font-bold",
+                                                    children: "Affiliated Hospital"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                    lineNumber: 810,
+                                                    columnNumber: 21
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                    className: "text-white mt-1 block",
+                                                    children: inspectDoctor.hospital
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                    lineNumber: 811,
+                                                    columnNumber: 21
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                            lineNumber: 809,
+                                            columnNumber: 19
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "p-3.5 bg-slate-950 rounded-2xl border border-slate-800",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-slate-400 block text-[10px] uppercase font-bold",
+                                                    children: "Consultation Fee"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                    lineNumber: 814,
+                                                    columnNumber: 21
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                    className: "text-emerald-300 mt-1 block font-mono",
+                                                    children: inspectDoctor.fee
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                                    lineNumber: 815,
+                                                    columnNumber: 21
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                            lineNumber: 813,
+                                            columnNumber: 19
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                    lineNumber: 800,
+                                    columnNumber: 17
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
+                                            className: "text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5",
+                                            children: "Biography & Clinical Focus"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                            lineNumber: 820,
+                                            columnNumber: 19
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                            className: "text-xs text-slate-300 leading-relaxed bg-slate-950 p-4 rounded-2xl border border-slate-800",
+                                            children: inspectDoctor.bio
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                            lineNumber: 821,
+                                            columnNumber: 19
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                    lineNumber: 819,
+                                    columnNumber: 17
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex gap-3 pt-2",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            type: "button",
+                                            onClick: ()=>setInspectDoctor(null),
+                                            className: "flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition",
+                                            children: "Close"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                            lineNumber: 827,
+                                            columnNumber: 19
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            type: "button",
+                                            onClick: ()=>{
+                                                setSelectedDoctor(inspectDoctor);
+                                                setInspectDoctor(null);
+                                            },
+                                            className: "flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-lg shadow-emerald-500/20",
+                                            children: "Select & Book Appointment"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/app/patient/book/page.tsx",
+                                            lineNumber: 834,
+                                            columnNumber: 19
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/app/patient/book/page.tsx",
+                                    lineNumber: 826,
+                                    columnNumber: 17
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/app/patient/book/page.tsx",
+                            lineNumber: 781,
+                            columnNumber: 15
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/src/app/patient/book/page.tsx",
+                        lineNumber: 780,
+                        columnNumber: 13
+                    }, this)
+                }, void 0, false, {
+                    fileName: "[project]/src/app/patient/book/page.tsx",
+                    lineNumber: 778,
+                    columnNumber: 9
+                }, this),
+                bookingSuccess && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "hidden print:block p-8 bg-white text-black font-sans min-h-screen",
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "max-w-2xl mx-auto border-2 border-black p-8 rounded-lg space-y-6",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "text-center border-b-2 border-black pb-4",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
+                                        className: "text-2xl font-black tracking-wider uppercase",
+                                        children: "PrimeCare Hospital System"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                        lineNumber: 855,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "text-xs font-semibold text-gray-700",
+                                        children: "Official Outpatient Consultation Token & Slip"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                        lineNumber: 856,
+                                        columnNumber: 17
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                lineNumber: 854,
+                                columnNumber: 15
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex justify-between items-center bg-gray-100 p-4 rounded-md border border-gray-300",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "text-xs font-bold text-gray-600 uppercase block",
+                                                children: "Token Number"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 861,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "text-2xl font-black font-mono",
+                                                children: bookingSuccess.tokenNumber
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 862,
+                                                columnNumber: 19
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                        lineNumber: 860,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "text-right",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "text-xs font-bold text-gray-600 uppercase block",
+                                                children: "Status"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 865,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "text-sm font-bold text-green-700 uppercase",
+                                                children: "Confirmed & Locked"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 866,
+                                                columnNumber: 19
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                        lineNumber: 864,
+                                        columnNumber: 17
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                lineNumber: 859,
+                                columnNumber: 15
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "grid grid-cols-2 gap-4 text-xs",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Patient Name:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 872,
+                                                columnNumber: 19
+                                            }, this),
+                                            " ",
+                                            bookingSuccess.patientName
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                        lineNumber: 871,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Age / Gender:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 875,
+                                                columnNumber: 19
+                                            }, this),
+                                            " ",
+                                            bookingSuccess.age,
+                                            " Yrs / ",
+                                            bookingSuccess.gender
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                        lineNumber: 874,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Doctor:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 878,
+                                                columnNumber: 19
+                                            }, this),
+                                            " ",
+                                            bookingSuccess.doctorName
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                        lineNumber: 877,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Specialisation:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 881,
+                                                columnNumber: 19
+                                            }, this),
+                                            " ",
+                                            bookingSuccess.department
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                        lineNumber: 880,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Date:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 884,
+                                                columnNumber: 19
+                                            }, this),
+                                            " ",
+                                            bookingSuccess.date
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                        lineNumber: 883,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Time Slot:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 887,
+                                                columnNumber: 19
+                                            }, this),
+                                            " ",
+                                            bookingSuccess.timeSlot
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                        lineNumber: 886,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Center:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 890,
+                                                columnNumber: 19
+                                            }, this),
+                                            " ",
+                                            bookingSuccess.hospital
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                        lineNumber: 889,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Fee:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                                lineNumber: 893,
+                                                columnNumber: 19
+                                            }, this),
+                                            " ",
+                                            bookingSuccess.fee
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                        lineNumber: 892,
+                                        columnNumber: 17
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                lineNumber: 870,
+                                columnNumber: 15
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "border-t border-gray-300 pt-3 text-xs",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                        children: "Chief Complaint:"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/patient/book/page.tsx",
+                                        lineNumber: 898,
+                                        columnNumber: 17
+                                    }, this),
+                                    " ",
+                                    bookingSuccess.symptoms
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                lineNumber: 897,
+                                columnNumber: 15
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "text-center text-[10px] text-gray-500 border-t border-gray-200 pt-4",
+                                children: "Please present this token at the reception desk 15 minutes before your scheduled consultation slot."
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/patient/book/page.tsx",
+                                lineNumber: 901,
+                                columnNumber: 15
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/app/patient/book/page.tsx",
+                        lineNumber: 853,
+                        columnNumber: 13
+                    }, this)
+                }, void 0, false, {
+                    fileName: "[project]/src/app/patient/book/page.tsx",
+                    lineNumber: 852,
+                    columnNumber: 11
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/patient/book/page.tsx",
-            lineNumber: 267,
+            lineNumber: 346,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/app/patient/book/page.tsx",
-        lineNumber: 266,
+        lineNumber: 345,
         columnNumber: 5
     }, this);
 }
-_s(BookAppointmentPage, "MWwRXXFwFr1oaHhgoG0TzdseczE=", false, function() {
+_s(BookAppointmentPage, "7quzeorImqXn7tYiUShrUS1wm0o=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$context$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"]
     ];
@@ -1384,214 +2477,95 @@ __turbopack_context__.s([
     ()=>ProtectedRoute
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$context$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/context/AuthContext.tsx [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/app-dir/link.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$lock$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Lock$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/lock.mjs [app-client] (ecmascript) <export default as Lock>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$log$2d$in$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__LogIn$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/log-in.mjs [app-client] (ecmascript) <export default as LogIn>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$shield$2d$alert$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ShieldAlert$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/shield-alert.mjs [app-client] (ecmascript) <export default as ShieldAlert>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$context$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/context/AuthContext.tsx [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
 ;
 ;
 ;
-;
-;
 function ProtectedRoute({ children, allowedRoles }) {
     _s();
-    const { user, loading, isAuthenticated } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$context$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
+    const { user, isAuthenticated, loading, logout } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$context$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "ProtectedRoute.useEffect": ()=>{
             if (!loading) {
                 if (!isAuthenticated || !user) {
                     router.replace("/login");
-                } else if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+                    return;
+                }
+                // STRICT GATE: If role is DOCTOR and not explicitly approved, kick back to login
+                if (user.role === "DOCTOR" && user.isApproved !== true) {
+                    logout();
                     router.replace("/login");
+                    return;
+                }
+                if (allowedRoles && !allowedRoles.includes(user.role)) {
+                    if (user.role === "PATIENT") {
+                        router.replace("/patient/book");
+                    } else if (user.role === "DOCTOR") {
+                        router.replace("/doctor/dashboard");
+                    } else if (user.role === "ADMIN") {
+                        router.replace("/admin/leaves");
+                    }
                 }
             }
         }
     }["ProtectedRoute.useEffect"], [
-        loading,
         isAuthenticated,
+        loading,
         user,
+        allowedRoles,
         router,
-        allowedRoles
+        logout
     ]);
     if (loading) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center",
+            className: "min-h-screen bg-slate-950 flex items-center justify-center text-emerald-400 font-mono text-xs",
             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "flex flex-col items-center gap-3",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"
+                        className: "w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ProtectedRoute.tsx",
-                        lineNumber: 33,
+                        lineNumber: 49,
                         columnNumber: 11
                     }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-xs text-slate-400",
-                        children: "Verifying security credentials..."
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                        children: "Verifying credentials & clinical authorizations..."
                     }, void 0, false, {
                         fileName: "[project]/src/components/ProtectedRoute.tsx",
-                        lineNumber: 34,
+                        lineNumber: 50,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ProtectedRoute.tsx",
-                lineNumber: 32,
+                lineNumber: 48,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/components/ProtectedRoute.tsx",
-            lineNumber: 31,
+            lineNumber: 47,
             columnNumber: 7
         }, this);
     }
-    // If unauthenticated, show strict access lock view before redirect completes
-    if (!isAuthenticated || !user) {
-        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4",
-            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "max-w-md w-full p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl text-center space-y-5",
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center mx-auto",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$lock$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Lock$3e$__["Lock"], {
-                            className: "w-7 h-7"
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/ProtectedRoute.tsx",
-                            lineNumber: 46,
-                            columnNumber: 13
-                        }, this)
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/ProtectedRoute.tsx",
-                        lineNumber: 45,
-                        columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                                className: "text-2xl font-black text-white",
-                                children: "Authentication Required"
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/ProtectedRoute.tsx",
-                                lineNumber: 49,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "text-xs text-slate-400 mt-1.5 leading-relaxed",
-                                children: "Patient appointment booking and outpatient services are protected. Please sign in or create an account to access clinical scheduling."
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/ProtectedRoute.tsx",
-                                lineNumber: 50,
-                                columnNumber: 13
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/components/ProtectedRoute.tsx",
-                        lineNumber: 48,
-                        columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                        href: "/login",
-                        className: "w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20",
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$log$2d$in$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__LogIn$3e$__["LogIn"], {
-                                className: "w-4 h-4"
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/ProtectedRoute.tsx",
-                                lineNumber: 58,
-                                columnNumber: 13
-                            }, this),
-                            " Sign In to Book Appointment"
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/components/ProtectedRoute.tsx",
-                        lineNumber: 54,
-                        columnNumber: 11
-                    }, this)
-                ]
-            }, void 0, true, {
-                fileName: "[project]/src/components/ProtectedRoute.tsx",
-                lineNumber: 44,
-                columnNumber: 9
-            }, this)
-        }, void 0, false, {
-            fileName: "[project]/src/components/ProtectedRoute.tsx",
-            lineNumber: 43,
-            columnNumber: 7
-        }, this);
-    }
-    // Role Mismatch Protection
-    if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4",
-            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "max-w-md w-full p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl text-center space-y-4",
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$shield$2d$alert$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ShieldAlert$3e$__["ShieldAlert"], {
-                        className: "w-12 h-12 text-amber-400 mx-auto"
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/ProtectedRoute.tsx",
-                        lineNumber: 70,
-                        columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                        className: "text-xl font-bold text-white",
-                        children: "Access Restricted"
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/ProtectedRoute.tsx",
-                        lineNumber: 71,
-                        columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-xs text-slate-400",
-                        children: [
-                            "Your profile (",
-                            user.role,
-                            ") is not authorized to access this section."
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/components/ProtectedRoute.tsx",
-                        lineNumber: 72,
-                        columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                        href: "/login",
-                        className: "text-xs text-emerald-400 hover:underline",
-                        children: "Switch Profile"
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/ProtectedRoute.tsx",
-                        lineNumber: 73,
-                        columnNumber: 11
-                    }, this)
-                ]
-            }, void 0, true, {
-                fileName: "[project]/src/components/ProtectedRoute.tsx",
-                lineNumber: 69,
-                columnNumber: 9
-            }, this)
-        }, void 0, false, {
-            fileName: "[project]/src/components/ProtectedRoute.tsx",
-            lineNumber: 68,
-            columnNumber: 7
-        }, this);
+    if (!isAuthenticated || !user || user.role === "DOCTOR" && user.isApproved !== true) {
+        return null;
     }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
         children: children
     }, void 0, false, {
         fileName: "[project]/src/components/ProtectedRoute.tsx",
-        lineNumber: 81,
+        lineNumber: 60,
         columnNumber: 10
     }, this);
 }
-_s(ProtectedRoute, "RSKdTqqa8sIcSl0j7/tbD2lfdCw=", false, function() {
+_s(ProtectedRoute, "E3U30M913moVQht5TG6IJJYYOus=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$context$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"],
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
