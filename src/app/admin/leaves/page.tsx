@@ -188,9 +188,18 @@ export default function AdminDashboardPage() {
   }, [appointments, searchQuery]);
 
   // Filtered Doctors
-  const filteredDoctors = useMemo(() => {
+    const filteredDoctors = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return doctorProfiles.filter(d => 
+    const map = new Map<string, DoctorProfile>();
+    
+    // Strict deduplication by email in UI
+    doctorProfiles.forEach(d => {
+      if (d && d.email) {
+        map.set(d.email.trim().toLowerCase(), d);
+      }
+    });
+
+    return Array.from(map.values()).filter(d => 
       ((d.name || '') + ' ' + (d.specialisation || '') + ' ' + (d.email || '') + ' ' + (d.hospital || '')).toLowerCase().includes(q)
     );
   }, [doctorProfiles, searchQuery]);
@@ -1310,4 +1319,5 @@ export default function AdminDashboardPage() {
     </ProtectedRoute>
   );
 }
+
 
