@@ -909,3 +909,4 @@ export default function BookAppointmentPage() {
     </ProtectedRoute>
   );
 }
+

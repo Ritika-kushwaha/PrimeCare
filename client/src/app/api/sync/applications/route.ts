@@ -15,7 +15,10 @@ export async function GET() {
         FROM pc_doctor_applications 
         ORDER BY created_at DESC
       `);
-      return NextResponse.json({ success: true, applications: res.rows || [] }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
+      return NextResponse.json(
+        { success: true, applications: res.rows || [] },
+        { headers: { 'Cache-Control': 'no-store, max-age=0' } }
+      );
     } catch (err: any) {
       console.error("GET applications error:", err);
     }
@@ -28,46 +31,76 @@ export async function POST(req: Request) {
   const pool = getDbPool();
   try {
     const data = await req.json();
-    const { id, email, status, name, specialisation, qualification, regNumber } = data;
+    const { id, email, status, name, specialisation, qualification, experience, regNumber } = data;
     const cleanEmail = (email || '').toLowerCase().trim();
 
-    if (pool && (id || cleanEmail)) {
+    if (!pool) {
+      return NextResponse.json({ success: false, error: 'Database offline' }, { status: 500 });
+    }
+
+    if (id || cleanEmail) {
       if (status === 'APPROVED') {
-        // 1. Mark application approved
+        // 1. Update application status
         if (id) await pool.query(`UPDATE pc_doctor_applications SET status = 'APPROVED' WHERE id = $1`, [id]);
-        if (cleanEmail) await pool.query(`UPDATE pc_users SET is_approved = TRUE WHERE LOWER(email) = $1 AND role = 'DOCTOR'`, [cleanEmail]);
+        if (cleanEmail) await pool.query(`UPDATE pc_doctor_applications SET status = 'APPROVED' WHERE LOWER(email) = $1`, [cleanEmail]);
 
-        // 2. Add directly to pc_doctors table so patients can immediately book appointments
+        // 2. Unlock login credentials in pc_users
+        if (cleanEmail) {
+          await pool.query(`UPDATE pc_users SET is_approved = TRUE WHERE LOWER(email) = $1 AND role = 'DOCTOR'`, [cleanEmail]);
+        }
+
+        // 3. Fetch doctor application details if not provided in payload
+        let docName = name;
+        let docSpec = specialisation;
+        let docQual = qualification;
+        let docExp = experience;
+        let docReg = regNumber;
+
+        if (!docName && cleanEmail) {
+          const appRes = await pool.query(`SELECT name, specialisation, qualification, experience, reg_number FROM pc_doctor_applications WHERE LOWER(email) = $1 LIMIT 1`, [cleanEmail]);
+          if (appRes.rows.length > 0) {
+            const row = appRes.rows[0];
+            docName = row.name;
+            docSpec = row.specialisation;
+            docQual = row.qualification;
+            docExp = row.experience;
+            docReg = row.reg_number;
+          }
+        }
+
+        const fullName = (docName || 'Specialist').startsWith('Dr.') ? docName : `Dr. ${docName || 'Specialist'}`;
+        const spec = docSpec || 'General Medicine';
         const docId = id || ('doc-' + Date.now());
-        const docName = (name || 'Dr. Specialist').startsWith('Dr.') ? name : 'Dr. ' + (name || 'Specialist');
-        const spec = specialisation || 'General Medicine';
 
+        // 4. Upsert directly into pc_doctors so new doctors appear on /patient/book and admin portal
         await pool.query(`
           INSERT INTO pc_doctors (id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio)
-          VALUES ($1, $2, $3, $4, $5, 'Practice Specialist', 'PrimeCare Multispecialty Hospital', '₹1,000', '5.0 ★', $6)
+          VALUES ($1, $2, $3, $4, $5, $6, 'PrimeCare Multispecialty Hospital', '₹1,000', '5.0 ★', $7)
           ON CONFLICT (email) DO UPDATE SET
             name = EXCLUDED.name,
             specialisation = EXCLUDED.specialisation,
-            qualification = EXCLUDED.qualification
+            qualification = EXCLUDED.qualification,
+            experience = EXCLUDED.experience,
+            bio = EXCLUDED.bio
         `, [
           docId,
           cleanEmail,
-          docName,
+          fullName,
           spec,
-          qualification || 'MBBS, MD',
-          `Verified Clinical Specialist in ${spec}. NMC Registration: ${regNumber || 'Verified'}`
+          docQual || 'MBBS, MD',
+          docExp || 'Practice Specialist',
+          `Verified Specialist in ${spec}. NMC Registration: ${docReg || 'Verified'}`
         ]);
       } else if (status === 'REJECTED') {
-        // 1. Mark application rejected
         if (id) await pool.query(`UPDATE pc_doctor_applications SET status = 'REJECTED' WHERE id = $1`, [id]);
-        
-        // 2. Delete credentials from pc_users and pc_doctors so rejected doctor CANNOT log in
         if (cleanEmail) {
+          await pool.query(`UPDATE pc_doctor_applications SET status = 'REJECTED' WHERE LOWER(email) = $1`, [cleanEmail]);
           await pool.query(`DELETE FROM pc_users WHERE LOWER(email) = $1 AND role = 'DOCTOR'`, [cleanEmail]);
           await pool.query(`DELETE FROM pc_doctors WHERE LOWER(email) = $1`, [cleanEmail]);
         }
       }
     }
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error("POST applications error:", err);
