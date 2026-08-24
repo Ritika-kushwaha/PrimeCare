@@ -198,6 +198,7 @@ export default function DoctorDashboardPage() {
         const myProfile = docData.doctors.find((d: any) => 
           (d.id && user?.id && d.id === user.id) ||
           (d.id && docId && d.id === docId) ||
+          (d.email && doctorEmail && d.email.toLowerCase() === doctorEmail.toLowerCase()) ||
           (d.name && cleanDoctorName(d.name) === myNameClean) ||
           (d.name && myNameClean && (cleanDoctorName(d.name).includes(myNameClean) || myNameClean.includes(cleanDoctorName(d.name))))
         );

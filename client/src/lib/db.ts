@@ -106,6 +106,23 @@ export async function initDb(): Promise<void> {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    // Auto-seed default doctors into pc_doctors if not present
+    try {
+      await p.query(`
+        INSERT INTO pc_doctors (id, email, name, specialisation, qualification, experience, hospital, fee, rating, bio, working_hours_start, working_hours_end, slot_duration_min)
+        VALUES 
+          ('doc-cardio-01', 'ritikakushwaha62@gmail.com', 'Dr. Ritika Kushwaha', 'Cardiology', 'MBBS, MD, DM (Cardiology)', '12 Years Practice Specialist', 'PrimeCare Multispecialty Hospital', '₹1,200', '5.0 ★', 'Senior Consultant Cardiologist specialising in interventional cardiology and cardiac triage.', '09:00', '17:00', 30),
+          ('doc-cardio-02', 'aarav.sharma@primecare.in', 'Dr. Aarav Sharma', 'Cardiology', 'MBBS, MD (Cardiology)', '10 Years Practice Specialist', 'PrimeCare Multispecialty Hospital', '₹1,000', '4.9 ★', 'Consultant Cardiologist specialising in preventative care.', '09:00', '17:00', 30),
+          ('doc-cardio-03', 'meera.kulkarni@primecare.in', 'Dr. Meera Kulkarni', 'Cardiology', 'MBBS, DNB (Cardiology)', '8 Years Practice Specialist', 'PrimeCare Multispecialty Hospital', '₹950', '4.8 ★', 'Specialist in non-invasive cardiology and echocardiography.', '09:00', '17:00', 30),
+          ('doc-neuro-01', 'priya.nair@primecare.in', 'Dr. Priya Nair', 'Neurology', 'MBBS, DM (Neurology)', '11 Years Practice Specialist', 'PrimeCare Multispecialty Hospital', '₹1,500', '4.9 ★', 'Senior Neurologist specialising in stroke care and neuromuscular disorders.', '09:00', '17:00', 30),
+          ('doc-ortho-01', 'vikram.patel@primecare.in', 'Dr. Vikram Patel', 'Orthopedics', 'MBBS, MS (Orthopedics)', '14 Years Practice Specialist', 'PrimeCare Multispecialty Hospital', '₹1,100', '4.9 ★', 'Orthopedic surgeon specializing in joint replacements and sports trauma.', '09:00', '17:00', 30),
+          ('doc-peds-01', 'ananya.deshmukh@primecare.in', 'Dr. Ananya Deshmukh', 'Pediatrics', 'MBBS, MD (Pediatrics)', '9 Years Practice Specialist', 'PrimeCare Multispecialty Hospital', '₹900', '4.9 ★', 'Pediatric specialist focused on child growth, immunizations, and developmental care.', '09:00', '17:00', 30),
+          ('doc-derma-01', 'rohan.mehta@primecare.in', 'Dr. Rohan Mehta', 'Dermatology', 'MBBS, MD (Dermatology)', '7 Years Practice Specialist', 'PrimeCare Multispecialty Hospital', '₹1,000', '4.8 ★', 'Consultant Dermatologist specializing in clinical dermatology and laser treatments.', '09:00', '17:00', 30)
+        ON CONFLICT (id) DO NOTHING;
+      `);
+    } catch {}
+
     isInit = true;
   } catch (err) {
     console.error("Database schema init error:", err);
