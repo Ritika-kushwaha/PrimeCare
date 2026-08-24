@@ -86,26 +86,25 @@ export default function AdminDashboardPage() {
     try {
       const res = await fetch('/api/sync/doctors', { cache: 'no-store' });
       const data = await res.json();
-      const fetchedDocs: DoctorProfile[] = (data.success && Array.isArray(data.doctors)) ? data.doctors : [];
+      const fetchedDocs: DoctorProfile[] = (data && data.success && Array.isArray(data.doctors)) ? data.doctors : [];
 
       const docMap = new Map<string, DoctorProfile>();
       DEFAULT_DOCTORS.forEach(d => {
-        docMap.set(d.id, d);
-        if (d.email) docMap.set(d.email.toLowerCase(), d);
+        if (d && d.id) docMap.set(d.id, d);
       });
 
       fetchedDocs.forEach(d => {
-        if (d.email) {
-          const key = d.email.toLowerCase();
-          const existing = docMap.get(key) || docMap.get(d.id);
-          docMap.set(key, { ...existing, ...d });
-        } else if (d.id) {
-          docMap.set(d.id, d);
+        if (d && d.id) {
+          docMap.set(d.id, { ...docMap.get(d.id), ...d });
+        } else if (d && d.email) {
+          const matchingDefault = DEFAULT_DOCTORS.find(def => def.email.toLowerCase() === d.email.toLowerCase());
+          const key = matchingDefault ? matchingDefault.id : ('doc-' + Date.now());
+          docMap.set(key, { ...matchingDefault, ...d, id: key });
         }
       });
 
-      const uniqueDocs = Array.from(new Set(docMap.values()));
-      setDoctors(uniqueDocs);
+      const doctorList = Array.from(docMap.values()).filter(Boolean);
+      setDoctors(doctorList.length > 0 ? doctorList : DEFAULT_DOCTORS);
     } catch (err) {
       console.error('Failed to load doctors:', err);
       setDoctors(DEFAULT_DOCTORS);
