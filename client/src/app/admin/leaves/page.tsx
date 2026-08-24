@@ -85,7 +85,7 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<'CONSULTATIONS' | 'LEAVE_AFFECTED' | 'DONE' | 'DOCTORS' | 'LEAVES'>('CONSULTATIONS');
   
   const [appointments, setAppointments] = useState<AppointmentItem[]>([]);
-  const [doctorProfiles, setDoctorProfiles] = useState<DoctorProfile[]>([]);
+  const [doctorProfiles, setDoctorProfiles] = useState<DoctorProfile[]>(DEFAULT_DOCTORS);
   const [doctorApplications, setDoctorApplications] = useState<DoctorApplication[]>([]);
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,9 +124,25 @@ export default function AdminDashboardPage() {
     try {
       const docRes = await fetch('/api/sync/doctors', { cache: 'no-store' });
       const docData = await docRes.json();
-            if (docData.success && Array.isArray(docData.doctors)) {
-        setDoctorProfiles(docData.doctors);
-      }
+      const fetchedDocs: DoctorProfile[] = (docData && docData.success && Array.isArray(docData.doctors)) ? docData.doctors : [];
+
+      const docMap = new Map<string, DoctorProfile>();
+      DEFAULT_DOCTORS.forEach(d => {
+        if (d && d.id) docMap.set(d.id, d);
+      });
+
+      fetchedDocs.forEach(d => {
+        if (d && d.id) {
+          docMap.set(d.id, { ...docMap.get(d.id), ...d });
+        } else if (d && d.email) {
+          const matchingDefault = DEFAULT_DOCTORS.find(def => def.email.toLowerCase() === d.email.toLowerCase());
+          const key = matchingDefault ? matchingDefault.id : ('doc-' + Date.now());
+          docMap.set(key, { ...matchingDefault, ...d, id: key });
+        }
+      });
+
+      const doctorList = Array.from(docMap.values()).filter(Boolean);
+      setDoctorProfiles(doctorList.length > 0 ? doctorList : DEFAULT_DOCTORS);
     } catch {}
 
     try {
@@ -188,19 +204,23 @@ export default function AdminDashboardPage() {
   }, [appointments, searchQuery]);
 
   // Filtered Doctors
-    const filteredDoctors = useMemo(() => {
+  const filteredDoctors = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     const map = new Map<string, DoctorProfile>();
 
+    DEFAULT_DOCTORS.forEach(d => map.set(d.id, d));
     doctorProfiles.forEach(d => {
-      if (d && d.email) {
-        const key = d.email.trim().toLowerCase();
-        // Keep the latest dynamic entry
-        map.set(key, d);
+      if (d && d.id) {
+        map.set(d.id, d);
+      } else if (d && d.email) {
+        map.set(d.email.trim().toLowerCase(), d);
       }
     });
 
-    return Array.from(map.values()).filter(d => 
+    const list = Array.from(map.values());
+    const finalDocs = list.length > 0 ? list : DEFAULT_DOCTORS;
+
+    return finalDocs.filter(d => 
       ((d.name || '') + ' ' + (d.specialisation || '') + ' ' + (d.email || '') + ' ' + (d.hospital || '')).toLowerCase().includes(q)
     );
   }, [doctorProfiles, searchQuery]);
