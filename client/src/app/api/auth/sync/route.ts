@@ -15,30 +15,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Email is required' }, { status: 400 });
     }
 
-    if (pool) {
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS pc_users (
-          id VARCHAR(255) PRIMARY KEY,
-          email VARCHAR(255),
-          role VARCHAR(50) NOT NULL,
-          first_name VARCHAR(255),
-          last_name VARCHAR(255),
-          password VARCHAR(255),
-          specialisation VARCHAR(255),
-          reg_number VARCHAR(255),
-          is_approved BOOLEAN DEFAULT FALSE,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          CONSTRAINT pc_users_email_role_unique UNIQUE (email, role)
-        );
-      `);
+    if (!pool) {
+      return NextResponse.json({ success: false, error: 'Database connection offline' }, { status: 500 });
     }
+
+    // Ensure table structure
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS pc_users (
+        id VARCHAR(255) PRIMARY KEY,
+        email VARCHAR(255),
+        role VARCHAR(50) NOT NULL,
+        first_name VARCHAR(255),
+        last_name VARCHAR(255),
+        password VARCHAR(255),
+        specialisation VARCHAR(255),
+        reg_number VARCHAR(255),
+        is_approved BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT pc_users_email_role_unique UNIQUE (email, role)
+      );
+    `);
 
     // --- 1. LOGIN ---
     if (action === 'LOGIN') {
-      if (!pool) {
-        return NextResponse.json({ success: false, error: 'Database connection offline' }, { status: 500 });
-      }
-
       const res = await pool.query(
         `SELECT id, email, role, first_name AS "firstName", last_name AS "lastName", 
                 password, specialisation, reg_number AS "regNumber", is_approved AS "isApproved" 
@@ -56,31 +55,38 @@ export async function POST(req: Request) {
 
       const u = res.rows[0];
 
-      // Password validation
+      // Password check
       if (password && u.password && u.password !== password && password !== 'Password@123') {
         return NextResponse.json({ success: false, error: 'Invalid password. Please check your credentials.' }, { status: 401 });
       }
 
-      // STRICT GATE: DOCTORS MUST BE APPROVED
-      if (role === 'DOCTOR' && !u.isApproved) {
+      // STRICT ZERO-EXCEPTION GATE: If role is DOCTOR, is_approved MUST be true
+      const isActuallyApproved = Boolean(u.isApproved === true || u.isApproved === 'true' || u.isApproved === 1);
+      if (role === 'DOCTOR' && !isActuallyApproved) {
         return NextResponse.json({
           success: false,
           isPendingApproval: true,
-          error: 'Your Doctor application has NOT been approved yet. Please wait for Admin verification before logging in.'
+          error: 'Your Doctor account is NOT approved yet. Please wait for the Hospital Administrator to verify and approve your registration.'
         }, { status: 403 });
       }
 
-      return NextResponse.json({ success: true, user: u });
+      return NextResponse.json({
+        success: true,
+        user: {
+          id: u.id,
+          email: u.email,
+          role: u.role,
+          firstName: u.firstName,
+          lastName: u.lastName,
+          specialisation: u.specialisation,
+          regNumber: u.regNumber,
+          isApproved: isActuallyApproved
+        }
+      });
     }
 
     // --- 2. REGISTER ---
     if (action === 'REGISTER') {
-      if (!pool) {
-        return NextResponse.json({ success: false, error: 'Database connection offline' }, { status: 500 });
-      }
-
-      const isApproved = role !== 'DOCTOR'; // DOCTOR ALWAYS FALSE ON SIGNUP
-      const userId = `usr-${Date.now()}`;
       const fName = (firstName || '').trim();
       const lName = (lastName || '').trim();
 
@@ -88,6 +94,9 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: false, error: 'First name is required.' }, { status: 400 });
       }
 
+      // DOCTORS ARE NEVER APPROVED ON REGISTRATION (Strictly false)
+      const isApproved = role !== 'DOCTOR';
+      const userId = `usr-${Date.now()}`;
       const fullName = role === 'DOCTOR' ? `Dr. ${fName} ${lName}`.trim() : `${fName} ${lName}`.trim();
 
       await pool.query(
@@ -99,7 +108,7 @@ export async function POST(req: Request) {
            password = EXCLUDED.password,
            specialisation = EXCLUDED.specialisation,
            reg_number = EXCLUDED.reg_number,
-           is_approved = pc_users.is_approved`,
+           is_approved = EXCLUDED.is_approved`,
         [userId, cleanEmail, role, fName, lName, password, specialisation || null, regNumber || null, isApproved]
       );
 
