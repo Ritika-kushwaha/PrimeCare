@@ -48,7 +48,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const storedUser = localStorage.getItem("user");
       if (storedToken && storedUser) {
         const parsed = JSON.parse(storedUser);
-        // Clear session if unapproved doctor
         if (parsed.role === "DOCTOR" && !parsed.isApproved) {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
@@ -60,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (e) {
-      console.error("Failed to restore session", e);
+      console.error("Session restore error:", e);
     } finally {
       setLoading(false);
     }
@@ -86,14 +85,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const data = await res.json();
     if (!res.ok || !data.success) {
+      // Clear any remaining storage
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+      setToken(null);
       throw new Error(data.error || 'Authentication failed.');
     }
 
     const authenticatedUser: User = data.user;
 
-    // Strict gate for doctors
+    // Hard verification
     if (authenticatedUser.role === 'DOCTOR' && !authenticatedUser.isApproved) {
-      throw new Error('Your Doctor Application is pending administrator verification. Please wait for Admin approval before logging in.');
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+      setToken(null);
+      throw new Error('Your Doctor application has NOT been approved yet. Please wait for Admin verification before logging in.');
     }
 
     const generatedToken = `jwt-primecare-${Date.now()}`;
@@ -155,16 +163,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const newUser: User = data.user;
 
-    // If role is DOCTOR, do NOT auto-login.
+    // NEVER LOGIN AN UNAPPROVED DOCTOR ON SIGNUP
     if (userData.role === 'DOCTOR') {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       setUser(null);
       setToken(null);
-      return false; // Returns false to indicate approval is pending
+      return false; // Tells login page to stay on pending approval screen
     }
 
-    // Patients and Admin auto-login
     const generatedToken = `jwt-primecare-${Date.now()}`;
     localStorage.setItem("token", generatedToken);
     localStorage.setItem("user", JSON.stringify(newUser));

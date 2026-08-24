@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     // --- 1. LOGIN ---
     if (action === 'LOGIN') {
       if (!pool) {
-        return NextResponse.json({ success: false, error: 'Database connection unavailable' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'Database connection offline' }, { status: 500 });
       }
 
       const res = await pool.query(
@@ -56,16 +56,17 @@ export async function POST(req: Request) {
 
       const u = res.rows[0];
 
+      // Password validation
       if (password && u.password && u.password !== password && password !== 'Password@123') {
-        return NextResponse.json({ success: false, error: 'Invalid password. Please try again.' }, { status: 401 });
+        return NextResponse.json({ success: false, error: 'Invalid password. Please check your credentials.' }, { status: 401 });
       }
 
-      // STRICT DOCTOR APPROVAL CHECK
+      // STRICT GATE: DOCTORS MUST BE APPROVED
       if (role === 'DOCTOR' && !u.isApproved) {
         return NextResponse.json({
           success: false,
           isPendingApproval: true,
-          error: 'Your Doctor Application is pending administrator verification. You cannot login until the Admin approves your account.'
+          error: 'Your Doctor application has NOT been approved yet. Please wait for Admin verification before logging in.'
         }, { status: 403 });
       }
 
@@ -75,10 +76,10 @@ export async function POST(req: Request) {
     // --- 2. REGISTER ---
     if (action === 'REGISTER') {
       if (!pool) {
-        return NextResponse.json({ success: false, error: 'Database connection unavailable' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'Database connection offline' }, { status: 500 });
       }
 
-      const isApproved = role !== 'DOCTOR'; // DOCTORS ARE NEVER AUTO-APPROVED
+      const isApproved = role !== 'DOCTOR'; // DOCTOR ALWAYS FALSE ON SIGNUP
       const userId = `usr-${Date.now()}`;
       const fName = (firstName || '').trim();
       const lName = (lastName || '').trim();
@@ -97,7 +98,8 @@ export async function POST(req: Request) {
            last_name = EXCLUDED.last_name,
            password = EXCLUDED.password,
            specialisation = EXCLUDED.specialisation,
-           reg_number = EXCLUDED.reg_number`,
+           reg_number = EXCLUDED.reg_number,
+           is_approved = pc_users.is_approved`,
         [userId, cleanEmail, role, fName, lName, password, specialisation || null, regNumber || null, isApproved]
       );
 
@@ -127,7 +129,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: false, error: 'Invalid action' }, { status: 400 });
   } catch (err: any) {
-    console.error("Auth error:", err);
+    console.error("Auth sync error:", err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
